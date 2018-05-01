@@ -52,7 +52,7 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="FactX\FactWriter.fs" />
+    <Compile Include="FactX\FactOutput.fs" />
     <None Include="Test01.fsx" />
     <Content Include="packages.config" />
   </ItemGroup>
