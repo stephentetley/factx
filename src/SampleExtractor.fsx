@@ -29,7 +29,7 @@ let getInstallations () : InstallationsRow list =
 
 // ** Generate Prolog facts.
 let GenAddresses () = 
-    let outFile = @"D:\coding\prolog\assets\addresses.pl"
+    let outFile = System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..","data/addresses.pl")
     let rows = getInstallations ()
     let proc1 (row:InstallationsRow) : FactOutput<unit> = 
         tellFact (namedAtom "address")  [quotedAtom row.InstReference; string row.``Full Address``]
@@ -43,7 +43,7 @@ let GenAddresses () =
     runFactOutput outFile procAll
 
 let GenAssetNames () = 
-    let outFile = @"D:\coding\prolog\assets\assetnames.pl"
+    let outFile = System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..","data/assetnames.pl")
     let rows = getInstallations ()
     let proc1 (row:InstallationsRow) : FactOutput<unit> = 
         tellFact (namedAtom "assetName")  [quotedAtom row.InstReference; string row.InstCommonName]

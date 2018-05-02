@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27428.2027
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "factx", "src\factx.fsproj", "{98C66D38-EE2E-49F4-98CD-0EEC5733C677}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "factx-fsharp", "src\factx-fsharp.fsproj", "{98C66D38-EE2E-49F4-98CD-0EEC5733C677}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

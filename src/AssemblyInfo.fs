@@ -1,4 +1,4 @@
-﻿namespace factx.AssemblyInfo
+﻿namespace factx_fsharp.AssemblyInfo
 
 open System.Reflection
 open System.Runtime.CompilerServices
@@ -7,11 +7,11 @@ open System.Runtime.InteropServices
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[<assembly: AssemblyTitle("factx")>]
+[<assembly: AssemblyTitle("factx-fsharp")>]
 [<assembly: AssemblyDescription("")>]
 [<assembly: AssemblyConfiguration("")>]
 [<assembly: AssemblyCompany("")>]
-[<assembly: AssemblyProduct("factx")>]
+[<assembly: AssemblyProduct("factx-fsharp")>]
 [<assembly: AssemblyCopyright("Copyright ©  2018")>]
 [<assembly: AssemblyTrademark("")>]
 [<assembly: AssemblyCulture("")>]
@@ -22,7 +22,7 @@ open System.Runtime.InteropServices
 [<assembly: ComVisible(false)>]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[<assembly: Guid("98c66d38-ee2e-49f4-98cd-0eec5733c677")>]
+[<assembly: Guid("53cab3f0-aa94-4a53-a146-77055d8c859b")>]
 
 // Version information for an assembly consists of the following four values:
 //
