@@ -1,6 +1,6 @@
 ﻿#load "FactX\FactOutput.fs"
 open FactX.FactOutput
-open FactX
+
 
 
 let demo01 () = 
