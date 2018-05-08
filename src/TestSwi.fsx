@@ -16,5 +16,12 @@ let temp01 () =
 let temp02 () = 
     runSwiProc swiPath ""
 
+let temp03 () = 
+    let prog = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data/films.pl")
+    printfn "'%s'" prog
+    runSwiProc2 swiPath prog [| "credit(\"Vendredi Soir\", Y)." ; "halt." |]
+
+
+
 
 
