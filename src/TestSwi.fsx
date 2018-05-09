@@ -16,12 +16,17 @@ let temp01 () =
 let temp02 () = 
     runSwiProc swiPath ""
 
-let temp03 () = 
-    let prog = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data/films.pl")
+let temp03 (cmd:string) = 
+    let prog = System.IO.Path.Combine(__SOURCE_DIRECTORY__, "..", "data/actions.pl")
     printfn "'%s'" prog
-    runSwiProc2 swiPath prog [| "credit(\"Vendredi Soir\", Y)." ; "halt." |]
+    runSwiProc2 swiPath (sprintf "--quiet %s" prog) cmd
 
 
+let temp04 (cmd:string) = 
+    let xsbPath = @"C:\programs\XSB\bin\xsb.bat"
+    runSwiProc2 xsbPath "" cmd
 
-
+let temp05 () = 
+    let pyPath:string = @"C:\programs\Python27\python.exe"
+    runSwiProc2 pyPath "" "print 12 + 1"
 

@@ -13,6 +13,6 @@ star("The Invisible Life", "Maria Joao Pinho").
 star("The Captive", "Silvie Testud").
 star("The Captive", "Stanislav Merhar").
 
-% Disjuctive rule
+% Disjunctive rule
 credit(X,Y) :- director(X,Y).
 credit(X,Y) :- star(X,Y).
