@@ -52,10 +52,12 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="FactX\SwiBridge\ApiStubs.fs" />
     <Compile Include="FactX\Utils.fs" />
     <Compile Include="FactX\FactOutput.fs" />
     <Compile Include="FactX\SwiProcess.fs" />
     <None Include="Test01.fsx" />
+
     <None Include="SampleExtractor.fsx" />
     <None Include="TestSwi.fsx" />
     <Content Include="packages.config" />
