@@ -57,9 +57,9 @@
     <Compile Include="FactX\FactOutput.fs" />
     <Compile Include="FactX\SwiProcess.fs" />
     <None Include="Test01.fsx" />
-
     <None Include="SampleExtractor.fsx" />
     <None Include="TestSwi.fsx" />
+    <None Include="TestSwiBridge.fsx" />
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
