@@ -53,6 +53,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="FactX\SwiBridge\ApiStubs.fs" />
+    <Compile Include="FactX\SwiBridge\PrimitiveApi.fs" />
     <Compile Include="FactX\Utils.fs" />
     <Compile Include="FactX\FactOutput.fs" />
     <Compile Include="FactX\SwiProcess.fs" />
