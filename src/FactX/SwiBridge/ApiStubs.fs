@@ -348,6 +348,9 @@ extern int PL_unify_atom(Term_T t, Atom_T a);
 [<DllImport(SwiDLL, EntryPoint="PL_unify_bool", CharSet=CharSet.Ansi, CallingConvention=CallingConvention.Cdecl)>]
 extern int PL_unify_bool(Term_T t, int n);
 
+// PL_EXPORT(int)		PL_unify_integer(term_t t, intptr_t n) WUNUSED;
+[<DllImport(SwiDLL, EntryPoint="PL_unify_integer", CharSet=CharSet.Ansi, CallingConvention=CallingConvention.Cdecl)>]
+extern int PL_unify_integer(Term_T t, int n);
 
 
 // *******************************

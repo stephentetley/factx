@@ -3,6 +3,9 @@
 open FactX.SwiBridge.PrimitiveApi
 
 
+// Structs are value types, classes are reference types
+
+
 
 [<Struct>]
 type Atom = 
@@ -11,13 +14,18 @@ type Atom =
 
 [<Struct>]
 type Functor = 
-    val internal atom : Atom
+    val internal atom : AtomT
     val internal arity : int
-    new (f:Atom, arity:int) = { atom = f; arity = arity }
-    new (f:string, arity:int) = { atom = new Atom(f); arity = arity}
+    new (f:Atom, arity:int) = { atom = f.atom; arity = arity }
+    new (f:string, arity:int) = { atom = plNewAtom f; arity = arity}
 
 [<Struct>]
 type Term = 
     val internal term : TermT
     new (a:unit) = { term = plNewTermRef () }
+
+
+
+
+
 

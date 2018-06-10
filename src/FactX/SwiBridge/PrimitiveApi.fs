@@ -7,9 +7,6 @@ open FactX.SwiBridge.ApiStubs
 // F# 4.1 has Struct Unions (Single Case) that are like Haskell's newtype
 
 
-[<Struct>]
-type FidT = FidT of Fid_T
-let inline internal getFidT (fid:FidT) : Fid_T = match fid with | FidT a0 -> a0
 
 // Prolog atom
 [<Struct>]
@@ -45,6 +42,11 @@ let inline internal getTermT (term:TermT) : Term_T = match term with | TermT a0 
 type QidT = QidT of Qid_T
 let inline internal getQidT (qid:QidT) : Qid_T = match qid with | QidT q0 -> q0
 
+[<Struct>]
+type FidT = FidT of Fid_T
+let inline internal getFidT (fid:FidT) : Fid_T = match fid with | FidT a0 -> a0
+
+
 
 let plContext () : ModuleT = 
     let m0 = PL_context () in ModuleT m0
@@ -77,6 +79,21 @@ let plNewFunctor (name:AtomT) (arity:int) : FunctorT  =
 let plNewTermRef () : TermT = 
     let t0 = PL_new_term_ref () in TermT t0
 
+let plNewTermRefs (n:int) : TermT [] = 
+    let t0 = PL_new_term_refs(n)
+    [| for i in 0 .. n-1 -> IntPtr.Add(t0,i) |> TermT |]
+
+let plPutInteger(t:TermT, n:int) : int = 
+    PL_put_integer(getTermT t, n)
+
+let plGetInteger(t:TermT) : int * int = 
+    let nptr:IntPtr = new IntPtr(0)
+    let errno = PL_get_integer(getTermT t, nptr)
+    let n = nptr.ToInt32() 
+    errno, n
+
+let plUnifyInteger(t:TermT, n:int) : int = 
+    PL_unify_integer(getTermT t, n)
 
 let plPredicate (name:string) (arity:int) (moduleName:string): PredicateT =
     let p0 = PL_predicate(name, arity, moduleName) in PredicateT p0
