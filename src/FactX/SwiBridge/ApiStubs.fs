@@ -302,6 +302,15 @@ extern int PL_put_variable(Term_T t);
 [<DllImport(SwiDLL, EntryPoint="PL_put_atom", CharSet=CharSet.Ansi, CallingConvention=CallingConvention.Cdecl)>]
 extern int PL_put_atom(Term_T t, Atom_T a);
 
+//PL_EXPORT(int)		PL_put_bool(term_t t, int val);
+[<DllImport(SwiDLL, EntryPoint="PL_put_bool", CharSet=CharSet.Ansi, CallingConvention=CallingConvention.Cdecl)>]
+extern int PL_put_bool(Term_T t, int a);
+
+// PL_EXPORT(int)		PL_put_atom_chars(term_t t, const char *chars);
+[<DllImport(SwiDLL, EntryPoint="PL_put_atom_chars", CharSet=CharSet.Ansi, CallingConvention=CallingConvention.Cdecl)>]
+extern int PL_put_atom_chars(Term_T t, [<MarshalAs(UnmanagedType.LPStr)>] string chars);
+
+
 
 // PL_EXPORT(int)		PL_put_integer(term_t t, long i) WUNUSED;
 // WARNING - long TODO

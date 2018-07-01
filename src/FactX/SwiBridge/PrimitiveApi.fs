@@ -19,7 +19,9 @@ type FunctorT = FunctorT of Functor_T
 let inline internal getFunctorT (functor:FunctorT) : Functor_T = match functor with | FunctorT a0 -> a0
 
 [<Struct>]
-type ModuleT = ModuleT of Module_T
+type ModuleT = 
+    ModuleT of Module_T
+     static member Zero = ModuleT IntPtr.Zero
 let inline internal getModuleT (modulet:ModuleT) : Module_T = match modulet with | ModuleT a0 -> a0
 
 [<Struct>]
@@ -80,10 +82,17 @@ let plNewTermRef () : TermT =
     let t0 = PL_new_term_ref () in TermT t0
 
 let plNewTermRefs (n:int) : TermT [] = 
-    let t0 = PL_new_term_refs(n)
+    let t0 = PL_new_term_refs (n)
     [| for i in 0 .. n-1 -> IntPtr.Add(t0,i) |> TermT |]
 
-let plPutInteger(t:TermT, n:int) : int = 
+let plCall (t:TermT) (m:ModuleT) : int = 
+    PL_call (getTermT t, getModuleT m)
+
+let plConsFunctorV (h:TermT) (fd:FunctorT) (a0:TermT) : int =  
+    PL_cons_functor_v (getTermT h, getFunctorT fd, getTermT a0)
+
+
+let plPutInteger(t:TermT) (n:int) : int = 
     PL_put_integer(getTermT t, n)
 
 let plGetInteger(t:TermT) : int * int = 
@@ -92,8 +101,11 @@ let plGetInteger(t:TermT) : int * int =
     let n = nptr.ToInt32() 
     errno, n
 
-let plUnifyInteger(t:TermT, n:int) : int = 
-    PL_unify_integer(getTermT t, n)
+let plPutAtomChars (t:TermT) (str:string) : int = 
+    PL_put_atom_chars (getTermT t, str)
+
+let plUnifyInteger(t:TermT) (n:int) : int = 
+    PL_unify_integer (getTermT t, n)
 
 let plPredicate (name:string) (arity:int) (moduleName:string): PredicateT =
     let p0 = PL_predicate(name, arity, moduleName) in PredicateT p0
@@ -113,3 +125,9 @@ type PlQueryFlags =
 let plOpenQuery (moduleCtx:ModuleT) (flags: PlQueryFlags list) (predicate:PredicateT) (term:TermT) : QidT = 
     let flagsInt : int = List.fold (fun ac flag -> ac ||| int flag) 0 flags
     let q0 = PL_open_query(getModuleT moduleCtx, flagsInt, getPredicateT predicate, getTermT term) in QidT q0
+
+
+let runQuery(query:string) : int =
+    // let qid = plOpenQuery ModuleT.Zero []  
+    0 
+
