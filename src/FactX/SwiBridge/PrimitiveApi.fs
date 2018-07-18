@@ -1,4 +1,8 @@
-﻿module FactX.SwiBridge.PrimitiveApi
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+
+module FactX.SwiBridge.PrimitiveApi
 
 open System
 
@@ -91,9 +95,18 @@ let plCall (t:TermT) (m:ModuleT) : int =
 let plConsFunctorV (h:TermT) (fd:FunctorT) (a0:TermT) : int =  
     PL_cons_functor_v (getTermT h, getFunctorT fd, getTermT a0)
 
+let plConsFunctor1 (h:TermT) (fd:FunctorT) (a0:TermT) : int =  
+    PL_cons_functor1 (getTermT h, getFunctorT fd, getTermT a0)
+
+let plConsFunctor2 (h:TermT) (fd:FunctorT) (a0:TermT) (a1:TermT) : int =  
+    PL_cons_functor2 (getTermT h, getFunctorT fd, getTermT a0, getTermT a1)
 
 let plPutInteger(t:TermT) (n:int) : int = 
     PL_put_integer(getTermT t, n)
+
+    
+let plPutFloat(t:TermT) (f:double) : int = 
+    PL_put_float(getTermT t, f)
 
 let plGetInteger(t:TermT) : int * int = 
     let nptr:IntPtr = new IntPtr(0)

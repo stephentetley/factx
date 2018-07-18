@@ -55,6 +55,7 @@
     <Compile Include="FactX\SwiBridge\ApiStubs.fs" />
     <Compile Include="FactX\SwiBridge\PrimitiveApi.fs" />
     <Compile Include="FactX\SwiBridge\Easy.fs" />
+    <Compile Include="FactX\FormatCombinators.fs" />
     <Compile Include="FactX\FactOutput.fs" />
     <Compile Include="FactX\ExcelProviderHelper.fs" />
     <Compile Include="FactX\SwiProcess.fs" />

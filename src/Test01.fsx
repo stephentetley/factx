@@ -1,6 +1,7 @@
-﻿#load "FactX\FactOutput.fs"
+﻿#load "FactX\FormatCombinators.fs"
+#load "FactX\FactOutput.fs"
+open FactX.FormatCombinators
 open FactX.FactOutput
-
 
 
 let demo01 () = 
@@ -14,6 +15,13 @@ let demo01 () =
             return () 
             }
     runFactOutput outFile proc1
+
+let test01 () = 
+    let d1 = HCat(Doc "Hello", HCat(Doc " ", Doc "world!"))
+    let d2 = Doc "***** ******"
+    render (Indent(2,VCat(d1,d2))) |> printfn "%s"
+
+
         
 
 

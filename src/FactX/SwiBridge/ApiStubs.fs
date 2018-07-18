@@ -1,4 +1,7 @@
-﻿module FactX.SwiBridge.ApiStubs
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+module FactX.SwiBridge.ApiStubs
 
 open System
 open System.Runtime.InteropServices
@@ -31,7 +34,7 @@ type Atom_TPtr = IntPtr
 // *            MODULES            *
 // *********************************
 
-
+// 
 // PL_EXPORT(module_t)	PL_context(void);
 [<DllImport(SwiDLL, EntryPoint="PL_context", CharSet=CharSet.Ansi, CallingConvention=CallingConvention.Cdecl)>]
 extern Module_T PL_context();
@@ -212,7 +215,14 @@ extern int PL_get_chars(Term_T t, StringPtr value, uint32 flags);
 
 // PL_EXPORT(int)		PL_get_integer(term_t t, int *i) WUNUSED;
 [<DllImport(SwiDLL, EntryPoint="PL_get_integer", CharSet=CharSet.Ansi, CallingConvention=CallingConvention.Cdecl)>]
-extern int PL_get_integer(Term_T t, IntPtr i);
+extern int PL_get_integer(Term_T t, [<Out>] IntPtr i);
+
+
+
+// PL_EXPORT(int)		PL_get_integer(term_t t, int *i) WUNUSED;
+[<DllImport(SwiDLL, EntryPoint="PL_get_integer", CharSet=CharSet.Ansi, CallingConvention=CallingConvention.Cdecl)>]
+extern int PL_get_integerZ(Term_T t, int *i);
+
 
 // PL_EXPORT(int)		PL_get_long(term_t t, long *i) WUNUSED;
 // WARNING - long * TODO
@@ -223,7 +233,7 @@ extern int PL_get_long(Term_T t, IntPtr i);
 // PL_EXPORT(int)		PL_get_float(term_t t, double *f) WUNUSED;
 // WARNING - double * TODO
 [<DllImport(SwiDLL, EntryPoint="PL_get_float", CharSet=CharSet.Ansi, CallingConvention=CallingConvention.Cdecl)>]
-extern int PL_get_float(Term_T t, IntPtr i);
+extern int PL_get_float(Term_T t, [<Out>] double *f);
 
 // ...
 
@@ -317,6 +327,12 @@ extern int PL_put_atom_chars(Term_T t, [<MarshalAs(UnmanagedType.LPStr)>] string
 [<DllImport(SwiDLL, EntryPoint="PL_put_integer", CharSet=CharSet.Ansi, CallingConvention=CallingConvention.Cdecl)>]
 extern int PL_put_integer(Term_T t, int i);
 
+
+// PL_EXPORT(int)		PL_put_float(term_t t, double f) WUNUSED;
+[<DllImport(SwiDLL, EntryPoint="PL_put_float", CharSet=CharSet.Ansi, CallingConvention=CallingConvention.Cdecl)>]
+extern int PL_put_float(Term_T t, double f);
+
+
 // PL_EXPORT(int)		PL_put_functor(term_t t, functor_t functor) WUNUSED;
 [<DllImport(SwiDLL, EntryPoint="PL_put_functor", CharSet=CharSet.Ansi, CallingConvention=CallingConvention.Cdecl)>]
 extern int PL_put_functor(Term_T t, Functor_T functor);
@@ -334,6 +350,13 @@ extern int PL_put_nil(Term_T l);
 extern int PL_put_term(Term_T t1, Term_T t2);
 
 // ** construct a functor or list-cell **
+
+// PL_EXPORT(int)		PL_cons_functor(term_t h, functor_t f, ...) WUNUSED;
+[<DllImport(SwiDLL, EntryPoint="PL_cons_functor", CharSet=CharSet.Ansi, CallingConvention=CallingConvention.Cdecl)>]
+extern int PL_cons_functor1(Term_T h, Functor_T fd, Term_T a0);
+
+[<DllImport(SwiDLL, EntryPoint="PL_cons_functor", CharSet=CharSet.Ansi, CallingConvention=CallingConvention.Cdecl)>]
+extern int PL_cons_functor2(Term_T h, Functor_T fd, Term_T a0, Term_T a1);
 
 // PL_EXPORT(int)		PL_cons_functor_v(term_t h, functor_t fd, term_t a0) WUNUSED;
 [<DllImport(SwiDLL, EntryPoint="PL_cons_functor_v", CharSet=CharSet.Ansi, CallingConvention=CallingConvention.Cdecl)>]
