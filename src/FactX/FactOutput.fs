@@ -1,8 +1,15 @@
-﻿module FactX.FactOutput
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+
+module FactX.FactOutput
 
 open System
 open System.IO
 
+
+// *************************************
+// Monad definition
 
 
 type FactOutput<'a> = 
@@ -119,6 +126,31 @@ let tellFact (head:TermWriter) (body: TermWriter list) : FactOutput<unit> =
         let line:string = sprintf "%s(%s)." (getTW head) args
         handle.WriteLine line
 
+/// Clearly this demonstrates we need something more like pretty-printing
+/// for indentation, lists...
+let private exportList (source: string list) : string list = 
+    let indent s = sprintf "          %s" s
+    let rec work ac xs = 
+        match xs with
+        | [] -> List.rev <| (indent "])." :: ac)
+        | [final] -> work (indent ("  " + final) :: ac) []
+        | y :: ys -> let s1 = sprintf "  %s," y in work (indent s1 :: ac) ys
+    let work1 xs = 
+        match xs with 
+        | [] -> [indent "["; indent "])." ]
+        | [y] -> [indent (sprintf "[ %s" y); indent "])." ]
+        | y :: ys -> work [ indent (sprintf "[ %s," y)] ys
+    work1 source
+    
+
+let tellModuleDirective (moduleName:string) (exports: (string * int) list) : FactOutput<unit> = 
+    FactOutput <| fun handle ->
+        handle.WriteLine (sprintf ":- module(%s," moduleName)
+        let exports1 : string list = 
+            exportList <| List.map (fun (s,i) -> sprintf "%s/%d" s i) exports
+        List.iter (fun (s:string) -> handle.WriteLine(s)) exports1
+
+
 let namedAtom (value:string) : TermWriter = TermWriter value
 let quotedAtom (value:string) : TermWriter = 
     TermWriter << sprintf "'%s'" <| value.Replace("'","''")
@@ -128,3 +160,7 @@ let bool (value:bool) : TermWriter = TermWriter <| if value then "true" else "fa
 let string (value:string) : TermWriter = TermWriter <| sprintf "\"%s\"" value
 
 let int (d:int) : TermWriter = TermWriter <| sprintf "%d" d
+
+let termList (terms:TermWriter list) : TermWriter = 
+    TermWriter << sprintf "[ %s ]" << String.concat ", " <| List.map getTW terms
+

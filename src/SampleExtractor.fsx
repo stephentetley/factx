@@ -7,9 +7,9 @@ open FSharp.Data
 open FSharp.ExcelProvider
 
 #load "FactX\FactOutput.fs"
-#load "FactX\Utils.fs"
+#load "FactX\ExcelProviderHelper.fs"
 open FactX.FactOutput
-open FactX.Utils
+open FactX.ExcelProviderHelper
 
 // ********** DATA SETUP **********
 
