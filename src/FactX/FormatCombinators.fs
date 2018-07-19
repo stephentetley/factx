@@ -35,7 +35,10 @@ let render (source:Doc) : string =
             work d1 (indent + i) sb1
     work source 0 (new StringBuilder()) |> fun sb -> sb.ToString()
 
-    
+/// Print the soc to the console.
+let testRender (source:Doc) : unit = 
+    render source |> printfn  "----------\n%s\n----------\n"
+
 // *************************************
 // Primitive values
 
@@ -50,11 +53,21 @@ let bool (value:bool) : Doc =
 let int (i:int) : Doc = 
     Doc(i.ToString())
 
+let float (d:float) : Doc = 
+    Doc(d.ToString())
+
+let double (d:double) : Doc = 
+    Doc(d.ToString())
+    
+let decimal (d:Decimal) : Doc = 
+    Doc(d.ToString())
+
+
 
 let char (ch:char) : Doc = 
     Doc (ch.ToString())
 
-/// TODO - string escaping...
+
 let string (value:string) : Doc = 
     Doc <| value
 
@@ -65,11 +78,21 @@ let doubleQuoted (value:string) : Doc =
     Doc <| sprintf "\"%s\"" value
 
 
+// *************************************
+// Character documents
+
 /// A single space
-let space = Doc " "
+let space = char ' '
 
 let dot = char '.'
+let semi = char ';'
+let colon = char ':'
 let comma = char ','
+let backslash = char '\\'
+let forwardslash = char '/'
+
+let underscore : Doc = char '_'
+
 
 
 
@@ -134,17 +157,22 @@ let punctuateVertically (sep:Doc) (source:Doc list) : Doc =
     | [] -> Empty
     | x :: xs -> work x xs
 
-let parens (d:Doc) : Doc = 
-    (char '(' +++ d) +++ char ')'
+let enclose (left:Doc) (right:Doc) (d1:Doc) : Doc = 
+    (left +++ d1) +++ right
 
-let angles (d:Doc) : Doc = 
-    (char '<' +++ d) +++ char '>'
 
-let squares (d:Doc) : Doc = 
-    (char '[' +++ d) +++ char ']'
+let parens (doc:Doc) : Doc = 
+    enclose (char '(') (char ')') doc
 
-let braces (d:Doc) : Doc = 
-    (char '{' +++ d) +++ char '}'
+let angles (doc:Doc) : Doc = 
+    enclose (char '<') (char '>') doc
+
+let squares (doc:Doc) : Doc = 
+    enclose (char '[') (char ']') doc
+
+let braces (doc:Doc) : Doc = 
+    enclose (char '{') (char '}') doc
+
 
 
 let tupled (source:Doc list) : Doc = 
@@ -175,7 +203,7 @@ let comment (comment:string) : Doc =
     vcat <| List.map (fun s -> char '%' +^+ string s) lines
 
 let fact (head:Doc) (body:Doc list) : Doc = 
-    head +++ tupled body
+    head +++ tupled body +++ dot
 
 let moduleDirective (moduleName:string) (exports: (string * int) list) : Doc = 
     let exportList = 

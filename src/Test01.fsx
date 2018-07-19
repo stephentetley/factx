@@ -28,7 +28,7 @@ let test01 () =
     let fact1 : Doc = 
         fact (string "address") 
             [quotedAtom "UID001"; prologString "1, Yellow Brick Road" ]
-    render fact1 |> printfn "%s"
+    testRender fact1 
 
     let mdirective = 
         moduleDirective "os_relations" 
@@ -36,15 +36,15 @@ let test01 () =
                         ; "osType", 2
                         ; "odComment", 2
                         ]
-    render mdirective |> printfn "%s"
+    testRender mdirective 
 
 let test02 () = 
     let doc1 = commaSepListVertically [string "one"; string "two"; string "three"]
     let doc2 = indent 10 doc1
-    render doc1 |> printfn "%s"
-    render doc2 |> printfn "%s"
+    testRender doc1 
+    testRender doc2
 
 let test03 () = 
     let doc1 = indent 10 (string "start")
-    render doc1 |> printfn "-----\n%s"
+    testRender doc1
 

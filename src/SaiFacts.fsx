@@ -108,7 +108,7 @@ let factOsType (row:OutstationRow) : FactOutput<unit> =
 let factOdComment (row:OutstationRow) : FactOutput<unit> = 
      tell <| fact (simpleAtom "odComment")  
                     [ quotedAtom    row.``OD name``
-                    ; string        row.``OD comment``
+                    ; prologString  row.``OD comment``
                     ]
 
 
