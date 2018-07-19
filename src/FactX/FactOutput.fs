@@ -7,6 +7,7 @@ module FactX.FactOutput
 open System
 open System.IO
 
+open FactX.FormatCombinators
 
 // *************************************
 // Monad definition
@@ -151,15 +152,24 @@ let tellModuleDirective (moduleName:string) (exports: (string * int) list) : Fac
         List.iter (fun (s:string) -> handle.WriteLine(s)) exports1
 
 
-let namedAtom (value:string) : TermWriter = TermWriter value
-let quotedAtom (value:string) : TermWriter = 
+let tellDoc (d:Doc) : FactOutput<unit> = 
+    FactOutput <| fun handle ->
+        handle.WriteLine (render d)
+
+
+
+/// OLD...
+/// These are to be replaced with Formatters to make terms.
+
+let namedAtomT (value:string) : TermWriter = TermWriter value
+let quotedAtomT (value:string) : TermWriter = 
     TermWriter << sprintf "'%s'" <| value.Replace("'","''")
 
-let bool (value:bool) : TermWriter = TermWriter <| if value then "true" else "false"
+let boolT (value:bool) : TermWriter = TermWriter <| if value then "true" else "false"
 
-let string (value:string) : TermWriter = TermWriter <| sprintf "\"%s\"" value
+let stringT (value:string) : TermWriter = TermWriter <| sprintf "\"%s\"" value
 
-let int (d:int) : TermWriter = TermWriter <| sprintf "%d" d
+let intT (d:int) : TermWriter = TermWriter <| sprintf "%d" d
 
 let termList (terms:TermWriter list) : TermWriter = 
     TermWriter << sprintf "[ %s ]" << String.concat ", " <| List.map getTW terms

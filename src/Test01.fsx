@@ -10,18 +10,37 @@ let demo01 () =
         factOutput {
             let! _ = tellComment "facts.pl"
             let! _ = tellComment "At prompt type ``make.`` to reload"
-            let! _ = tellFact (namedAtom "address") [quotedAtom "UID001"; string "1, Yellow Brick Road"; int 0 ]
-            let! _ = tellFact (namedAtom "address") [quotedAtom "UID005"; string "15, Giant Causeway"; int 15 ]
+            let! _ = tellFact (namedAtomT "address") [quotedAtomT "UID001"; stringT "1, Yellow Brick Road"; intT 0 ]
+            let! _ = tellFact (namedAtomT "address") [quotedAtomT "UID005"; stringT "15, Giants Causeway"; intT 15 ]
             return () 
             }
     runFactOutput outFile proc1
 
 let test01 () = 
-    let d1 = HCat(Doc "Hello", HCat(Doc " ", Doc "world!"))
-    let d2 = Doc "***** ******"
-    render (Indent(2,VCat(d1,d2))) |> printfn "%s"
+    let d1 = string "Hello" +^+ string "world!"
+    let d2 = string "***** ******"
+    render (indent 2 (d1 @@@ d2)) |> printfn "%s"
 
+    let fact1 : Doc = 
+        fact (string "address") 
+            [quotedAtom "UID001"; prologString "1, Yellow Brick Road" ]
+    render fact1 |> printfn "%s"
 
-        
+    let mdirective = 
+        moduleDirective "os_relations" 
+                        [ "osName", 2
+                        ; "osType", 2
+                        ; "odComment", 2
+                        ]
+    render mdirective |> printfn "%s"
 
+let test02 () = 
+    let doc1 = commaSepListVertically [string "one"; string "two"; string "three"]
+    let doc2 = indent 10 doc1
+    render doc1 |> printfn "%s"
+    render doc2 |> printfn "%s"
+
+let test03 () = 
+    let doc1 = indent 10 (string "start")
+    render doc1 |> printfn "-----\n%s"
 

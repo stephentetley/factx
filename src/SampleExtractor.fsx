@@ -6,8 +6,10 @@ open FSharp.Data
 #r "ExcelProvider.dll"
 open FSharp.ExcelProvider
 
+#load "FactX\FormatCombinators.fs"
 #load "FactX\FactOutput.fs"
 #load "FactX\ExcelProviderHelper.fs"
+open FactX.FormatCombinators
 open FactX.FactOutput
 open FactX.ExcelProviderHelper
 
@@ -32,7 +34,8 @@ let GenAddresses () =
     let outFile = System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..","data/addresses.pl")
     let rows = getInstallations ()
     let proc1 (row:InstallationsRow) : FactOutput<unit> = 
-        tellFact (namedAtom "address")  [quotedAtom row.InstReference; string row.``Full Address``]
+        tellDoc 
+            <| fact (simpleAtom "address")  [quotedAtom row.InstReference; prologString row.``Full Address``]
     let procAll : FactOutput<unit> = 
         factOutput {
             let! _ = tellComment "addresses.pl"
@@ -46,7 +49,8 @@ let GenAssetNames () =
     let outFile = System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..","data/assetnames.pl")
     let rows = getInstallations ()
     let proc1 (row:InstallationsRow) : FactOutput<unit> = 
-        tellFact (namedAtom "assetName")  [quotedAtom row.InstReference; string row.InstCommonName]
+        tellDoc 
+            <| fact (simpleAtom "assetName")  [quotedAtom row.InstReference; prologString row.InstCommonName]
     let procAll : FactOutput<unit> = 
         factOutput {
             let! _ = tellComment "assetnames.pl"
