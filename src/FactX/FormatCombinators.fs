@@ -27,7 +27,7 @@ let render (source:Doc) : string =
             let sb1 = work d1 indent sb in work d2 indent sb1
         | VDoc(d1,d2) -> 
             let sb1 = work d1 indent sb
-            let sb2 = sb1.Append(String.replicate indent " ")
+            let sb2 = sb1 // sb1.Append(String.replicate indent " ")
             let sb3 = sb2.Append("\n" + String.replicate indent " ")
             work d2 indent sb3
         | Indent(i,d1) -> 
@@ -164,11 +164,15 @@ let commaSepListVertically (source:Doc list) : Doc =
 // *************************************
 // Prolog specific
 
-let simpleAtom (value:string) = string value
+let simpleAtom (value:string) : Doc = string value
 
-let quotedAtom (value:string) = singleQuoted value
+let quotedAtom (value:string) : Doc = singleQuoted value
 
-let prologString (value:string) = doubleQuoted value
+let prologString (value:string) : Doc = doubleQuoted value
+
+let comment (comment:string) : Doc = 
+    let lines = comment.Split [|'\n'|] |> Array.toList
+    vcat <| List.map (fun s -> char '%' +^+ string s) lines
 
 let fact (head:Doc) (body:Doc list) : Doc = 
     head +++ tupled body

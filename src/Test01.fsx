@@ -8,10 +8,14 @@ let demo01 () =
     let outFile = System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..", @"data\facts.pl")
     let proc1 : FactOutput<unit> = 
         factOutput {
-            let! _ = tellComment "facts.pl"
-            let! _ = tellComment "At prompt type ``make.`` to reload"
-            let! _ = tellFact (namedAtomT "address") [quotedAtomT "UID001"; stringT "1, Yellow Brick Road"; intT 0 ]
-            let! _ = tellFact (namedAtomT "address") [quotedAtomT "UID005"; stringT "15, Giants Causeway"; intT 15 ]
+            let! _ = tell <| comment "facts.pl"
+            let! _ = tell <| comment "At prompt type 'make.' to reload"
+            let! _ = 
+                tell <| fact (simpleAtom "address") 
+                                [quotedAtom "UID001"; prologString "1, Yellow Brick Road"; int 0 ]
+            let! _ = 
+                tell <| fact (simpleAtom "address") 
+                                [quotedAtom "UID005"; prologString "15, Giants Causeway"; int 15 ]
             return () 
             }
     runFactOutput outFile proc1
