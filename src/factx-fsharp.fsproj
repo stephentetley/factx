@@ -66,6 +66,7 @@
     <None Include="TestSwiBridge.fsx" />
     <None Include="TestSwi02.fsx" />
     <None Include="TestSwi03.fsx" />
+    <Compile Include="PropRtu.fs" />
     <None Include="UQFacts.fsx" />
     <Content Include="packages.config" />
   </ItemGroup>

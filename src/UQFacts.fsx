@@ -19,6 +19,9 @@ open FactX.FormatCombinators
 open FactX.FactOutput
 open FactX.ExcelProviderHelper
 
+#load @"PropRtu.fs"
+open PropRtu
+
 // *************************************
 // Picture facts
 
@@ -81,34 +84,16 @@ let readPoints (sourcePath:string) : PointsRow list =
     let sheet = PointsTable.Load(uri=sourcePath)
     sheet.Rows |> Seq.toList
 
-let strLeftOf (pivot:char) (source:string) : string = 
-    let splits : string [] = source.Split(pivot)
-    splits.[0]
 
-let strRightOf (pivot:char) (source:string) : string = 
-    let splits : string [] = source.Split(pivot)
-    String.concat (pivot.ToString()) splits.[1..]
-
-let getPointName (source:string) : string = 
-    (strRightOf '\\' source).Trim()
-
-
-let getOsName (source:string) : string = 
-    (strLeftOf '\\' source).Trim()
-    
 
 let factPoint3 (row:PointsRow) : FactOutput<unit> = 
      tell <| fact (simpleAtom "point")  
-                    [ quotedAtom (getPointName row.``OS\Point name``)
-                    ; quotedAtom (getOsName row.``OS\Point name``)
+                    [ quotedAtom (getOsName row.``OS\Point name``)
+                    ; quotedAtom (getPointName row.``OS\Point name``)
                     ; quotedAtom (row.``Ctrl pic  Alarm pic``)
                     ]
 
-//let factOsType (row:OutstationRow) : FactOutput<unit> = 
-//     tell <| fact (simpleAtom "osType")  
-//                    [ quotedAtom    row.``OD name``
-//                    ; quotedAtom    row.``OS type``
-//                    ]
+
 
 //let factOdComment (row:OutstationRow) : FactOutput<unit> = 
 //     tell <| fact (simpleAtom "odComment")  
@@ -125,21 +110,61 @@ let genPointFacts (rows:PointsRow list) : unit =
             do! tell <| moduleDirective "point_facts" 
                         [ "point", 3
                         ]
-            do! tell <| comment "point(name, osname, picture)."
+            do! tell <| comment "point(osname, name, picture)."
             do! mapMz factPoint3 rows
             return () 
             }
     runFactOutput outfile procAll
 
-let test01 () = 
-    readPoints @"G:\work\Projects\uquart\rts-data\CHERRY_BURTON_STW-rtu-points.csv"
-        |> List.iter (printfn "%A")
+
 
 
 let getFilesMatching (sourceDirectory:string) (pattern:string) : string list =
     DirectoryInfo(sourceDirectory).GetFiles(searchPattern = pattern) 
         |> Array.map (fun (info:FileInfo)  -> info.FullName)
         |> Array.toList
+
+/// Name incluse Outstation:
+/// "THORNTON_DALE_STW   \INLET_BRUSH_SCREEN_R" => "THORNTON_DALE_STW   \INLET_BRUSH_SCREEN"
+
+type PumpPoints = Map<string,string list>
+
+let getPumpPoints (rows:PointsRow list) : PumpPoints = 
+    let oper (ac:PumpPoints) (row:PointsRow) : PumpPoints = 
+        if isPump row.``OS\Point name`` then
+            let name = uptoSuffix '_' row.``OS\Point name``
+            // let n1 = getPointName row.``OS\Point name``
+            let suffix = suffixOf '_' row.``OS\Point name``
+            match Map.tryFind name ac with
+            | Some xs -> Map.add name (suffix::xs) ac
+            | None -> Map.add name [suffix] ac
+        else ac
+    List.fold oper Map.empty rows
+
+let factPumpPoints (qualName:string, points:string list)  : FactOutput<unit> = 
+     tell <| fact (simpleAtom "pump")  
+                    [ quotedAtom    <| getOsName qualName
+                    ; quotedAtom    <| getPointName qualName
+                    ; prologList    <| List.map quotedAtom points
+                    ]
+
+let genPumpFacts (pumpPoints:PumpPoints) : unit = 
+    let outfile = outputFile "pump_facts.pl"
+    let pumps = Map.toList pumpPoints
+    let procAll : FactOutput<unit> = 
+        factOutput {
+            do! tell <| comment "pump_facts.pl"
+            do! tell <| moduleDirective "pump_facts" 
+                        [ "pump", 3
+                        ]
+            do! tell <| comment "point(name, osname, points)."
+            do! mapMz factPumpPoints pumps
+            return () 
+            }
+    runFactOutput outfile procAll
+
+
+
 
 let main () : unit = 
      readPictureRows () |> genPictureFacts
@@ -149,3 +174,18 @@ let main () : unit =
         List.map  readPoints pointFiles |> List.concat
 
      allPoints |> genPointFacts
+     // Pumps pump/3
+     allPoints |> getPumpPoints |> genPumpFacts
+
+
+
+let test01 () = 
+    printfn "%s" <| suffixOf    '_' @"INLET_BRUSH_SCREEN_R"
+    printfn "%s" <| uptoSuffix  '_' @"INLET_BRUSH_SCREEN_R"
+    printfn "%A" <| isPRF "INLET_BRUSH_SCREEN_R"
+    printfn "%A" <| isPRF "INLET_BRUSH_SCREEN_S"
+    printfn "%A" <| isPump "PUMP_1_R"
+    printfn "%A" <| isPump "INLET_BRUSH_SCREEN_S"
+    printfn "%A" <| isScreen "INLET_BRUSH_SCREEN_S"
+    printfn "%A" <| isScreen "PUMP_1_R"
+    

@@ -202,6 +202,10 @@ let quotedAtom (value:string) : Doc = singleQuoted value
 let prologString (value:string) : Doc = 
     doubleQuoted (escapeSpecial value)
 
+/// Display the list horizontally.
+let prologList (elements:Doc list) : Doc = commaSepList elements
+
+
 let comment (comment:string) : Doc = 
     let lines = comment.Split [|'\n'|] |> Array.toList
     vcat <| List.map (fun s -> char '%' +^+ string s) lines
