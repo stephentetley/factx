@@ -61,10 +61,12 @@
     <Compile Include="FactX\SwiProcess.fs" />
     <None Include="Test01.fsx" />
     <None Include="SampleExtractor.fsx" />
+    <None Include="SaiFacts.fsx" />
     <None Include="TestSwi.fsx" />
     <None Include="TestSwiBridge.fsx" />
     <None Include="TestSwi02.fsx" />
     <None Include="TestSwi03.fsx" />
+    <None Include="UQFacts.fsx" />
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

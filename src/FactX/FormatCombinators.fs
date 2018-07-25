@@ -192,11 +192,15 @@ let commaSepListVertically (source:Doc list) : Doc =
 // *************************************
 // Prolog specific
 
+let private escapeSpecial (source:string) : string = 
+    source.Replace("\\" , "\\\\")
+
 let simpleAtom (value:string) : Doc = string value
 
 let quotedAtom (value:string) : Doc = singleQuoted value
 
-let prologString (value:string) : Doc = doubleQuoted value
+let prologString (value:string) : Doc = 
+    doubleQuoted (escapeSpecial value)
 
 let comment (comment:string) : Doc = 
     let lines = comment.Split [|'\n'|] |> Array.toList
