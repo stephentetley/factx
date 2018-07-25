@@ -22,17 +22,19 @@ type InstallationsTable =
 
 type InstallationsRow = InstallationsTable.Row
 
-let getInstallations () : InstallationsRow list = 
-    let dict : GetExcelRowsDict<InstallationsTable, InstallationsRow> = 
-        { GetRows     = fun imports -> imports.Data 
-          NotNullProc = fun row -> match row.GetValue(0) with null -> false | _ -> true }
-    excelTableGetRows dict (new InstallationsTable())
+let readInstallations () : InstallationsRow list = 
+    let helper = 
+        { new IExcelProviderHelper<InstallationsTable,InstallationsRow>
+          with member this.ReadTableRows table = table.Data 
+               member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
+         
+    excelReadRowsAsList helper (new InstallationsTable())
 
 
 // ** Generate Prolog facts.
 let GenAddresses () = 
     let outFile = System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..","data/addresses.pl")
-    let rows = getInstallations ()
+    let rows = readInstallations ()
     let proc1 (row:InstallationsRow) : FactOutput<unit> = 
         tell <| fact (simpleAtom "address")  
                             [ quotedAtom row.InstReference
@@ -48,7 +50,7 @@ let GenAddresses () =
 
 let GenAssetNames () = 
     let outFile = System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..","data/assetnames.pl")
-    let rows = getInstallations ()
+    let rows = readInstallations ()
     let proc1 (row:InstallationsRow) : FactOutput<unit> = 
         tell <| fact (simpleAtom "assetName")  
                         [quotedAtom row.InstReference; prologString row.InstCommonName]

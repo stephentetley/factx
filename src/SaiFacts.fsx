@@ -28,13 +28,13 @@ type SaiTable =
 type SaiRow = SaiTable.Row
 
 
-let getSaiRowRows () : SaiRow list = 
-    let dict () = 
+let readSaiRowRows () : SaiRow list = 
+    let helper = 
         { new IExcelProviderHelper<SaiTable,SaiRow>
-          with member this.GetTableRows table = table.Data 
+          with member this.ReadTableRows table = table.Data 
                member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
          
-    excelGetRowsAsList (dict ()) (new SaiTable())
+    excelReadRowsAsList helper (new SaiTable())
 
 let outputFile (filename:string) : string = 
     System.IO.Path.Combine(@"G:\work\common_data\prolog", filename) 
@@ -60,12 +60,12 @@ let factAssetStatus (row:SaiRow) : FactOutput<unit> =
                     ]
 
 
-let genSiteRelations (rows:SaiRow list) : unit = 
-    let outfile = outputFile "sai_relations.pl"
+let genSiteFacts (rows:SaiRow list) : unit = 
+    let outfile = outputFile "sai_facts.pl"
     let procAll : FactOutput<unit> = 
         factOutput {
-            let! _ = tell <| comment "sai_relations.pl"
-            let! _ = tell <| moduleDirective "sai_relations" 
+            let! _ = tell <| comment "sai_facts.pl"
+            let! _ = tell <| moduleDirective "sai_facts" 
                         [ "siteName", 2
                         ; "assetType", 2
                         ; "assetStatus", 2
@@ -89,7 +89,7 @@ type OustationTable =
 
 type OutstationRow = OustationTable.Row
 
-let getOutstationRows () : OutstationRow list = 
+let readOutstationRows () : OutstationRow list = 
     (new OustationTable()).Rows |> Seq.toList
 
 
@@ -112,12 +112,12 @@ let factOdComment (row:OutstationRow) : FactOutput<unit> =
                     ]
 
 
-let genOsRelations (rows:OutstationRow list) : unit = 
-    let outfile = outputFile "os_relations.pl"
+let genOsFacts (rows:OutstationRow list) : unit = 
+    let outfile = outputFile "os_facts.pl"
     let procAll : FactOutput<unit> = 
         factOutput {
-            let! _ = tell <| comment "os_relations.pl"
-            let! _ = tell <| moduleDirective "os_relations" 
+            let! _ = tell <| comment "os_facts.pl"
+            let! _ = tell <| moduleDirective "os_facts" 
                         [ "osName", 2
                         ; "osType", 2
                         ; "odComment", 2
@@ -130,5 +130,5 @@ let genOsRelations (rows:OutstationRow list) : unit =
     runFactOutput outfile procAll
 
 let main () : unit = 
-     getSaiRowRows () |> genSiteRelations
-     getOutstationRows () |> genOsRelations
+     readSaiRowRows () |> genSiteFacts
+     readOutstationRows () |> genOsFacts

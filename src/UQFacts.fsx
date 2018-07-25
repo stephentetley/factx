@@ -32,12 +32,12 @@ type PictureRow = PictureTable.Row
 
 
 let readPictureRows () : PictureRow list = 
-    let dict () = 
+    let helper = 
         { new IExcelProviderHelper<PictureTable,PictureRow>
-          with member this.GetTableRows table = table.Data 
+          with member this.ReadTableRows table = table.Data 
                member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
          
-    excelGetRowsAsList (dict ()) (new PictureTable())
+    excelReadRowsAsList helper (new PictureTable())
 
 let outputFile (filename:string) : string = 
     System.IO.Path.Combine(@"G:\work\Projects\uquart\facts", filename) 
