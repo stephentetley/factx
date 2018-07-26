@@ -43,27 +43,27 @@ let readPictureRows () : PictureRow list =
     excelReadRowsAsList helper (new PictureTable())
 
 let outputFile (filename:string) : string = 
-    System.IO.Path.Combine(@"G:\work\Projects\uquart\facts", filename) 
+    System.IO.Path.Combine(@"G:\work\Projects\uquart\prolog\facts", filename) 
 
 
 
-let factPictureName (row:PictureRow) : FactOutput<unit> = 
-     tell <| fact (simpleAtom "pictureName")  
+let factPictureName2 (row:PictureRow) : FactOutput<unit> = 
+     tell <| fact (simpleAtom "rts_picture_name")  
                     [ quotedAtom row.``Picture ID``
                     ; prologString row.Name
                     ]
 
 
 
-let genPictureFacts (rows:PictureRow list) : unit = 
-    let outfile = outputFile "picture_facts.pl"
+let genPicNameFacts (rows:PictureRow list) : unit = 
+    let outfile = outputFile "rts_picture_names.pl"
     let procAll : FactOutput<unit> = 
         factOutput {
-            do! tell <| comment "picture_facts.pl"
-            do! tell <| moduleDirective "picture_facts" 
-                            [ "pictureName", 2
+            do! tell <| comment "rts_picture_names.pl"
+            do! tell <| moduleDirective "rts_picture_names" 
+                            [ "rts_picture_name", 2
                             ]
-            do! mapMz factPictureName rows
+            do! mapMz factPictureName2 rows
             return () 
         }
     runFactOutput outfile procAll
@@ -87,30 +87,23 @@ let readPoints (sourcePath:string) : PointsRow list =
 
 
 let factPoint3 (row:PointsRow) : FactOutput<unit> = 
-     tell <| fact (simpleAtom "point")  
-                    [ quotedAtom (getOsName row.``OS\Point name``)
+     tell <| fact (simpleAtom "rts_picture")  
+                    [ quotedAtom (row.``Ctrl pic  Alarm pic``)
+                    ; quotedAtom (getOsName row.``OS\Point name``)
                     ; quotedAtom (getPointName row.``OS\Point name``)
-                    ; quotedAtom (row.``Ctrl pic  Alarm pic``)
                     ]
 
 
 
-//let factOdComment (row:OutstationRow) : FactOutput<unit> = 
-//     tell <| fact (simpleAtom "odComment")  
-//                    [ quotedAtom    row.``OD name``
-//                    ; prologString  row.``OD comment``
-//                    ]
-
-
-let genPointFacts (rows:PointsRow list) : unit = 
-    let outfile = outputFile "point_facts.pl"
+let genPictureChildrenFacts (rows:PointsRow list) : unit = 
+    let outfile = outputFile "rts_picture_facts.pl"
     let procAll : FactOutput<unit> = 
         factOutput {
-            do! tell <| comment "point_facts.pl"
-            do! tell <| moduleDirective "point_facts" 
-                        [ "point", 3
+            do! tell <| comment "rts_picture_facts.pl"
+            do! tell <| moduleDirective "rts_picture_facts" 
+                        [ "rts_picture", 3
                         ]
-            do! tell <| comment "point(osname, name, picture)."
+            do! tell <| comment "rts_picture_points(picture, os_name, point_name)."
             do! mapMz factPoint3 rows
             return () 
             }
@@ -141,23 +134,23 @@ let getPumpPoints (rows:PointsRow list) : PumpPoints =
         else ac
     List.fold oper Map.empty rows
 
-let factPumpPoints (qualName:string, points:string list)  : FactOutput<unit> = 
-     tell <| fact (simpleAtom "pump")  
+let factPumpPoints (qualName:string, pointCodes:string list)  : FactOutput<unit> = 
+     tell <| fact (simpleAtom "rts_pump")  
                     [ quotedAtom    <| getOsName qualName
                     ; quotedAtom    <| getPointName qualName
-                    ; prologList    <| List.map quotedAtom points
+                    ; prologList    <| List.map quotedAtom pointCodes
                     ]
 
 let genPumpFacts (pumpPoints:PumpPoints) : unit = 
-    let outfile = outputFile "pump_facts.pl"
+    let outfile = outputFile "rts_pump_facts.pl"
     let pumps = Map.toList pumpPoints
     let procAll : FactOutput<unit> = 
         factOutput {
-            do! tell <| comment "pump_facts.pl"
-            do! tell <| moduleDirective "pump_facts" 
-                        [ "pump", 3
+            do! tell <| comment "rts_pump_facts.pl"
+            do! tell <| moduleDirective "rts_pump_facts" 
+                        [ "rts_pump", 3
                         ]
-            do! tell <| comment "point(name, osname, points)."
+            do! tell <| comment "rts_pump(osname, pump_name, point_codes)."
             do! mapMz factPumpPoints pumps
             return () 
             }
@@ -167,13 +160,13 @@ let genPumpFacts (pumpPoints:PumpPoints) : unit =
 
 
 let main () : unit = 
-     readPictureRows () |> genPictureFacts
+     readPictureRows () |> genPicNameFacts
 
-     let pointFiles = getFilesMatching @"G:\work\Projects\uquart\rts-data" "*-rtu-points.csv"
+     let allPointsFiles = getFilesMatching @"G:\work\Projects\uquart\rts-data" "*-rtu-points.csv"
      let allPoints = 
-        List.map  readPoints pointFiles |> List.concat
+        List.map readPoints allPointsFiles |> List.concat
 
-     allPoints |> genPointFacts
+     allPoints |> genPictureChildrenFacts
      // Pumps pump/3
      allPoints |> getPumpPoints |> genPumpFacts
 
