@@ -42,19 +42,19 @@ let outputFile (filename:string) : string =
 
 
 let factSiteName (row:SaiRow) : FactOutput<unit> = 
-     tell <| fact (simpleAtom "siteName")  
+     tell <| fact (simpleAtom "site_name")  
                     [ quotedAtom row.InstReference
                     ; prologString row.InstCommonName
                     ]
 
 let factAssetType (row:SaiRow) : FactOutput<unit> = 
-     tell <| fact (simpleAtom "assetType")  
+     tell <| fact (simpleAtom "asset_type")  
                     [ quotedAtom row.InstReference
                     ; quotedAtom row.AssetType
                     ]
 
 let factAssetStatus (row:SaiRow) : FactOutput<unit> = 
-     tell <| fact (simpleAtom "assetStatus")  
+     tell <| fact (simpleAtom "asset_status")  
                     [ quotedAtom row.InstReference
                     ; quotedAtom row.AssetStatus
                     ]
@@ -66,9 +66,9 @@ let genSiteFacts (rows:SaiRow list) : unit =
         factOutput {
             let! _ = tell <| comment "sai_facts.pl"
             let! _ = tell <| moduleDirective "sai_facts" 
-                        [ "siteName", 2
-                        ; "assetType", 2
-                        ; "assetStatus", 2
+                        [ "site_name", 2
+                        ; "asset_type", 2
+                        ; "asset_status", 2
                         ]
             let! _ = mapMz factSiteName rows
             let! _ = mapMz factAssetType rows
@@ -94,19 +94,19 @@ let readOutstationRows () : OutstationRow list =
 
 
 let factOsName (row:OutstationRow) : FactOutput<unit> = 
-     tell <| fact (simpleAtom "osName")  
+     tell <| fact (simpleAtom "os_name")  
                     [ quotedAtom row.``OD name``
                     ; quotedAtom row.``OS name``
                     ]
 
 let factOsType (row:OutstationRow) : FactOutput<unit> = 
-     tell <| fact (simpleAtom "osType")  
+     tell <| fact (simpleAtom "os_type")  
                     [ quotedAtom    row.``OD name``
                     ; quotedAtom    row.``OS type``
                     ]
 
 let factOdComment (row:OutstationRow) : FactOutput<unit> = 
-     tell <| fact (simpleAtom "odComment")  
+     tell <| fact (simpleAtom "od_comment")  
                     [ quotedAtom    row.``OD name``
                     ; prologString  row.``OD comment``
                     ]
@@ -118,9 +118,9 @@ let genOsFacts (rows:OutstationRow list) : unit =
         factOutput {
             let! _ = tell <| comment "os_facts.pl"
             let! _ = tell <| moduleDirective "os_facts" 
-                        [ "osName", 2
-                        ; "osType", 2
-                        ; "odComment", 2
+                        [ "os_name", 2
+                        ; "os_type", 2
+                        ; "od_comment", 2
                         ]
             let! _ = mapMz factOsName rows
             let! _ = mapMz factOsType rows

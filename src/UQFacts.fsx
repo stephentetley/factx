@@ -117,22 +117,30 @@ let getFilesMatching (sourceDirectory:string) (pattern:string) : string list =
         |> Array.map (fun (info:FileInfo)  -> info.FullName)
         |> Array.toList
 
-/// Name incluse Outstation:
+/// Name include Outstation:
 /// "THORNTON_DALE_STW   \INLET_BRUSH_SCREEN_R" => "THORNTON_DALE_STW   \INLET_BRUSH_SCREEN"
 
-type PumpPoints = Map<string,string list>
+/// The map maps stem to its suffixes.
+type StemPoints = Map<string,string list>
 
-let getPumpPoints (rows:PointsRow list) : PumpPoints = 
-    let oper (ac:PumpPoints) (row:PointsRow) : PumpPoints = 
-        if isPump row.``OS\Point name`` then
+let getStemPoints (rowMatch:PointsRow -> bool) (rows:PointsRow list) : StemPoints = 
+    let oper (ac:StemPoints) (row:PointsRow) : StemPoints = 
+        if rowMatch row then
             let name = uptoSuffix '_' row.``OS\Point name``
-            // let n1 = getPointName row.``OS\Point name``
             let suffix = suffixOf '_' row.``OS\Point name``
             match Map.tryFind name ac with
             | Some xs -> Map.add name (suffix::xs) ac
             | None -> Map.add name [suffix] ac
         else ac
     List.fold oper Map.empty rows
+
+// *************************************
+// Pump facts
+
+let getPumpPoints (rows:PointsRow list) : StemPoints = 
+    let matcher (row:PointsRow) : bool = isPump row.``OS\Point name``
+    getStemPoints matcher rows
+    
 
 let factPumpPoints (qualName:string, pointCodes:string list)  : FactOutput<unit> = 
      tell <| fact (simpleAtom "rts_pump")  
@@ -141,7 +149,7 @@ let factPumpPoints (qualName:string, pointCodes:string list)  : FactOutput<unit>
                     ; prologList    <| List.map quotedAtom pointCodes
                     ]
 
-let genPumpFacts (pumpPoints:PumpPoints) : unit = 
+let genPumpFacts (pumpPoints:StemPoints) : unit = 
     let outfile = outputFile "rts_pump_facts.pl"
     let pumps = Map.toList pumpPoints
     let procAll : FactOutput<unit> = 
@@ -157,7 +165,39 @@ let genPumpFacts (pumpPoints:PumpPoints) : unit =
     runFactOutput outfile procAll
 
 
+// *************************************
+// Screen facts
 
+let getScreenPoints (rows:PointsRow list) : StemPoints = 
+    let matcher (row:PointsRow) : bool = isScreen row.``OS\Point name``
+    getStemPoints matcher rows
+
+let factScreenPoints (qualName:string, pointCodes:string list)  : FactOutput<unit> = 
+     tell <| fact (simpleAtom "rts_screen")  
+                    [ quotedAtom    <| getOsName qualName
+                    ; quotedAtom    <| getPointName qualName
+                    ; prologList    <| List.map quotedAtom pointCodes
+                    ]
+
+let genScreenFacts (screenPoints:StemPoints) : unit = 
+    let outfile = outputFile "rts_screen_facts.pl"
+    let screens = Map.toList screenPoints
+    let procAll : FactOutput<unit> = 
+        factOutput {
+            do! tell <| comment "rts_screen_facts.pl"
+            do! tell <| moduleDirective "rts_screen_facts" 
+                        [ "rts_screen", 3
+                        ]
+            do! tell <| comment "rts_screen(osname, screen_name, point_codes)."
+            do! mapMz factScreenPoints screens
+            return () 
+            }
+    runFactOutput outfile procAll
+
+
+
+// *************************************
+// Main
 
 let main () : unit = 
      readPictureRows () |> genPicNameFacts
@@ -169,7 +209,7 @@ let main () : unit =
      allPoints |> genPictureChildrenFacts
      // Pumps pump/3
      allPoints |> getPumpPoints |> genPumpFacts
-
+     allPoints |> getScreenPoints |> genScreenFacts
 
 
 let test01 () = 

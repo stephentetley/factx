@@ -49,14 +49,14 @@ let GenAddresses () =
     runFactOutput outFile procAll
 
 let GenAssetNames () = 
-    let outFile = System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..","data/assetnames.pl")
+    let outFile = System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..","data/asset_names.pl")
     let rows = readInstallations ()
     let proc1 (row:InstallationsRow) : FactOutput<unit> = 
-        tell <| fact (simpleAtom "assetName")  
+        tell <| fact (simpleAtom "asset_name")  
                         [quotedAtom row.InstReference; prologString row.InstCommonName]
     let procAll : FactOutput<unit> = 
         factOutput {
-            let! _ = tell <| comment "assetnames.pl"
+            let! _ = tell <| comment "asset_names.pl"
             let! _ = tell <| comment "At prompt type 'make.' to reload"
             let! _ = forMz rows proc1
             return () 
