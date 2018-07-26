@@ -13,6 +13,9 @@ open FactX.FormatCombinators
 // Monad definition
 
 
+// Note the monadic (writer) interface feels lower level than 
+// e.g. CsvProviders csv write interface.
+
 type FactOutput<'a> = 
     FactOutput of (StreamWriter -> 'a)
 

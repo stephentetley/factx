@@ -55,6 +55,9 @@ let getOsName (source:string) : string =
 // *************************************
 // Pumps & Screens
 
+let hasSuffixAFPR (pointName:string) : bool = 
+    Regex.Match(pointName, "_[AFPR]\Z").Success
+
 let isPRF (pointName:string) : bool = 
     Regex.Match(pointName, "_[FPR]\Z").Success
 

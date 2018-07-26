@@ -117,6 +117,54 @@ let getFilesMatching (sourceDirectory:string) (pattern:string) : string list =
         |> Array.map (fun (info:FileInfo)  -> info.FullName)
         |> Array.toList
 
+
+        
+// *************************************
+// asset_to_signal
+
+// signal is a suffix, one of _P,_R,_F,_A
+
+type AssetToSignal = 
+    { OsName: string
+      AssetName: string
+      PointName: string
+      SignalSuffix: string }
+
+let optAssetToSignal (row:PointsRow) : option<AssetToSignal> = 
+    if hasSuffixAFPR row.``OS\Point name`` then
+        Some <| 
+            let pointName = getPointName row.``OS\Point name``
+            { OsName = getOsName row.``OS\Point name``;
+              AssetName = uptoSuffix '_' pointName;
+              PointName = pointName;
+              SignalSuffix = suffixOf '_' pointName }
+    else None
+
+let getAssetToSignals (rows:PointsRow list) : AssetToSignal list = 
+    List.choose id <| List.map optAssetToSignal rows
+
+let factAssetToSignal (source:AssetToSignal) : FactOutput<unit> = 
+     tell <| fact (simpleAtom "asset_to_signal")  
+                    [ quotedAtom    <| source.OsName
+                    ; quotedAtom    <| source.AssetName
+                    ; quotedAtom    <| source.PointName
+                    ; quotedAtom    <| source.SignalSuffix
+                    ]
+
+
+let genAssetToSignals (source:AssetToSignal list) : unit = 
+    let outfile = outputFile "rts_asset_to_signal.pl"
+    let procAll : FactOutput<unit> = 
+        factOutput {
+            do! tell <| comment "rts_asset_to_signal.pl"
+            do! tell <| moduleDirective "rts_asset_to_signal" 
+                            [ "asset_to_signal", 4
+                            ]
+            do! tell <| comment "asset_to_signal(osname, assetname, signalname, suffix)."
+            do! mapMz factAssetToSignal source
+            return () 
+            }
+    runFactOutput outfile procAll
 /// Name include Outstation:
 /// "THORNTON_DALE_STW   \INLET_BRUSH_SCREEN_R" => "THORNTON_DALE_STW   \INLET_BRUSH_SCREEN"
 
@@ -125,7 +173,7 @@ type StemPoints = Map<string,string list>
 
 let getStemPoints (rowMatch:PointsRow -> bool) (rows:PointsRow list) : StemPoints = 
     let oper (ac:StemPoints) (row:PointsRow) : StemPoints = 
-        if rowMatch row then
+        if rowMatch row && hasSuffixAFPR row.``OS\Point name`` then
             let name = uptoSuffix '_' row.``OS\Point name``
             let suffix = suffixOf '_' row.``OS\Point name``
             match Map.tryFind name ac with
@@ -165,6 +213,9 @@ let genPumpFacts (pumpPoints:StemPoints) : unit =
     runFactOutput outfile procAll
 
 
+
+
+
 // *************************************
 // Screen facts
 
@@ -194,8 +245,6 @@ let genScreenFacts (screenPoints:StemPoints) : unit =
             }
     runFactOutput outfile procAll
 
-
-
 // *************************************
 // Main
 
@@ -210,15 +259,5 @@ let main () : unit =
      // Pumps pump/3
      allPoints |> getPumpPoints |> genPumpFacts
      allPoints |> getScreenPoints |> genScreenFacts
+     allPoints |> getAssetToSignals |> genAssetToSignals
 
-
-let test01 () = 
-    printfn "%s" <| suffixOf    '_' @"INLET_BRUSH_SCREEN_R"
-    printfn "%s" <| uptoSuffix  '_' @"INLET_BRUSH_SCREEN_R"
-    printfn "%A" <| isPRF "INLET_BRUSH_SCREEN_R"
-    printfn "%A" <| isPRF "INLET_BRUSH_SCREEN_S"
-    printfn "%A" <| isPump "PUMP_1_R"
-    printfn "%A" <| isPump "INLET_BRUSH_SCREEN_S"
-    printfn "%A" <| isScreen "INLET_BRUSH_SCREEN_S"
-    printfn "%A" <| isScreen "PUMP_1_R"
-    
