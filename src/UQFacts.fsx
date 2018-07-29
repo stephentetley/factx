@@ -23,47 +23,47 @@ open FactX.ExcelProviderHelper
 open PropRtu
 
 // *************************************
-// Picture facts
+// Mimic facts
 
 
-type PictureTable = 
-    ExcelFile< FileName = @"G:\work\Projects\uquart\rts-data\rts-picture-list.xlsx",
+type MimicTable = 
+    ExcelFile< FileName = @"G:\work\Projects\uquart\rts-data\rts-mimic-list.xlsx",
                 SheetName = "Sheet1",
                 ForceString = true >
 
-type PictureRow = PictureTable.Row
+type MimicRow = MimicTable.Row
 
 
-let readPictureRows () : PictureRow list = 
+let readMimicRows () : MimicRow list = 
     let helper = 
-        { new IExcelProviderHelper<PictureTable,PictureRow>
+        { new IExcelProviderHelper<MimicTable,MimicRow>
           with member this.ReadTableRows table = table.Data 
                member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
          
-    excelReadRowsAsList helper (new PictureTable())
+    excelReadRowsAsList helper (new MimicTable())
 
 let outputFile (filename:string) : string = 
-    System.IO.Path.Combine(@"G:\work\Projects\uquart\prolog\facts", filename) 
+    System.IO.Path.Combine(@"E:\coding\prolog\rts\facts", filename) 
 
 
 
-let factPictureName2 (row:PictureRow) : FactOutput<unit> = 
-     tell <| fact (simpleAtom "rts_picture_name")  
-                    [ quotedAtom row.``Picture ID``
+let factMimicName2 (row:MimicRow) : FactOutput<unit> = 
+     tell <| fact (simpleAtom "rts_mimic_name")  
+                    [ quotedAtom row.``Mimic ID``
                     ; prologString row.Name
                     ]
 
 
 
-let genPicNameFacts (rows:PictureRow list) : unit = 
-    let outfile = outputFile "rts_picture_names.pl"
+let genMimicNameFacts (rows:MimicRow list) : unit = 
+    let outfile = outputFile "rts_mimic_names.pl"
     let procAll : FactOutput<unit> = 
         factOutput {
-            do! tell <| comment "rts_picture_names.pl"
-            do! tell <| moduleDirective "rts_picture_names" 
-                            [ "rts_picture_name", 2
+            do! tell <| comment "rts_mimic_names.pl"
+            do! tell <| moduleDirective "rts_mimic_names" 
+                            [ "rts_mimic_name", 2
                             ]
-            do! mapMz factPictureName2 rows
+            do! mapMz factMimicName2 rows
             return () 
         }
     runFactOutput outfile procAll
@@ -86,8 +86,8 @@ let readPoints (sourcePath:string) : PointsRow list =
 
 
 
-let factPoint3 (row:PointsRow) : FactOutput<unit> = 
-     tell <| fact (simpleAtom "rts_picture")  
+let factMimicPoint3 (row:PointsRow) : FactOutput<unit> = 
+     tell <| fact (simpleAtom "rts_mimic_point")  
                     [ quotedAtom (row.``Ctrl pic  Alarm pic``)
                     ; quotedAtom (getOsName row.``OS\Point name``)
                     ; quotedAtom (getPointName row.``OS\Point name``)
@@ -95,16 +95,16 @@ let factPoint3 (row:PointsRow) : FactOutput<unit> =
 
 
 
-let genPictureChildrenFacts (rows:PointsRow list) : unit = 
-    let outfile = outputFile "rts_picture_facts.pl"
+let genMimicPoints (rows:PointsRow list) : unit = 
+    let outfile = outputFile "rts_mimic_points.pl"
     let procAll : FactOutput<unit> = 
         factOutput {
-            do! tell <| comment "rts_picture_facts.pl"
-            do! tell <| moduleDirective "rts_picture_facts" 
-                        [ "rts_picture", 3
+            do! tell <| comment "rts_mimic_points.pl"
+            do! tell <| moduleDirective "rts_mimic_points" 
+                        [ "rts_mimic_point", 3
                         ]
-            do! tell <| comment "rts_picture_points(picture, os_name, point_name)."
-            do! mapMz factPoint3 rows
+            do! tell <| comment "rts_mimic_point(picture, os_name, point_name)."
+            do! mapMz factMimicPoint3 rows
             return () 
             }
     runFactOutput outfile procAll
@@ -249,13 +249,13 @@ let genScreenFacts (screenPoints:StemPoints) : unit =
 // Main
 
 let main () : unit = 
-     readPictureRows () |> genPicNameFacts
+     readMimicRows () |> genMimicNameFacts
 
      let allPointsFiles = getFilesMatching @"G:\work\Projects\uquart\rts-data" "*-rtu-points.csv"
      let allPoints = 
         List.map readPoints allPointsFiles |> List.concat
 
-     allPoints |> genPictureChildrenFacts
+     allPoints |> genMimicPoints
      // Pumps pump/3
      allPoints |> getPumpPoints |> genPumpFacts
      allPoints |> getScreenPoints |> genScreenFacts
