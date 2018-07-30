@@ -52,21 +52,13 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="FactX\SwiBridge\ApiStubs.fs" />
-    <Compile Include="FactX\SwiBridge\PrimitiveApi.fs" />
-    <Compile Include="FactX\SwiBridge\Easy.fs" />
     <Compile Include="FactX\Internal\FormatCombinators.fs" />
     <Compile Include="FactX\Internal\FactWriter.fs" />
-    <Compile Include="FactX\ExcelProviderHelper.fs" />
+    <Compile Include="FactX\Utils\ExcelProviderHelper.fs" />
     <Compile Include="FactX\FactOutput.fs" />
-    <Compile Include="FactX\SwiProcess.fs" />
     <None Include="Test01.fsx" />
     <None Include="SampleExtractor.fsx" />
     <None Include="SaiFacts.fsx" />
-    <None Include="TestSwi.fsx" />
-    <None Include="TestSwiBridge.fsx" />
-    <None Include="TestSwi02.fsx" />
-    <None Include="TestSwi03.fsx" />
     <Compile Include="PropRtu.fs" />
     <None Include="UQFacts.fsx" />
     <Content Include="packages.config" />

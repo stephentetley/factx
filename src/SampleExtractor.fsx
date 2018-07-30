@@ -10,11 +10,11 @@ open FSharp.ExcelProvider
 
 #load "FactX\Internal\FormatCombinators.fs"
 #load "FactX\Internal\FactWriter.fs"
-#load "FactX\ExcelProviderHelper.fs"
+#load "FactX\Utils\ExcelProviderHelper.fs"
 #load "FactX\FactOutput.fs"
 open FactX.Internal.FormatCombinators
 open FactX.Internal.FactWriter
-open FactX.ExcelProviderHelper
+open FactX.Utils.ExcelProviderHelper
 open FactX.FactOutput
 
 // ********** DATA SETUP **********
@@ -62,16 +62,15 @@ let GenAssetNames () =
         { Name = "asset_name"
           Arity = 2
           Signature = "asset_name(refnum, name)."
-          Facts = readInstallations () |> List.map makeFact } // Stack overflow...
+          Facts = readInstallations () |> List.map makeFact } 
 
     let pmodule = 
         { ModuleName = "asset_names"
           GlobalComment = "asset_names.pl"
           FactCols = [facts] }
     
-    // pmodule.Save(outFile)
-    printfn "pmodule.SaveToString()"
-    pmodule.SaveToString() |> printfn "%s"
+    pmodule.Save(outFile)
+    
 
 let main () : unit = 
     GenAddresses ()

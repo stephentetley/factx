@@ -18,26 +18,6 @@ type Doc =
     
 
 
-let render1 (source:Doc) : string = 
-    let sb = new StringBuilder ()
-    let rec work (doc:Doc) (indent:int) : unit = 
-        match doc with
-        | Empty -> ()
-        | Doc str -> sb.Append(str) |> ignore
-        | HDoc(d1,d2) -> 
-            work d1 indent
-            work d2 indent
-        | VDoc(d1,d2) -> 
-            work d1 indent
-            sb.Append("\n" + String.replicate indent " ") |> ignore
-            work d2 indent
-        | Indent(i,d1) -> 
-            sb.Append(String.replicate i " ") |> ignore
-            work d1 (indent + i)
-    work source 0 
-    printfn "work done; calling sb.ToString() "
-    sb.ToString()
-
 let render (source:Doc) : string = 
     let sb = new StringBuilder ()
     let rec work (doc:Doc) (indent:int) cont  = 
@@ -58,7 +38,6 @@ let render (source:Doc) : string =
             work d1 (indent + i) (fun _ -> 
             cont ())
     work source 0 (fun _ -> ())
-    printfn "work done; calling sb.ToString() "
     sb.ToString()
 
 

@@ -11,10 +11,10 @@ open FSharp.Data
 
 #load "FactX\Internal\FormatCombinators.fs"
 #load "FactX\Internal\FactWriter.fs"
-#load "FactX\ExcelProviderHelper.fs"
+#load "FactX\Utils\ExcelProviderHelper.fs"
 open FactX.Internal.FormatCombinators
 open FactX.Internal.FactWriter
-open FactX.ExcelProviderHelper
+open FactX.Utils.ExcelProviderHelper
 
 // *************************************
 // SAI facts

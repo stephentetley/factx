@@ -58,7 +58,6 @@ type Module =
         vcat <| (d1 :: empty :: d2 :: empty :: ds)
 
     member v.SaveToString () : string = 
-        printfn "Module.SaveToString() - calling render..."
         render v.Format
     member v.Save(filePath:string) = 
         use sw = new System.IO.StreamWriter(filePath)

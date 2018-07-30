@@ -14,10 +14,10 @@ open FSharp.Data
 
 #load "FactX\Internal\FormatCombinators.fs"
 #load "FactX\Internal\FactWriter.fs"
-#load "FactX\ExcelProviderHelper.fs"
+#load "FactX\Utils\ExcelProviderHelper.fs"
 open FactX.Internal.FormatCombinators
 open FactX.Internal.FactWriter
-open FactX.ExcelProviderHelper
+open FactX.Utils.ExcelProviderHelper
 
 #load @"PropRtu.fs"
 open PropRtu
@@ -62,7 +62,7 @@ let genMimicNameFacts (rows:MimicRow list) : unit =
     let outfile = outputFile "rts_mimic_names.pl"
     let procAll : FactWriter<unit> = 
         factWriter {
-            do! tell <| comment "rts_mimic_names.pl"
+            do! tell <| prologComment "rts_mimic_names.pl"
             do! tell <| moduleDirective "rts_mimic_names" 
                             [ "rts_mimic_name", 2
                             ]
@@ -102,11 +102,11 @@ let genMimicPoints (rows:PointsRow list) : unit =
     let outfile = outputFile "rts_mimic_points.pl"
     let procAll : FactWriter<unit> = 
         factWriter {
-            do! tell <| comment "rts_mimic_points.pl"
+            do! tell <| prologComment "rts_mimic_points.pl"
             do! tell <| moduleDirective "rts_mimic_points" 
                         [ "rts_mimic_point", 3
                         ]
-            do! tell <| comment "rts_mimic_point(picture, os_name, point_name)."
+            do! tell <| prologComment "rts_mimic_point(picture, os_name, point_name)."
             do! mapMz factMimicPoint3 rows
             return () 
             }
@@ -159,11 +159,11 @@ let genAssetToSignals (source:AssetToSignal list) : unit =
     let outfile = outputFile "rts_asset_to_signal.pl"
     let procAll : FactWriter<unit> = 
         factWriter {
-            do! tell <| comment "rts_asset_to_signal.pl"
+            do! tell <| prologComment "rts_asset_to_signal.pl"
             do! tell <| moduleDirective "rts_asset_to_signal" 
                             [ "asset_to_signal", 4
                             ]
-            do! tell <| comment "asset_to_signal(osname, assetname, signalname, suffix)."
+            do! tell <| prologComment "asset_to_signal(osname, assetname, signalname, suffix)."
             do! mapMz factAssetToSignal source
             return () 
             }
@@ -205,11 +205,11 @@ let genPumpFacts (pumpPoints:StemPoints) : unit =
     let pumps = Map.toList pumpPoints
     let procAll : FactWriter<unit> = 
         factWriter {
-            do! tell <| comment "rts_pump_facts.pl"
+            do! tell <| prologComment "rts_pump_facts.pl"
             do! tell <| moduleDirective "rts_pump_facts" 
                         [ "rts_pump", 3
                         ]
-            do! tell <| comment "rts_pump(osname, pump_name, point_codes)."
+            do! tell <| prologComment "rts_pump(osname, pump_name, point_codes)."
             do! mapMz factPumpPoints pumps
             return () 
             }
@@ -238,11 +238,11 @@ let genScreenFacts (screenPoints:StemPoints) : unit =
     let screens = Map.toList screenPoints
     let procAll : FactWriter<unit> = 
         factWriter {
-            do! tell <| comment "rts_screen_facts.pl"
+            do! tell <| prologComment "rts_screen_facts.pl"
             do! tell <| moduleDirective "rts_screen_facts" 
                         [ "rts_screen", 3
                         ]
-            do! tell <| comment "rts_screen(osname, screen_name, point_codes)."
+            do! tell <| prologComment "rts_screen(osname, screen_name, point_codes)."
             do! mapMz factScreenPoints screens
             return () 
             }
@@ -272,15 +272,17 @@ let genOutstationFacts (allRows:PointsRow list) : unit =
     let outstations = getOutstations allRows
     let procAll : FactWriter<unit> = 
         factWriter {
-            do! tell <| comment "rts_outstations.pl"
+            do! tell <| prologComment "rts_outstations.pl"
             do! tell <| moduleDirective "rts_outstations" 
                         [ "rts_outstation", 1
                         ]
-            do! tell <| comment "rts_outstation(osname)."
+            do! tell <| prologComment "rts_outstation(osname)."
             do! mapMz factOutstation outstations
             return () 
             }
     runFactWriter outfile procAll
+
+
 // *************************************
 // Main
 
