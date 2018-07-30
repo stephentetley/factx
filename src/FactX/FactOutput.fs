@@ -57,7 +57,9 @@ type Module =
         let ds = List.map (fun (col:FactCollection) -> col.Format) v.FactCols
         vcat <| (d1 :: empty :: d2 :: empty :: ds)
 
-    member v.SaveToString () : string = render v.Format
+    member v.SaveToString () : string = 
+        printfn "Module.SaveToString() - calling render..."
+        render v.Format
     member v.Save(filePath:string) = 
         use sw = new System.IO.StreamWriter(filePath)
         sw.Write (render v.Format)

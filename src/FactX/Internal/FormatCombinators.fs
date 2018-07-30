@@ -18,7 +18,7 @@ type Doc =
     
 
 
-let render (source:Doc) : string = 
+let render1 (source:Doc) : string = 
     let sb = new StringBuilder ()
     let rec work (doc:Doc) (indent:int) : unit = 
         match doc with
@@ -35,7 +35,32 @@ let render (source:Doc) : string =
             sb.Append(String.replicate i " ") |> ignore
             work d1 (indent + i)
     work source 0 
+    printfn "work done; calling sb.ToString() "
     sb.ToString()
+
+let render (source:Doc) : string = 
+    let sb = new StringBuilder ()
+    let rec work (doc:Doc) (indent:int) cont  = 
+        match doc with
+        | Empty -> cont ()
+        | Doc str -> sb.Append(str) |> ignore; cont ()
+        | HDoc(d1,d2) -> 
+            work d1 indent (fun _ ->
+            work d2 indent (fun _ -> 
+            cont ()))
+        | VDoc(d1,d2) -> 
+            work d1 indent (fun _ -> 
+            sb.Append("\n" + String.replicate indent " ") |> ignore
+            work d2 indent (fun _ -> 
+            cont ()))
+        | Indent(i,d1) -> 
+            sb.Append(String.replicate i " ") |> ignore
+            work d1 (indent + i) (fun _ -> 
+            cont ())
+    work source 0 (fun _ -> ())
+    printfn "work done; calling sb.ToString() "
+    sb.ToString()
+
 
 /// Print the soc to the console.
 let testRender (source:Doc) : unit = 

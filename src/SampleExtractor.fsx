@@ -1,4 +1,6 @@
-﻿#I @"..\packages\FSharp.Data.3.0.0-beta3\lib\net45"
+﻿open System.Text
+
+#I @"..\packages\FSharp.Data.3.0.0-beta3\lib\net45"
 #r @"FSharp.Data.dll"
 open FSharp.Data
 
@@ -66,11 +68,20 @@ let GenAssetNames () =
         { ModuleName = "asset_names"
           GlobalComment = "asset_names.pl"
           FactCols = [facts] }
-
+    
     // pmodule.Save(outFile)
+    printfn "pmodule.SaveToString()"
     pmodule.SaveToString() |> printfn "%s"
 
 let main () : unit = 
     GenAddresses ()
     GenAssetNames ()
     printfn "Done."
+
+// StringBuilder is capable of building a huge string...
+let temp01 () = 
+    let sb = new StringBuilder ()
+    let table = (new InstallationsTable()).Data
+    table |> Seq.iter (fun (row:InstallationsRow) -> sb.AppendLine(row.ToString()) |> ignore)
+    sb.ToString ()
+
