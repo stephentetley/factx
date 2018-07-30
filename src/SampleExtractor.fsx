@@ -34,26 +34,34 @@ let readInstallations () : InstallationsRow list =
          
     excelReadRowsAsList helper (new InstallationsTable())
 
+let makeOutputPath (fileName:string) : string = 
+    System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..", "data", fileName)
 
 // ** Generate Prolog facts.
 let GenAddresses () = 
-    let outFile = System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..","data/addresses.pl")
+    let outFile = makeOutputPath "addresses.pl"
+
     let rows = readInstallations ()
-    let proc1 (row:InstallationsRow) : FactWriter<unit> = 
-        tell <| prologFact (simpleAtom "address")  
-                            [ quotedAtom row.InstReference
-                            ; prologString row.``Full Address``]
-    let procAll : FactWriter<unit> = 
-        factWriter {
-            let! _ = tell <| prologComment "addresses.pl"
-            let! _ = tell <| prologComment "At prompt type 'make.' to reload"
-            let! _ = forMz rows proc1
-            return () 
-            }
-    runFactWriter outFile procAll
+    let makeFact (row:InstallationsRow) : Fact = 
+        { FactName = "address"  
+          FactValues = [ PQuotedAtom row.InstReference; PString row.``Full Address``] }
+
+    let facts : FactCollection = 
+        { Name = "address"
+          Arity = 2
+          Signature = "address(refnum, addr)."
+          Facts = readInstallations () |> List.map makeFact } 
+
+    let pmodule : Module = 
+        { ModuleName = "addresses"
+          GlobalComment = "addresses.pl"
+          FactCols = [facts] }
+
+    pmodule.Save(outFile)
 
 let GenAssetNames () = 
-    let outFile = System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..","data/asset_names.pl")
+    let outFile = makeOutputPath "asset_names.pl"
+
     let makeFact (row:InstallationsRow) : Fact = 
         { FactName = "asset_name"
           FactValues = [PQuotedAtom row.InstReference; PString row.InstCommonName ] }
@@ -64,7 +72,7 @@ let GenAssetNames () =
           Signature = "asset_name(refnum, name)."
           Facts = readInstallations () |> List.map makeFact } 
 
-    let pmodule = 
+    let pmodule : Module= 
         { ModuleName = "asset_names"
           GlobalComment = "asset_names.pl"
           FactCols = [facts] }
