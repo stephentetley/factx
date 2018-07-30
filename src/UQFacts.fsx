@@ -51,10 +51,10 @@ let readMimicRows () : MimicRow list =
 
 
 let factMimicName2 (row:MimicRow) : FactWriter<unit> = 
-     tell <| fact (simpleAtom "rts_mimic_name")  
-                    [ quotedAtom row.``Mimic ID``
-                    ; prologString row.Name
-                    ]
+     tell <| prologFact (simpleAtom "rts_mimic_name")  
+                        [ quotedAtom row.``Mimic ID``
+                        ; prologString row.Name
+                        ]
 
 
 
@@ -90,11 +90,11 @@ let readPoints (sourcePath:string) : PointsRow list =
 
 
 let factMimicPoint3 (row:PointsRow) : FactWriter<unit> = 
-     tell <| fact (simpleAtom "rts_mimic_point")  
-                    [ quotedAtom (row.``Ctrl pic  Alarm pic``)
-                    ; quotedAtom (getOsName row.``OS\Point name``)
-                    ; quotedAtom (getPointName row.``OS\Point name``)
-                    ]
+     tell <| prologFact (simpleAtom "rts_mimic_point")  
+                        [ quotedAtom (row.``Ctrl pic  Alarm pic``)
+                        ; quotedAtom (getOsName row.``OS\Point name``)
+                        ; quotedAtom (getPointName row.``OS\Point name``)
+                        ]
 
 
 
@@ -147,12 +147,12 @@ let getAssetToSignals (rows:PointsRow list) : AssetToSignal list =
     List.choose id <| List.map optAssetToSignal rows
 
 let factAssetToSignal (source:AssetToSignal) : FactWriter<unit> = 
-     tell <| fact (simpleAtom "asset_to_signal")  
-                    [ quotedAtom    <| source.OsName
-                    ; quotedAtom    <| source.AssetName
-                    ; quotedAtom    <| source.PointName
-                    ; quotedAtom    <| source.SignalSuffix
-                    ]
+     tell <| prologFact (simpleAtom "asset_to_signal")  
+                        [ quotedAtom    <| source.OsName
+                        ; quotedAtom    <| source.AssetName
+                        ; quotedAtom    <| source.PointName
+                        ; quotedAtom    <| source.SignalSuffix
+                        ]
 
 
 let genAssetToSignals (source:AssetToSignal list) : unit = 
@@ -194,11 +194,11 @@ let getPumpPoints (rows:PointsRow list) : StemPoints =
     
 
 let factPumpPoints (qualName:string, pointCodes:string list)  : FactWriter<unit> = 
-     tell <| fact (simpleAtom "rts_pump")  
-                    [ quotedAtom    <| getOsName qualName
-                    ; quotedAtom    <| getPointName qualName
-                    ; prologList    <| List.map quotedAtom pointCodes
-                    ]
+     tell <| prologFact (simpleAtom "rts_pump")  
+                        [ quotedAtom    <| getOsName qualName
+                        ; quotedAtom    <| getPointName qualName
+                        ; prologList    <| List.map quotedAtom pointCodes
+                        ]
 
 let genPumpFacts (pumpPoints:StemPoints) : unit = 
     let outfile = outputFile "rts_pump_facts.pl"
@@ -227,11 +227,11 @@ let getScreenPoints (rows:PointsRow list) : StemPoints =
     getStemPoints matcher rows
 
 let factScreenPoints (qualName:string, pointCodes:string list)  : FactWriter<unit> = 
-     tell <| fact (simpleAtom "rts_screen")  
-                    [ quotedAtom    <| getOsName qualName
-                    ; quotedAtom    <| getPointName qualName
-                    ; prologList    <| List.map quotedAtom pointCodes
-                    ]
+     tell <| prologFact (simpleAtom "rts_screen")  
+                        [ quotedAtom    <| getOsName qualName
+                        ; quotedAtom    <| getPointName qualName
+                        ; prologList    <| List.map quotedAtom pointCodes
+                        ]
 
 let genScreenFacts (screenPoints:StemPoints) : unit = 
     let outfile = outputFile "rts_screen_facts.pl"
@@ -263,8 +263,8 @@ let getOutstations (rows:PointsRow list) : string list =
         |> Set.toList
 
 let factOutstation (name:string)  : FactWriter<unit> = 
-     tell <| fact (simpleAtom "rts_outstation")  
-                    [ quotedAtom name ]
+     tell <| prologFact (simpleAtom "rts_outstation")  
+                        [ quotedAtom name ]
 
 
 let genOutstationFacts (allRows:PointsRow list) : unit = 

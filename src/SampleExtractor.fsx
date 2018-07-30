@@ -36,7 +36,7 @@ let GenAddresses () =
     let outFile = System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..","data/addresses.pl")
     let rows = readInstallations ()
     let proc1 (row:InstallationsRow) : FactWriter<unit> = 
-        tell <| fact (simpleAtom "address")  
+        tell <| prologFact (simpleAtom "address")  
                             [ quotedAtom row.InstReference
                             ; prologString row.``Full Address``]
     let procAll : FactWriter<unit> = 
@@ -52,8 +52,8 @@ let GenAssetNames () =
     let outFile = System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..","data/asset_names.pl")
     let rows = readInstallations ()
     let proc1 (row:InstallationsRow) : FactWriter<unit> = 
-        tell <| fact (simpleAtom "asset_name")  
-                        [quotedAtom row.InstReference; prologString row.InstCommonName]
+        tell <| prologFact (simpleAtom "asset_name")  
+                            [quotedAtom row.InstReference; prologString row.InstCommonName]
     let procAll : FactWriter<unit> = 
         factWriter {
             let! _ = tell <| comment "asset_names.pl"

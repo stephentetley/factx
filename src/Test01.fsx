@@ -11,23 +11,23 @@ let demo01 () =
             let! _ = tell <| comment "facts.pl"
             let! _ = tell <| comment "At prompt type 'make.' to reload"
             let! _ = 
-                tell <| fact (simpleAtom "address") 
-                                [quotedAtom "UID001"; prologString "1, Yellow Brick Road"; int 0 ]
+                tell <| prologFact (simpleAtom "address") 
+                                [quotedAtom "UID001"; prologString "1, Yellow Brick Road"; formatInt 0 ]
             let! _ = 
-                tell <| fact (simpleAtom "address") 
-                                [quotedAtom "UID005"; prologString "15, Giants Causeway"; int 15 ]
+                tell <| prologFact (simpleAtom "address") 
+                                [quotedAtom "UID005"; prologString "15, Giants Causeway"; formatInt 15 ]
             return () 
             }
     runFactWriter outFile proc1
 
 let test01 () = 
-    let d1 = string "Hello" +^+ string "world!"
-    let d2 = string "***** ******"
+    let d1 = formatString "Hello" +^+ formatString "world!"
+    let d2 = formatString "***** ******"
     render (indent 2 (d1 @@@ d2)) |> printfn "%s"
 
     let fact1 : Doc = 
-        fact (string "address") 
-            [quotedAtom "UID001"; prologString "1, Yellow Brick Road" ]
+        prologFact (formatString "address") 
+                    [quotedAtom "UID001"; prologString "1, Yellow Brick Road" ]
     testRender fact1 
 
     let mdirective = 
@@ -39,12 +39,12 @@ let test01 () =
     testRender mdirective 
 
 let test02 () = 
-    let doc1 = commaSepListVertically [string "one"; string "two"; string "three"]
+    let doc1 = commaSepListVertically [formatString "one"; formatString "two"; formatString "three"]
     let doc2 = indent 10 doc1
     testRender doc1 
     testRender doc2
 
 let test03 () = 
-    let doc1 = indent 10 (string "start")
+    let doc1 = indent 10 (formatString "start")
     testRender doc1
 

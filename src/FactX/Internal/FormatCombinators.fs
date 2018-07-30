@@ -46,29 +46,29 @@ let empty : Doc =
     Empty
 
 
-let bool (value:bool) : Doc = 
+let formatBool (value:bool) : Doc = 
     Doc <| if value then "true" else "false"
 
 
-let int (i:int) : Doc = 
+let formatInt (i:int) : Doc = 
     Doc(i.ToString())
 
-let float (d:float) : Doc = 
+let formatFloat (d:float) : Doc = 
     Doc(d.ToString())
 
-let double (d:double) : Doc = 
+let formatDouble (d:double) : Doc = 
     Doc(d.ToString())
     
-let decimal (d:Decimal) : Doc = 
+let formatDecimal (d:Decimal) : Doc = 
     Doc(d.ToString())
 
 
 
-let char (ch:char) : Doc = 
+let formatChar (ch:char) : Doc = 
     Doc (ch.ToString())
 
 
-let string (value:string) : Doc = 
+let formatString (value:string) : Doc = 
     Doc <| value
 
 let singleQuoted (value:string) : Doc = 
@@ -82,16 +82,16 @@ let doubleQuoted (value:string) : Doc =
 // Character documents
 
 /// A single space
-let space = char ' '
+let space : Doc = formatChar ' '
 
-let dot = char '.'
-let semi = char ';'
-let colon = char ':'
-let comma = char ','
-let backslash = char '\\'
-let forwardslash = char '/'
+let dot : Doc = formatChar '.'
+let semi : Doc = formatChar ';'
+let colon : Doc = formatChar ':'
+let comma : Doc = formatChar ','
+let backslash : Doc = formatChar '\\'
+let forwardslash : Doc = formatChar '/'
 
-let underscore : Doc = char '_'
+let underscore : Doc = formatChar '_'
 
 
 
@@ -162,31 +162,31 @@ let enclose (left:Doc) (right:Doc) (d1:Doc) : Doc =
 
 
 let parens (doc:Doc) : Doc = 
-    enclose (char '(') (char ')') doc
+    enclose (formatChar '(') (formatChar ')') doc
 
 let angles (doc:Doc) : Doc = 
-    enclose (char '<') (char '>') doc
+    enclose (formatChar '<') (formatChar '>') doc
 
 let squares (doc:Doc) : Doc = 
-    enclose (char '[') (char ']') doc
+    enclose (formatChar '[') (formatChar ']') doc
 
 let braces (doc:Doc) : Doc = 
-    enclose (char '{') (char '}') doc
+    enclose (formatChar '{') (formatChar '}') doc
 
 
 
 let tupled (source:Doc list) : Doc = 
-    parens (punctuate (string ", ") source)
+    parens (punctuate (formatString ", ") source)
 
 let commaSepList (source: Doc list) : Doc = 
-    squares (punctuate (string ", ") source)
+    squares (punctuate (formatString ", ") source)
 
 let semiSepList (source: Doc list) : Doc = 
-    squares (punctuate (string "; ") source)
+    squares (punctuate (formatString "; ") source)
 
 
 let commaSepListVertically (source:Doc list) : Doc = 
-    squares (punctuateVertically (char ',') source)
+    squares (punctuateVertically (formatChar ',') source)
 
 
 // *************************************
@@ -195,7 +195,7 @@ let commaSepListVertically (source:Doc list) : Doc =
 let private escapeSpecial (source:string) : string = 
     source.Replace("\\" , "\\\\")
 
-let simpleAtom (value:string) : Doc = string value
+let simpleAtom (value:string) : Doc = formatString value
 
 let quotedAtom (value:string) : Doc = singleQuoted value
 
@@ -208,13 +208,14 @@ let prologList (elements:Doc list) : Doc = commaSepList elements
 
 let comment (comment:string) : Doc = 
     let lines = comment.Split [|'\n'|] |> Array.toList
-    vcat <| List.map (fun s -> char '%' +^+ string s) lines
+    vcat <| List.map (fun s -> formatChar '%' +^+ formatString s) lines
 
-let fact (head:Doc) (body:Doc list) : Doc = 
+let prologFact (head:Doc) (body:Doc list) : Doc = 
     head +++ tupled body +++ dot
 
 let moduleDirective (moduleName:string) (exports: (string * int) list) : Doc = 
     let exportList = 
-        commaSepListVertically <| List.map (fun (s,i) -> string (sprintf "%s/%i" s i)) exports
-    string ":- module" +++ parens ((string moduleName +++ comma) @@@ (indent 10 exportList)) +++ dot
+        commaSepListVertically 
+            <| List.map (fun (s,i) -> formatString (sprintf "%s/%i" s i)) exports
+    formatString ":- module" +++ parens ((formatString moduleName +++ comma) @@@ (indent 10 exportList)) +++ dot
     
