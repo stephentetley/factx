@@ -8,8 +8,8 @@ let demo01 () =
     let outFile = System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..", @"data\facts.pl")
     let proc1 : FactWriter<unit> = 
         factWriter {
-            let! _ = tell <| comment "facts.pl"
-            let! _ = tell <| comment "At prompt type 'make.' to reload"
+            let! _ = tell <| prologComment "facts.pl"
+            let! _ = tell <| prologComment "At prompt type 'make.' to reload"
             let! _ = 
                 tell <| prologFact (simpleAtom "address") 
                                 [quotedAtom "UID001"; prologString "1, Yellow Brick Road"; formatInt 0 ]

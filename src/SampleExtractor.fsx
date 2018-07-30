@@ -9,9 +9,11 @@ open FSharp.ExcelProvider
 #load "FactX\Internal\FormatCombinators.fs"
 #load "FactX\Internal\FactWriter.fs"
 #load "FactX\ExcelProviderHelper.fs"
+#load "FactX\FactOutput.fs"
 open FactX.Internal.FormatCombinators
 open FactX.Internal.FactWriter
 open FactX.ExcelProviderHelper
+open FactX.FactOutput
 
 // ********** DATA SETUP **********
 
@@ -41,8 +43,8 @@ let GenAddresses () =
                             ; prologString row.``Full Address``]
     let procAll : FactWriter<unit> = 
         factWriter {
-            let! _ = tell <| comment "addresses.pl"
-            let! _ = tell <| comment "At prompt type 'make.' to reload"
+            let! _ = tell <| prologComment "addresses.pl"
+            let! _ = tell <| prologComment "At prompt type 'make.' to reload"
             let! _ = forMz rows proc1
             return () 
             }
@@ -50,18 +52,23 @@ let GenAddresses () =
 
 let GenAssetNames () = 
     let outFile = System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..","data/asset_names.pl")
-    let rows = readInstallations ()
-    let proc1 (row:InstallationsRow) : FactWriter<unit> = 
-        tell <| prologFact (simpleAtom "asset_name")  
-                            [quotedAtom row.InstReference; prologString row.InstCommonName]
-    let procAll : FactWriter<unit> = 
-        factWriter {
-            let! _ = tell <| comment "asset_names.pl"
-            let! _ = tell <| comment "At prompt type 'make.' to reload"
-            let! _ = forMz rows proc1
-            return () 
-            }
-    runFactWriter outFile procAll
+    let makeFact (row:InstallationsRow) : Fact = 
+        { FactName = "asset_name"
+          FactValues = [PQuotedAtom row.InstReference; PString row.InstCommonName ] }
+
+    let facts : FactCollection = 
+        { Name = "asset_name"
+          Arity = 2
+          Signature = "asset_name(refnum, name)."
+          Facts = readInstallations () |> List.map makeFact } // Stack overflow...
+
+    let pmodule = 
+        { ModuleName = "asset_names"
+          GlobalComment = "asset_names.pl"
+          FactCols = [facts] }
+
+    // pmodule.Save(outFile)
+    pmodule.SaveToString() |> printfn "%s"
 
 let main () : unit = 
     GenAddresses ()

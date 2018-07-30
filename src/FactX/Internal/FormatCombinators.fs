@@ -19,21 +19,23 @@ type Doc =
 
 
 let render (source:Doc) : string = 
-    let rec work (doc:Doc) (indent:int) (sb:StringBuilder) : StringBuilder = 
+    let sb = new StringBuilder ()
+    let rec work (doc:Doc) (indent:int) : unit = 
         match doc with
-        | Empty -> sb
-        | Doc str -> sb.Append(str)
+        | Empty -> ()
+        | Doc str -> sb.Append(str) |> ignore
         | HDoc(d1,d2) -> 
-            let sb1 = work d1 indent sb in work d2 indent sb1
+            work d1 indent
+            work d2 indent
         | VDoc(d1,d2) -> 
-            let sb1 = work d1 indent sb
-            let sb2 = sb1 // sb1.Append(String.replicate indent " ")
-            let sb3 = sb2.Append("\n" + String.replicate indent " ")
-            work d2 indent sb3
+            work d1 indent
+            sb.Append("\n" + String.replicate indent " ") |> ignore
+            work d2 indent
         | Indent(i,d1) -> 
-            let sb1 = sb.Append(String.replicate i " ")
-            work d1 (indent + i) sb1
-    work source 0 (new StringBuilder()) |> fun sb -> sb.ToString()
+            sb.Append(String.replicate i " ") |> ignore
+            work d1 (indent + i)
+    work source 0 
+    sb.ToString()
 
 /// Print the soc to the console.
 let testRender (source:Doc) : unit = 
@@ -206,7 +208,7 @@ let prologString (value:string) : Doc =
 let prologList (elements:Doc list) : Doc = commaSepList elements
 
 
-let comment (comment:string) : Doc = 
+let prologComment (comment:string) : Doc = 
     let lines = comment.Split [|'\n'|] |> Array.toList
     vcat <| List.map (fun s -> formatChar '%' +^+ formatString s) lines
 

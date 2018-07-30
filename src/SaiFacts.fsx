@@ -64,7 +64,7 @@ let genSiteFacts (rows:SaiRow list) : unit =
     let outfile = outputFile "sai_facts.pl"
     let procAll : FactWriter<unit> = 
         factWriter {
-            let! _ = tell <| comment "sai_facts.pl"
+            let! _ = tell <| prologComment "sai_facts.pl"
             let! _ = tell <| moduleDirective "sai_facts" 
                         [ "site_name", 2
                         ; "asset_type", 2
@@ -116,7 +116,7 @@ let genOsFacts (rows:OutstationRow list) : unit =
     let outfile = outputFile "os_facts.pl"
     let procAll : FactWriter<unit> = 
         factWriter {
-            let! _ = tell <| comment "os_facts.pl"
+            let! _ = tell <| prologComment "os_facts.pl"
             let! _ = 
                 tell <| moduleDirective "os_facts" 
                                 [ "os_name", 2
