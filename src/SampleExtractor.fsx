@@ -6,11 +6,11 @@ open FSharp.Data
 #r "ExcelProvider.dll"
 open FSharp.ExcelProvider
 
-#load "FactX\FormatCombinators.fs"
-#load "FactX\FactOutput.fs"
+#load "FactX\Internal\FormatCombinators.fs"
+#load "FactX\Internal\FactWriter.fs"
 #load "FactX\ExcelProviderHelper.fs"
-open FactX.FormatCombinators
-open FactX.FactOutput
+open FactX.Internal.FormatCombinators
+open FactX.Internal.FactWriter
 open FactX.ExcelProviderHelper
 
 // ********** DATA SETUP **********
@@ -35,33 +35,33 @@ let readInstallations () : InstallationsRow list =
 let GenAddresses () = 
     let outFile = System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..","data/addresses.pl")
     let rows = readInstallations ()
-    let proc1 (row:InstallationsRow) : FactOutput<unit> = 
+    let proc1 (row:InstallationsRow) : FactWriter<unit> = 
         tell <| fact (simpleAtom "address")  
                             [ quotedAtom row.InstReference
                             ; prologString row.``Full Address``]
-    let procAll : FactOutput<unit> = 
-        factOutput {
+    let procAll : FactWriter<unit> = 
+        factWriter {
             let! _ = tell <| comment "addresses.pl"
             let! _ = tell <| comment "At prompt type 'make.' to reload"
             let! _ = forMz rows proc1
             return () 
             }
-    runFactOutput outFile procAll
+    runFactWriter outFile procAll
 
 let GenAssetNames () = 
     let outFile = System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..","data/asset_names.pl")
     let rows = readInstallations ()
-    let proc1 (row:InstallationsRow) : FactOutput<unit> = 
+    let proc1 (row:InstallationsRow) : FactWriter<unit> = 
         tell <| fact (simpleAtom "asset_name")  
                         [quotedAtom row.InstReference; prologString row.InstCommonName]
-    let procAll : FactOutput<unit> = 
-        factOutput {
+    let procAll : FactWriter<unit> = 
+        factWriter {
             let! _ = tell <| comment "asset_names.pl"
             let! _ = tell <| comment "At prompt type 'make.' to reload"
             let! _ = forMz rows proc1
             return () 
             }
-    runFactOutput outFile procAll
+    runFactWriter outFile procAll
 
 let main () : unit = 
     GenAddresses ()

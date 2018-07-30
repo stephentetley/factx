@@ -9,11 +9,11 @@ open FSharp.ExcelProvider
 #r @"FSharp.Data.dll"
 open FSharp.Data
 
-#load "FactX\FormatCombinators.fs"
-#load "FactX\FactOutput.fs"
+#load "FactX\Internal\FormatCombinators.fs"
+#load "FactX\Internal\FactWriter.fs"
 #load "FactX\ExcelProviderHelper.fs"
-open FactX.FormatCombinators
-open FactX.FactOutput
+open FactX.Internal.FormatCombinators
+open FactX.Internal.FactWriter
 open FactX.ExcelProviderHelper
 
 // *************************************
@@ -41,19 +41,19 @@ let outputFile (filename:string) : string =
 
 
 
-let factSiteName (row:SaiRow) : FactOutput<unit> = 
+let factSiteName (row:SaiRow) : FactWriter<unit> = 
      tell <| fact (simpleAtom "site_name")  
                     [ quotedAtom row.InstReference
                     ; prologString row.InstCommonName
                     ]
 
-let factAssetType (row:SaiRow) : FactOutput<unit> = 
+let factAssetType (row:SaiRow) : FactWriter<unit> = 
      tell <| fact (simpleAtom "asset_type")  
                     [ quotedAtom row.InstReference
                     ; quotedAtom row.AssetType
                     ]
 
-let factAssetStatus (row:SaiRow) : FactOutput<unit> = 
+let factAssetStatus (row:SaiRow) : FactWriter<unit> = 
      tell <| fact (simpleAtom "asset_status")  
                     [ quotedAtom row.InstReference
                     ; quotedAtom row.AssetStatus
@@ -62,8 +62,8 @@ let factAssetStatus (row:SaiRow) : FactOutput<unit> =
 
 let genSiteFacts (rows:SaiRow list) : unit = 
     let outfile = outputFile "sai_facts.pl"
-    let procAll : FactOutput<unit> = 
-        factOutput {
+    let procAll : FactWriter<unit> = 
+        factWriter {
             let! _ = tell <| comment "sai_facts.pl"
             let! _ = tell <| moduleDirective "sai_facts" 
                         [ "site_name", 2
@@ -75,7 +75,7 @@ let genSiteFacts (rows:SaiRow list) : unit =
             let! _ = mapMz factAssetStatus rows
             return () 
             }
-    runFactOutput outfile procAll
+    runFactWriter outfile procAll
 
     
 // *************************************
@@ -93,19 +93,19 @@ let readOutstationRows () : OutstationRow list =
     (new OustationTable()).Rows |> Seq.toList
 
 
-let factOsName (row:OutstationRow) : FactOutput<unit> = 
+let factOsName (row:OutstationRow) : FactWriter<unit> = 
      tell <| fact (simpleAtom "os_name")  
                     [ quotedAtom row.``OD name``
                     ; quotedAtom row.``OS name``
                     ]
 
-let factOsType (row:OutstationRow) : FactOutput<unit> = 
+let factOsType (row:OutstationRow) : FactWriter<unit> = 
      tell <| fact (simpleAtom "os_type")  
                     [ quotedAtom    row.``OD name``
                     ; quotedAtom    row.``OS type``
                     ]
 
-let factOdComment (row:OutstationRow) : FactOutput<unit> = 
+let factOdComment (row:OutstationRow) : FactWriter<unit> = 
      tell <| fact (simpleAtom "od_comment")  
                     [ quotedAtom    row.``OD name``
                     ; prologString  row.``OD comment``
@@ -114,8 +114,8 @@ let factOdComment (row:OutstationRow) : FactOutput<unit> =
 
 let genOsFacts (rows:OutstationRow list) : unit = 
     let outfile = outputFile "os_facts.pl"
-    let procAll : FactOutput<unit> = 
-        factOutput {
+    let procAll : FactWriter<unit> = 
+        factWriter {
             let! _ = tell <| comment "os_facts.pl"
             let! _ = tell <| moduleDirective "os_facts" 
                         [ "os_name", 2
@@ -127,7 +127,7 @@ let genOsFacts (rows:OutstationRow list) : unit =
             let! _ = mapMz factOdComment rows
             return () 
             }
-    runFactOutput outfile procAll
+    runFactWriter outfile procAll
 
 let main () : unit = 
      readSaiRowRows () |> genSiteFacts

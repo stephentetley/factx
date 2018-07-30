@@ -1,13 +1,13 @@
-﻿#load "FactX\FormatCombinators.fs"
-#load "FactX\FactOutput.fs"
-open FactX.FormatCombinators
-open FactX.FactOutput
+﻿#load "FactX\Internal\FormatCombinators.fs"
+#load "FactX\Internal\FactWriter.fs"
+open FactX.Internal.FormatCombinators
+open FactX.Internal.FactWriter
 
 
 let demo01 () = 
     let outFile = System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..", @"data\facts.pl")
-    let proc1 : FactOutput<unit> = 
-        factOutput {
+    let proc1 : FactWriter<unit> = 
+        factWriter {
             let! _ = tell <| comment "facts.pl"
             let! _ = tell <| comment "At prompt type 'make.' to reload"
             let! _ = 
@@ -18,7 +18,7 @@ let demo01 () =
                                 [quotedAtom "UID005"; prologString "15, Giants Causeway"; int 15 ]
             return () 
             }
-    runFactOutput outFile proc1
+    runFactWriter outFile proc1
 
 let test01 () = 
     let d1 = string "Hello" +^+ string "world!"

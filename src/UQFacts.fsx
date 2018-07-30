@@ -12,15 +12,20 @@ open FSharp.ExcelProvider
 #r @"FSharp.Data.dll"
 open FSharp.Data
 
-#load "FactX\FormatCombinators.fs"
-#load "FactX\FactOutput.fs"
+#load "FactX\Internal\FormatCombinators.fs"
+#load "FactX\Internal\FactWriter.fs"
 #load "FactX\ExcelProviderHelper.fs"
-open FactX.FormatCombinators
-open FactX.FactOutput
+open FactX.Internal.FormatCombinators
+open FactX.Internal.FactWriter
 open FactX.ExcelProviderHelper
 
 #load @"PropRtu.fs"
 open PropRtu
+
+
+let outputFile (filename:string) : string = 
+    System.IO.Path.Combine(@"D:\coding\prolog\rts\facts", filename) 
+
 
 // *************************************
 // Mimic facts
@@ -42,12 +47,10 @@ let readMimicRows () : MimicRow list =
          
     excelReadRowsAsList helper (new MimicTable())
 
-let outputFile (filename:string) : string = 
-    System.IO.Path.Combine(@"E:\coding\prolog\rts\facts", filename) 
 
 
 
-let factMimicName2 (row:MimicRow) : FactOutput<unit> = 
+let factMimicName2 (row:MimicRow) : FactWriter<unit> = 
      tell <| fact (simpleAtom "rts_mimic_name")  
                     [ quotedAtom row.``Mimic ID``
                     ; prologString row.Name
@@ -57,8 +60,8 @@ let factMimicName2 (row:MimicRow) : FactOutput<unit> =
 
 let genMimicNameFacts (rows:MimicRow list) : unit = 
     let outfile = outputFile "rts_mimic_names.pl"
-    let procAll : FactOutput<unit> = 
-        factOutput {
+    let procAll : FactWriter<unit> = 
+        factWriter {
             do! tell <| comment "rts_mimic_names.pl"
             do! tell <| moduleDirective "rts_mimic_names" 
                             [ "rts_mimic_name", 2
@@ -66,7 +69,7 @@ let genMimicNameFacts (rows:MimicRow list) : unit =
             do! mapMz factMimicName2 rows
             return () 
         }
-    runFactOutput outfile procAll
+    runFactWriter outfile procAll
 
     
 // *************************************
@@ -86,7 +89,7 @@ let readPoints (sourcePath:string) : PointsRow list =
 
 
 
-let factMimicPoint3 (row:PointsRow) : FactOutput<unit> = 
+let factMimicPoint3 (row:PointsRow) : FactWriter<unit> = 
      tell <| fact (simpleAtom "rts_mimic_point")  
                     [ quotedAtom (row.``Ctrl pic  Alarm pic``)
                     ; quotedAtom (getOsName row.``OS\Point name``)
@@ -97,8 +100,8 @@ let factMimicPoint3 (row:PointsRow) : FactOutput<unit> =
 
 let genMimicPoints (rows:PointsRow list) : unit = 
     let outfile = outputFile "rts_mimic_points.pl"
-    let procAll : FactOutput<unit> = 
-        factOutput {
+    let procAll : FactWriter<unit> = 
+        factWriter {
             do! tell <| comment "rts_mimic_points.pl"
             do! tell <| moduleDirective "rts_mimic_points" 
                         [ "rts_mimic_point", 3
@@ -107,7 +110,7 @@ let genMimicPoints (rows:PointsRow list) : unit =
             do! mapMz factMimicPoint3 rows
             return () 
             }
-    runFactOutput outfile procAll
+    runFactWriter outfile procAll
 
 
 
@@ -143,7 +146,7 @@ let optAssetToSignal (row:PointsRow) : option<AssetToSignal> =
 let getAssetToSignals (rows:PointsRow list) : AssetToSignal list = 
     List.choose id <| List.map optAssetToSignal rows
 
-let factAssetToSignal (source:AssetToSignal) : FactOutput<unit> = 
+let factAssetToSignal (source:AssetToSignal) : FactWriter<unit> = 
      tell <| fact (simpleAtom "asset_to_signal")  
                     [ quotedAtom    <| source.OsName
                     ; quotedAtom    <| source.AssetName
@@ -154,8 +157,8 @@ let factAssetToSignal (source:AssetToSignal) : FactOutput<unit> =
 
 let genAssetToSignals (source:AssetToSignal list) : unit = 
     let outfile = outputFile "rts_asset_to_signal.pl"
-    let procAll : FactOutput<unit> = 
-        factOutput {
+    let procAll : FactWriter<unit> = 
+        factWriter {
             do! tell <| comment "rts_asset_to_signal.pl"
             do! tell <| moduleDirective "rts_asset_to_signal" 
                             [ "asset_to_signal", 4
@@ -164,7 +167,7 @@ let genAssetToSignals (source:AssetToSignal list) : unit =
             do! mapMz factAssetToSignal source
             return () 
             }
-    runFactOutput outfile procAll
+    runFactWriter outfile procAll
 /// Name include Outstation:
 /// "THORNTON_DALE_STW   \INLET_BRUSH_SCREEN_R" => "THORNTON_DALE_STW   \INLET_BRUSH_SCREEN"
 
@@ -186,11 +189,11 @@ let getStemPoints (rowMatch:PointsRow -> bool) (rows:PointsRow list) : StemPoint
 // Pump facts
 
 let getPumpPoints (rows:PointsRow list) : StemPoints = 
-    let matcher (row:PointsRow) : bool = isPump row.``OS\Point name``
+    let matcher (row:PointsRow) : bool = isPump (getPointName row.``OS\Point name``)
     getStemPoints matcher rows
     
 
-let factPumpPoints (qualName:string, pointCodes:string list)  : FactOutput<unit> = 
+let factPumpPoints (qualName:string, pointCodes:string list)  : FactWriter<unit> = 
      tell <| fact (simpleAtom "rts_pump")  
                     [ quotedAtom    <| getOsName qualName
                     ; quotedAtom    <| getPointName qualName
@@ -200,8 +203,8 @@ let factPumpPoints (qualName:string, pointCodes:string list)  : FactOutput<unit>
 let genPumpFacts (pumpPoints:StemPoints) : unit = 
     let outfile = outputFile "rts_pump_facts.pl"
     let pumps = Map.toList pumpPoints
-    let procAll : FactOutput<unit> = 
-        factOutput {
+    let procAll : FactWriter<unit> = 
+        factWriter {
             do! tell <| comment "rts_pump_facts.pl"
             do! tell <| moduleDirective "rts_pump_facts" 
                         [ "rts_pump", 3
@@ -210,7 +213,7 @@ let genPumpFacts (pumpPoints:StemPoints) : unit =
             do! mapMz factPumpPoints pumps
             return () 
             }
-    runFactOutput outfile procAll
+    runFactWriter outfile procAll
 
 
 
@@ -220,10 +223,10 @@ let genPumpFacts (pumpPoints:StemPoints) : unit =
 // Screen facts
 
 let getScreenPoints (rows:PointsRow list) : StemPoints = 
-    let matcher (row:PointsRow) : bool = isScreen row.``OS\Point name``
+    let matcher (row:PointsRow) : bool = isScreen (getPointName row.``OS\Point name``)
     getStemPoints matcher rows
 
-let factScreenPoints (qualName:string, pointCodes:string list)  : FactOutput<unit> = 
+let factScreenPoints (qualName:string, pointCodes:string list)  : FactWriter<unit> = 
      tell <| fact (simpleAtom "rts_screen")  
                     [ quotedAtom    <| getOsName qualName
                     ; quotedAtom    <| getPointName qualName
@@ -233,8 +236,8 @@ let factScreenPoints (qualName:string, pointCodes:string list)  : FactOutput<uni
 let genScreenFacts (screenPoints:StemPoints) : unit = 
     let outfile = outputFile "rts_screen_facts.pl"
     let screens = Map.toList screenPoints
-    let procAll : FactOutput<unit> = 
-        factOutput {
+    let procAll : FactWriter<unit> = 
+        factWriter {
             do! tell <| comment "rts_screen_facts.pl"
             do! tell <| moduleDirective "rts_screen_facts" 
                         [ "rts_screen", 3
@@ -243,8 +246,41 @@ let genScreenFacts (screenPoints:StemPoints) : unit =
             do! mapMz factScreenPoints screens
             return () 
             }
-    runFactOutput outfile procAll
+    runFactWriter outfile procAll
 
+
+// *************************************
+// Outstation facts
+
+let getOutstations (rows:PointsRow list) : string list = 
+    let step (ac:Set<string>) (row:PointsRow) : Set<string> = 
+        let osName = getOsName row.``OS\Point name``
+        if not (ac.Contains osName) then 
+            ac.Add osName
+        else ac
+    
+    List.fold step Set.empty rows 
+        |> Set.toList
+
+let factOutstation (name:string)  : FactWriter<unit> = 
+     tell <| fact (simpleAtom "rts_outstation")  
+                    [ quotedAtom name ]
+
+
+let genOutstationFacts (allRows:PointsRow list) : unit = 
+    let outfile = outputFile "rts_outstations.pl"
+    let outstations = getOutstations allRows
+    let procAll : FactWriter<unit> = 
+        factWriter {
+            do! tell <| comment "rts_outstations.pl"
+            do! tell <| moduleDirective "rts_outstations" 
+                        [ "rts_outstation", 1
+                        ]
+            do! tell <| comment "rts_outstation(osname)."
+            do! mapMz factOutstation outstations
+            return () 
+            }
+    runFactWriter outfile procAll
 // *************************************
 // Main
 
@@ -256,6 +292,8 @@ let main () : unit =
         List.map readPoints allPointsFiles |> List.concat
 
      allPoints |> genMimicPoints
+     allPoints |> genOutstationFacts
+
      // Pumps pump/3
      allPoints |> getPumpPoints |> genPumpFacts
      allPoints |> getScreenPoints |> genScreenFacts
