@@ -9,7 +9,6 @@ open FSharp.Data
 open FSharp.ExcelProvider
 
 #load "FactX\Internal\FormatCombinators.fs"
-#load "FactX\Internal\FactWriter.fs"
 #load "FactX\FactOutput.fs"
 #load "FactX\ExcelProviderHelper.fs"
 open FactX

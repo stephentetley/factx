@@ -59,8 +59,9 @@
     <None Include="Test01.fsx" />
     <None Include="SampleExtractor.fsx" />
     <None Include="SaiFacts.fsx" />
-    <Compile Include="PropRtu.fs" />
-    <None Include="UQFacts.fsx" />
+    <Compile Include="PropUtils.fs" />
+    <None Include="UQ_RtuFacts.fsx" />
+    <None Include="UQ_AssetFacts.fsx" />
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

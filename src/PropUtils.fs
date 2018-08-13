@@ -3,13 +3,19 @@
 
 // Helper functions for dealing with a proprietry data source.
 
-module PropRtu
+module PropUtils
 
-
+open System.IO 
 open System.Text.RegularExpressions
 
 // *************************************
 // General utils
+
+
+let getFilesMatching (sourceDirectory:string) (pattern:string) : string list =
+    DirectoryInfo(sourceDirectory).GetFiles(searchPattern = pattern) 
+        |> Array.map (fun (info:FileInfo)  -> info.FullName)
+        |> Array.toList
 
 
 let private strLeftOf (pivot:char) (source:string) : string = 

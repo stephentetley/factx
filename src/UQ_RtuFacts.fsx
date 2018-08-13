@@ -13,14 +13,13 @@ open FSharp.ExcelProvider
 open FSharp.Data
 
 #load "FactX\Internal\FormatCombinators.fs"
-#load "FactX\Internal\FactWriter.fs"
 #load "FactX\FactOutput.fs"
 #load "FactX\ExcelProviderHelper.fs"
 open FactX
 open FactX.ExcelProviderHelper
 
-#load @"PropRtu.fs"
-open PropRtu
+#load @"PropUtils.fs"
+open PropUtils
 
 
 let outputFile (filename:string) : string = 
@@ -112,10 +111,6 @@ let genMimicPoints (rows:PointsRow list) : unit =
 
 
 
-let getFilesMatching (sourceDirectory:string) (pattern:string) : string list =
-    DirectoryInfo(sourceDirectory).GetFiles(searchPattern = pattern) 
-        |> Array.map (fun (info:FileInfo)  -> info.FullName)
-        |> Array.toList
 
 
         
