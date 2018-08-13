@@ -12,9 +12,6 @@ open FSharp.ExcelProvider
 #load "FactX\Internal\FactWriter.fs"
 #load "FactX\FactOutput.fs"
 #load "FactX\ExcelProviderHelper.fs"
-open FactX.Internal.FormatCombinators
-open FactX.Internal.FactWriter
-
 open FactX
 open FactX.ExcelProviderHelper
 
@@ -39,10 +36,9 @@ let makeOutputPath (fileName:string) : string =
     System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..", "data", fileName)
 
 // ** Generate Prolog facts.
-let GenAddresses () = 
+let genAddresses () = 
     let outFile = makeOutputPath "addresses.pl"
 
-    let rows = readInstallations ()
     let makeFact (row:InstallationsRow) : Fact = 
         { FactName = "address"  
           FactValues = [ PQuotedAtom row.InstReference; PString row.``Full Address``] }
@@ -60,7 +56,7 @@ let GenAddresses () =
 
     pmodule.Save(outFile)
 
-let GenAssetNames () = 
+let genAssetNames () = 
     let outFile = makeOutputPath "asset_names.pl"
 
     let makeFact (row:InstallationsRow) : Fact = 
@@ -82,14 +78,7 @@ let GenAssetNames () =
     
 
 let main () : unit = 
-    GenAddresses ()
-    GenAssetNames ()
+    genAddresses ()
+    genAssetNames ()
     printfn "Done."
-
-// StringBuilder is capable of building a huge string...
-let temp01 () = 
-    let sb = new StringBuilder ()
-    let table = (new InstallationsTable()).Data
-    table |> Seq.iter (fun (row:InstallationsRow) -> sb.AppendLine(row.ToString()) |> ignore)
-    sb.ToString ()
 

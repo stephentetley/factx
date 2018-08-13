@@ -3,9 +3,9 @@
 
 namespace FactX.ExcelProviderHelper
 
+
 [<AutoOpen>]
 module ExcelProviderHelper = 
-
 
 
     /// F# design guidelines say favour object-interfaces rather than records of functions...

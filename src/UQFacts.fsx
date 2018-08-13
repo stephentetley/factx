@@ -14,10 +14,10 @@ open FSharp.Data
 
 #load "FactX\Internal\FormatCombinators.fs"
 #load "FactX\Internal\FactWriter.fs"
-#load "FactX\Utils\ExcelProviderHelper.fs"
-open FactX.Internal.FormatCombinators
-open FactX.Internal.FactWriter
-open FactX.Utils.ExcelProviderHelper
+#load "FactX\FactOutput.fs"
+#load "FactX\ExcelProviderHelper.fs"
+open FactX
+open FactX.ExcelProviderHelper
 
 #load @"PropRtu.fs"
 open PropRtu
@@ -32,7 +32,7 @@ let outputFile (filename:string) : string =
 
 
 type MimicTable = 
-    ExcelFile< FileName = @"G:\work\Projects\uquart\rts-data\rts-mimic-list.xlsx",
+    ExcelFile< FileName = @"G:\work\Projects\uquart\site-data\RTS\rts-mimic-list.xlsx",
                 SheetName = "Sheet1",
                 ForceString = true >
 
@@ -48,28 +48,26 @@ let readMimicRows () : MimicRow list =
     excelReadRowsAsList helper (new MimicTable())
 
 
-
-
-let factMimicName2 (row:MimicRow) : FactWriter<unit> = 
-     tell <| prologFact (simpleAtom "rts_mimic_name")  
-                        [ quotedAtom row.``Mimic ID``
-                        ; prologString row.Name
-                        ]
-
-
-
 let genMimicNameFacts (rows:MimicRow list) : unit = 
-    let outfile = outputFile "rts_mimic_names.pl"
-    let procAll : FactWriter<unit> = 
-        factWriter {
-            do! tell <| prologComment "rts_mimic_names.pl"
-            do! tell <| moduleDirective "rts_mimic_names" 
-                            [ "rts_mimic_name", 2
-                            ]
-            do! mapMz factMimicName2 rows
-            return () 
-        }
-    runFactWriter outfile procAll
+    let outFile = outputFile "rts_mimic_names.pl"
+
+    let makeFact (row:MimicRow) : Fact = 
+        { FactName = "rts_mimic_name"
+          FactValues = [PQuotedAtom row.``Mimic ID``; PString row.Name ] }
+
+    let facts : FactCollection = 
+        { Name = "rts_mimic_name"
+          Arity = 2
+          Signature = "rts_mimic_name(mimic_id, mimic_name)."
+          Facts = readMimicRows () |> List.map makeFact } 
+    
+    let pmodule : Module= 
+        { ModuleName = "rts_mimic_names"
+          GlobalComment = "rts_mimic_names.pl"
+          FactCols = [facts] }
+    
+    pmodule.Save(outFile)
+
 
     
 // *************************************
@@ -77,7 +75,7 @@ let genMimicNameFacts (rows:MimicRow list) : unit =
 
     
 type PointsTable = 
-    CsvProvider< Sample = @"G:\work\Projects\uquart\rts-data\points-sample.csv",
+    CsvProvider< Sample = @"G:\work\Projects\uquart\site-data\RTS\points-sample.csv",
                  HasHeaders = true,
                  IgnoreErrors = true >
 
@@ -89,29 +87,28 @@ let readPoints (sourcePath:string) : PointsRow list =
 
 
 
-let factMimicPoint3 (row:PointsRow) : FactWriter<unit> = 
-     tell <| prologFact (simpleAtom "rts_mimic_point")  
-                        [ quotedAtom (row.``Ctrl pic  Alarm pic``)
-                        ; quotedAtom (getOsName row.``OS\Point name``)
-                        ; quotedAtom (getPointName row.``OS\Point name``)
-                        ]
-
-
-
 let genMimicPoints (rows:PointsRow list) : unit = 
-    let outfile = outputFile "rts_mimic_points.pl"
-    let procAll : FactWriter<unit> = 
-        factWriter {
-            do! tell <| prologComment "rts_mimic_points.pl"
-            do! tell <| moduleDirective "rts_mimic_points" 
-                        [ "rts_mimic_point", 3
-                        ]
-            do! tell <| prologComment "rts_mimic_point(picture, os_name, point_name)."
-            do! mapMz factMimicPoint3 rows
-            return () 
-            }
-    runFactWriter outfile procAll
+    let outFile = outputFile "rts_mimic_points.pl"
 
+    let makeFact (row:PointsRow) : Fact = 
+        { FactName = "rts_mimic_point"  
+          FactValues = [ PQuotedAtom (row.``Ctrl pic  Alarm pic``)
+                       ; PQuotedAtom (getOsName row.``OS\Point name``)
+                       ; PQuotedAtom (getPointName row.``OS\Point name``)
+                       ] }
+
+    let facts : FactCollection = 
+        { Name = "rts_mimic_point"
+          Arity = 2
+          Signature = "rts_mimic_point(picture, os_name, point_name)."
+          Facts = rows |> List.map makeFact } 
+
+    let pmodule : Module = 
+        { ModuleName = "rts_mimic_points"
+          GlobalComment = "rts_mimic_points.pl"
+          FactCols = [facts] }
+
+    pmodule.Save(outFile)
 
 
 
@@ -146,28 +143,33 @@ let optAssetToSignal (row:PointsRow) : option<AssetToSignal> =
 let getAssetToSignals (rows:PointsRow list) : AssetToSignal list = 
     List.choose id <| List.map optAssetToSignal rows
 
-let factAssetToSignal (source:AssetToSignal) : FactWriter<unit> = 
-     tell <| prologFact (simpleAtom "asset_to_signal")  
-                        [ quotedAtom    <| source.OsName
-                        ; quotedAtom    <| source.AssetName
-                        ; quotedAtom    <| source.PointName
-                        ; quotedAtom    <| source.SignalSuffix
-                        ]
-
 
 let genAssetToSignals (source:AssetToSignal list) : unit = 
-    let outfile = outputFile "rts_asset_to_signal.pl"
-    let procAll : FactWriter<unit> = 
-        factWriter {
-            do! tell <| prologComment "rts_asset_to_signal.pl"
-            do! tell <| moduleDirective "rts_asset_to_signal" 
-                            [ "asset_to_signal", 4
-                            ]
-            do! tell <| prologComment "asset_to_signal(osname, assetname, signalname, suffix)."
-            do! mapMz factAssetToSignal source
-            return () 
-            }
-    runFactWriter outfile procAll
+    let outFile = outputFile "rts_asset_to_signal.pl"
+
+    let makeFact (atos:AssetToSignal) : Fact = 
+        { FactName = "asset_to_signal"  
+          FactValues = [ PQuotedAtom    <| atos.OsName
+                       ; PQuotedAtom    <| atos.AssetName
+                       ; PQuotedAtom    <| atos.PointName
+                       ; PQuotedAtom    <| atos.SignalSuffix
+                       ]}
+
+    let facts : FactCollection = 
+        { Name = "asset_to_signal"
+          Arity = 4
+          Signature = "asset_to_signal(os_name, asset_name, signal_name, suffix)."
+          Facts = source |> List.map makeFact } 
+    
+    let pmodule : Module = 
+        { ModuleName = "rts_asset_to_signal"
+          GlobalComment = "rts_asset_to_signal.pl"
+          FactCols = [facts] }
+
+    pmodule.Save(outFile)
+
+
+
 /// Name include Outstation:
 /// "THORNTON_DALE_STW   \INLET_BRUSH_SCREEN_R" => "THORNTON_DALE_STW   \INLET_BRUSH_SCREEN"
 
@@ -193,27 +195,29 @@ let getPumpPoints (rows:PointsRow list) : StemPoints =
     getStemPoints matcher rows
     
 
-let factPumpPoints (qualName:string, pointCodes:string list)  : FactWriter<unit> = 
-     tell <| prologFact (simpleAtom "rts_pump")  
-                        [ quotedAtom    <| getOsName qualName
-                        ; quotedAtom    <| getPointName qualName
-                        ; prologList    <| List.map quotedAtom pointCodes
-                        ]
-
 let genPumpFacts (pumpPoints:StemPoints) : unit = 
-    let outfile = outputFile "rts_pump_facts.pl"
+    let outFile = outputFile "rts_pump_facts.pl"
+    
     let pumps = Map.toList pumpPoints
-    let procAll : FactWriter<unit> = 
-        factWriter {
-            do! tell <| prologComment "rts_pump_facts.pl"
-            do! tell <| moduleDirective "rts_pump_facts" 
-                        [ "rts_pump", 3
-                        ]
-            do! tell <| prologComment "rts_pump(osname, pump_name, point_codes)."
-            do! mapMz factPumpPoints pumps
-            return () 
-            }
-    runFactWriter outfile procAll
+    
+    let makeFact (qualName:string, pointCodes:string list) : Fact = 
+        { FactName = "rts_pump"  
+          FactValues = [ PQuotedAtom    <| getOsName qualName
+                       ; PQuotedAtom    <| getPointName qualName
+                       ; PList          <| List.map PQuotedAtom pointCodes] }
+
+    let facts : FactCollection = 
+        { Name = "rts_pump"
+          Arity = 3
+          Signature = "rts_pump(osname, pump_name, point_codes)."
+          Facts = pumps |> List.map makeFact } 
+    
+    let pmodule : Module = 
+        { ModuleName = "rts_pump_facts"
+          GlobalComment = "rts_pump_facts.pl"
+          FactCols = [facts] }
+
+    pmodule.Save(outFile)
 
 
 
@@ -226,27 +230,31 @@ let getScreenPoints (rows:PointsRow list) : StemPoints =
     let matcher (row:PointsRow) : bool = isScreen (getPointName row.``OS\Point name``)
     getStemPoints matcher rows
 
-let factScreenPoints (qualName:string, pointCodes:string list)  : FactWriter<unit> = 
-     tell <| prologFact (simpleAtom "rts_screen")  
-                        [ quotedAtom    <| getOsName qualName
-                        ; quotedAtom    <| getPointName qualName
-                        ; prologList    <| List.map quotedAtom pointCodes
-                        ]
 
 let genScreenFacts (screenPoints:StemPoints) : unit = 
-    let outfile = outputFile "rts_screen_facts.pl"
+    let outFile = outputFile "rts_screen_facts.pl"
+
     let screens = Map.toList screenPoints
-    let procAll : FactWriter<unit> = 
-        factWriter {
-            do! tell <| prologComment "rts_screen_facts.pl"
-            do! tell <| moduleDirective "rts_screen_facts" 
-                        [ "rts_screen", 3
-                        ]
-            do! tell <| prologComment "rts_screen(osname, screen_name, point_codes)."
-            do! mapMz factScreenPoints screens
-            return () 
-            }
-    runFactWriter outfile procAll
+
+    let makeFact (qualName:string, pointCodes:string list) : Fact = 
+        { FactName = "rts_screen"  
+          FactValues = [ PQuotedAtom    <| getOsName qualName
+                       ; PQuotedAtom    <| getPointName qualName
+                       ; PList          <| List.map PQuotedAtom pointCodes] }
+
+    let facts : FactCollection = 
+        { Name = "rts_screen"
+          Arity = 3
+          Signature = "rts_screen(os_name, screen_name, point_codes)."
+          Facts = screens |> List.map makeFact } 
+    
+    let pmodule : Module = 
+        { ModuleName = "rts_screen_facts"
+          GlobalComment = "rts_screen_facts.pl"
+          FactCols = [facts] }
+
+    pmodule.Save(outFile)
+
 
 
 // *************************************
@@ -262,25 +270,28 @@ let getOutstations (rows:PointsRow list) : string list =
     List.fold step Set.empty rows 
         |> Set.toList
 
-let factOutstation (name:string)  : FactWriter<unit> = 
-     tell <| prologFact (simpleAtom "rts_outstation")  
-                        [ quotedAtom name ]
-
 
 let genOutstationFacts (allRows:PointsRow list) : unit = 
-    let outfile = outputFile "rts_outstations.pl"
-    let outstations = getOutstations allRows
-    let procAll : FactWriter<unit> = 
-        factWriter {
-            do! tell <| prologComment "rts_outstations.pl"
-            do! tell <| moduleDirective "rts_outstations" 
-                        [ "rts_outstation", 1
-                        ]
-            do! tell <| prologComment "rts_outstation(osname)."
-            do! mapMz factOutstation outstations
-            return () 
-            }
-    runFactWriter outfile procAll
+    let outFile = outputFile "rts_outstations.pl"
+
+    let makeFact (name:string) : Fact = 
+        { FactName = "rts_outstation"  
+          FactValues = [ PQuotedAtom name ] }
+
+          
+    let facts : FactCollection = 
+        { Name = "rts_outstation"
+          Arity = 1
+          Signature = "rts_outstation(os_name)."
+          Facts = getOutstations allRows |> List.map makeFact } 
+
+    let pmodule : Module = 
+        { ModuleName = "rts_outstations"
+          GlobalComment = "rts_outstations.pl"
+          FactCols = [facts] }
+
+    pmodule.Save(outFile)
+
 
 
 // *************************************
@@ -289,7 +300,7 @@ let genOutstationFacts (allRows:PointsRow list) : unit =
 let main () : unit = 
      readMimicRows () |> genMimicNameFacts
 
-     let allPointsFiles = getFilesMatching @"G:\work\Projects\uquart\rts-data" "*-rtu-points.csv"
+     let allPointsFiles = getFilesMatching @"G:\work\Projects\uquart\site-data\RTS" "*-rtu-points.csv"
      let allPoints = 
         List.map readPoints allPointsFiles |> List.concat
 
