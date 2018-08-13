@@ -10,12 +10,13 @@ open FSharp.ExcelProvider
 
 #load "FactX\Internal\FormatCombinators.fs"
 #load "FactX\Internal\FactWriter.fs"
-#load "FactX\Utils\ExcelProviderHelper.fs"
 #load "FactX\FactOutput.fs"
+#load "FactX\ExcelProviderHelper.fs"
 open FactX.Internal.FormatCombinators
 open FactX.Internal.FactWriter
-open FactX.Utils.ExcelProviderHelper
-open FactX.FactOutput
+
+open FactX
+open FactX.ExcelProviderHelper
 
 // ********** DATA SETUP **********
 
