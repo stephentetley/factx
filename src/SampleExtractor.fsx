@@ -38,15 +38,15 @@ let makeOutputPath (fileName:string) : string =
 let genAddresses () = 
     let outFile = makeOutputPath "addresses.pl"
 
-    let makeFact (row:InstallationsRow) : Fact = 
+    let makeClause (row:InstallationsRow) : Clause = 
         { FactName = "address"  
-          FactValues = [ PQuotedAtom row.InstReference; PString row.``Full Address``] }
+          Values = [ PQuotedAtom row.InstReference; PString row.``Full Address``] }
 
     let facts : FactCollection = 
-        { Name = "address"
+        { FactName = "address"
           Arity = 2
           Signature = "address(refnum, addr)."
-          Facts = readInstallations () |> List.map makeFact } 
+          Clauses = readInstallations () |> List.map makeClause } 
 
     let pmodule : Module = 
         { ModuleName = "addresses"
@@ -58,15 +58,15 @@ let genAddresses () =
 let genAssetNames () = 
     let outFile = makeOutputPath "asset_names.pl"
 
-    let makeFact (row:InstallationsRow) : Fact = 
+    let makeClause (row:InstallationsRow) : Clause = 
         { FactName = "asset_name"
-          FactValues = [PQuotedAtom row.InstReference; PString row.InstCommonName ] }
+          Values = [PQuotedAtom row.InstReference; PString row.InstCommonName ] }
 
     let facts : FactCollection = 
-        { Name = "asset_name"
+        { FactName = "asset_name"
           Arity = 2
           Signature = "asset_name(refnum, name)."
-          Facts = readInstallations () |> List.map makeFact } 
+          Clauses = readInstallations () |> List.map makeClause } 
 
     let pmodule : Module= 
         { ModuleName = "asset_names"

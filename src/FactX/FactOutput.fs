@@ -28,25 +28,25 @@ module FactOutput =
             | PQuotedAtom s -> quotedAtom s
             | PList vs -> prologList (List.map (fun (x:Value) -> x.Format) vs)
 
-    type Fact = 
+    type Clause = 
         { FactName: string
-          FactValues : Value list }
+          Values : Value list }
         member v.Format = 
             prologFact (simpleAtom v.FactName) 
-                        (List.map (fun (x:Value) -> x.Format) v.FactValues)
+                        (List.map (fun (x:Value) -> x.Format) v.Values)
 
     type FactCollection = 
-        { Name: string 
+        { FactName: string 
           Arity: int
           Signature: string
-          Facts: Fact list }
+          Clauses: Clause list }
         member v.Format = 
             let d1 = prologComment v.Signature
-            let ds = List.map (fun (fact:Fact) -> fact.Format) v.Facts
+            let ds = List.map (fun (clause:Clause) -> clause.Format) v.Clauses
             vcat <| (d1 :: ds)
 
     let private genModuleDecl (moduleName:string) (factCols:FactCollection list) : Doc = 
-        let pairs1 (fcol:FactCollection) = (fcol.Name, fcol.Arity)
+        let pairs1 (fcol:FactCollection) = (fcol.FactName, fcol.Arity)
         let allPairs = List.map pairs1 factCols
         moduleDirective moduleName allPairs
 

@@ -40,5 +40,58 @@ let readAssetSpeadsheet (sourcePath:string) : AssetRow list =
          
     excelReadRowsAsList helper (new AssetTable(sourcePath))
 
+let equipmentClause (factName:string) (row:AssetRow) : Clause = 
+        { FactName = factName  
+          Values = [ PQuotedAtom    <| row.Reference
+                   ; PQuotedAtom    <| siteNameFromPath row.``Common Name`` 
+                   ; PQuotedAtom    <| row.``Common Name`` 
+                   ; PQuotedAtom    <| row.AssetStatus 
+                   ] }
 
 
+let genPumpFacts (allRows:AssetRow list) : unit = 
+    let outFile = outputFile "adb_ultrasonics.pl"
+    
+    let ultrasonics = 
+        List.filter (fun (row:AssetRow) -> isLevelControlAdb row.``Common Name``) allRows
+
+    let facts : FactCollection = 
+        { FactName = "adb_ultrasonic"
+          Arity = 4
+          Signature = "adb_ultrasonic(uid, site_name, path, op_status)."
+          Clauses = ultrasonics |> List.map (equipmentClause "adb_ultrasonic") } 
+    
+    let pmodule : Module = 
+        { ModuleName = "adb_ultrasonics"
+          GlobalComment = "adb_ultrasonics.pl"
+          FactCols = [facts] }
+
+    pmodule.Save(outFile)
+
+
+let genFlowMeterFacts (allRows:AssetRow list) : unit = 
+    let outFile = outputFile "adb_flow_meters.pl"
+    
+    let flowMeters = 
+        List.filter (fun (row:AssetRow) -> isFlowMeterAdb row.``Common Name``) allRows
+
+    let facts : FactCollection = 
+        { FactName = "adb_flow_meter"
+          Arity = 4
+          Signature = "adb_flow_meter(uid, site_name, path, op_status)."
+          Clauses = flowMeters |> List.map (equipmentClause "adb_flow_meter") } 
+    
+    let pmodule : Module = 
+        { ModuleName = "adb_flow_meters"
+          GlobalComment = "adb_flow_meters.pl"
+          FactCols = [facts] }
+
+    pmodule.Save(outFile)
+
+let main () = 
+    let allAssetFiles = getFilesMatching @"G:\work\Projects\uquart\site-data\AssetDB" "AI*.xlsx"
+    let allRows = 
+        allAssetFiles |> List.map readAssetSpeadsheet |> List.concat
+    
+    genPumpFacts allRows
+    genFlowMeterFacts allRows

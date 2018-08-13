@@ -201,9 +201,12 @@ let commaSepListVertically (source:Doc list) : Doc =
 let private escapeSpecial (source:string) : string = 
     source.Replace("\\" , "\\\\")
 
+
+
 let simpleAtom (value:string) : Doc = formatString value
 
-let quotedAtom (value:string) : Doc = singleQuoted value
+// This must escape.
+let quotedAtom (value:string) : Doc = singleQuoted (escapeSpecial value)
 
 let prologString (value:string) : Doc = 
     doubleQuoted (escapeSpecial value)

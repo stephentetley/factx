@@ -57,20 +57,45 @@ let getPointName (source:string) : string =
 let getOsName (source:string) : string = 
     (strLeftOf '\\' source).Trim()
     
+/// Input is "SITE_NAME \POINT_NAME"
+let siteNameFromPath (source:string) : string = 
+    let splits : string [] = source.Split([| '/' |])
+    if splits.Length >= 2 then 
+        String.concat "/" splits.[0 .. 1]
+    else
+        source
+
 
 // *************************************
 // Pumps & Screens
 
+let isRegexMatch1(source:string) (regex:string) : bool = 
+    Regex.Match(source, regex).Success
+
+let isRegexMatch(source:string) (regexs:string list) : bool = 
+    List.exists (fun regex -> Regex.Match(source, regex).Success) regexs
+
 let hasSuffixAFPR (pointName:string) : bool = 
-    Regex.Match(pointName, "_[AFPR]\Z").Success
+    isRegexMatch1 pointName "_[AFPR]\Z"
 
 let isPRF (pointName:string) : bool = 
-    Regex.Match(pointName, "_[FPR]\Z").Success
+    isRegexMatch1 pointName "_[FPR]\Z"
 
-let isPump (pointName:string) : bool = 
-    Regex.Match(pointName, "^PU?MP_").Success || Regex.Match(pointName, "_PU?MP_").Success
+let isPumpRtu (pointName:string) : bool = 
+    isRegexMatch pointName [ "^PU?MP_"; "_PU?MP_" ]
 
 
-let isScreen (pointName:string) : bool = 
-    Regex.Match(pointName, "^SCREEN_").Success || Regex.Match(pointName, "_SCREEN_").Success
+let isScreenRtu (pointName:string) : bool = 
+    isRegexMatch pointName [ "^SCREEN_"; "_SCREEN_" ]
 
+let isLevelControlAdb (path:string) : bool = 
+    isRegexMatch1 path "EQUIPMENT: ULTRASONIC LEVEL INSTRUMENT\Z"
+
+let isFlowMeterAdb (path:string) : bool = 
+    isRegexMatch1 path "EQUIPMENT: MAGNETIC FLOW INSTRUMENT\Z"
+
+let isPressureInstAdb (path:string) : bool = 
+    isRegexMatch path [ "EQUIPMENT: MAGNETIC FLOW INSTRUMENT\Z"
+                      ; "EQUIPMENT: MAGNETIC FLOW INSTRUMENT\Z"
+                      ]
+        

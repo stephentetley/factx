@@ -50,15 +50,15 @@ let readMimicRows () : MimicRow list =
 let genMimicNameFacts (rows:MimicRow list) : unit = 
     let outFile = outputFile "rts_mimic_names.pl"
 
-    let makeFact (row:MimicRow) : Fact = 
+    let makeClause (row:MimicRow) : Clause = 
         { FactName = "rts_mimic_name"
-          FactValues = [PQuotedAtom row.``Mimic ID``; PString row.Name ] }
+          Values = [PQuotedAtom row.``Mimic ID``; PString row.Name ] }
 
     let facts : FactCollection = 
-        { Name = "rts_mimic_name"
+        { FactName = "rts_mimic_name"
           Arity = 2
           Signature = "rts_mimic_name(mimic_id, mimic_name)."
-          Facts = readMimicRows () |> List.map makeFact } 
+          Clauses = readMimicRows () |> List.map makeClause } 
     
     let pmodule : Module= 
         { ModuleName = "rts_mimic_names"
@@ -89,18 +89,18 @@ let readPoints (sourcePath:string) : PointsRow list =
 let genMimicPoints (rows:PointsRow list) : unit = 
     let outFile = outputFile "rts_mimic_points.pl"
 
-    let makeFact (row:PointsRow) : Fact = 
+    let makeClause (row:PointsRow) : Clause = 
         { FactName = "rts_mimic_point"  
-          FactValues = [ PQuotedAtom (row.``Ctrl pic  Alarm pic``)
-                       ; PQuotedAtom (getOsName row.``OS\Point name``)
-                       ; PQuotedAtom (getPointName row.``OS\Point name``)
-                       ] }
+          Values = [ PQuotedAtom (row.``Ctrl pic  Alarm pic``)
+                   ; PQuotedAtom (getOsName row.``OS\Point name``)
+                   ; PQuotedAtom (getPointName row.``OS\Point name``)
+                   ] }
 
     let facts : FactCollection = 
-        { Name = "rts_mimic_point"
+        { FactName = "rts_mimic_point"
           Arity = 2
           Signature = "rts_mimic_point(picture, os_name, point_name)."
-          Facts = rows |> List.map makeFact } 
+          Clauses = rows |> List.map makeClause } 
 
     let pmodule : Module = 
         { ModuleName = "rts_mimic_points"
@@ -142,19 +142,19 @@ let getAssetToSignals (rows:PointsRow list) : AssetToSignal list =
 let genAssetToSignals (source:AssetToSignal list) : unit = 
     let outFile = outputFile "rts_asset_to_signal.pl"
 
-    let makeFact (atos:AssetToSignal) : Fact = 
+    let makeClause (atos:AssetToSignal) : Clause = 
         { FactName = "asset_to_signal"  
-          FactValues = [ PQuotedAtom    <| atos.OsName
-                       ; PQuotedAtom    <| atos.AssetName
-                       ; PQuotedAtom    <| atos.PointName
-                       ; PQuotedAtom    <| atos.SignalSuffix
-                       ]}
+          Values = [ PQuotedAtom    <| atos.OsName
+                   ; PQuotedAtom    <| atos.AssetName
+                   ; PQuotedAtom    <| atos.PointName
+                   ; PQuotedAtom    <| atos.SignalSuffix
+                   ]}
 
     let facts : FactCollection = 
-        { Name = "asset_to_signal"
+        { FactName = "asset_to_signal"
           Arity = 4
           Signature = "asset_to_signal(os_name, asset_name, signal_name, suffix)."
-          Facts = source |> List.map makeFact } 
+          Clauses = source |> List.map makeClause } 
     
     let pmodule : Module = 
         { ModuleName = "rts_asset_to_signal"
@@ -186,7 +186,7 @@ let getStemPoints (rowMatch:PointsRow -> bool) (rows:PointsRow list) : StemPoint
 // Pump facts
 
 let getPumpPoints (rows:PointsRow list) : StemPoints = 
-    let matcher (row:PointsRow) : bool = isPump (getPointName row.``OS\Point name``)
+    let matcher (row:PointsRow) : bool = isPumpRtu (getPointName row.``OS\Point name``)
     getStemPoints matcher rows
     
 
@@ -195,17 +195,18 @@ let genPumpFacts (pumpPoints:StemPoints) : unit =
     
     let pumps = Map.toList pumpPoints
     
-    let makeFact (qualName:string, pointCodes:string list) : Fact = 
+    let makeClause (qualName:string, pointCodes:string list) : Clause = 
         { FactName = "rts_pump"  
-          FactValues = [ PQuotedAtom    <| getOsName qualName
-                       ; PQuotedAtom    <| getPointName qualName
-                       ; PList          <| List.map PQuotedAtom pointCodes] }
+          Values = [ PQuotedAtom    <| getOsName qualName
+                   ; PQuotedAtom    <| getPointName qualName
+                   ; PList          <| List.map PQuotedAtom pointCodes
+                   ] }
 
     let facts : FactCollection = 
-        { Name = "rts_pump"
+        { FactName = "rts_pump"
           Arity = 3
           Signature = "rts_pump(osname, pump_name, point_codes)."
-          Facts = pumps |> List.map makeFact } 
+          Clauses = pumps |> List.map makeClause } 
     
     let pmodule : Module = 
         { ModuleName = "rts_pump_facts"
@@ -222,7 +223,7 @@ let genPumpFacts (pumpPoints:StemPoints) : unit =
 // Screen facts
 
 let getScreenPoints (rows:PointsRow list) : StemPoints = 
-    let matcher (row:PointsRow) : bool = isScreen (getPointName row.``OS\Point name``)
+    let matcher (row:PointsRow) : bool = isScreenRtu (getPointName row.``OS\Point name``)
     getStemPoints matcher rows
 
 
@@ -231,17 +232,17 @@ let genScreenFacts (screenPoints:StemPoints) : unit =
 
     let screens = Map.toList screenPoints
 
-    let makeFact (qualName:string, pointCodes:string list) : Fact = 
+    let makeClause (qualName:string, pointCodes:string list) : Clause = 
         { FactName = "rts_screen"  
-          FactValues = [ PQuotedAtom    <| getOsName qualName
+          Values = [ PQuotedAtom    <| getOsName qualName
                        ; PQuotedAtom    <| getPointName qualName
                        ; PList          <| List.map PQuotedAtom pointCodes] }
 
     let facts : FactCollection = 
-        { Name = "rts_screen"
+        { FactName = "rts_screen"
           Arity = 3
           Signature = "rts_screen(os_name, screen_name, point_codes)."
-          Facts = screens |> List.map makeFact } 
+          Clauses = screens |> List.map makeClause } 
     
     let pmodule : Module = 
         { ModuleName = "rts_screen_facts"
@@ -269,16 +270,16 @@ let getOutstations (rows:PointsRow list) : string list =
 let genOutstationFacts (allRows:PointsRow list) : unit = 
     let outFile = outputFile "rts_outstations.pl"
 
-    let makeFact (name:string) : Fact = 
+    let makeClause (name:string) : Clause = 
         { FactName = "rts_outstation"  
-          FactValues = [ PQuotedAtom name ] }
+          Values = [ PQuotedAtom name ] }
 
           
     let facts : FactCollection = 
-        { Name = "rts_outstation"
+        { FactName = "rts_outstation"
           Arity = 1
           Signature = "rts_outstation(os_name)."
-          Facts = getOutstations allRows |> List.map makeFact } 
+          Clauses = getOutstations allRows |> List.map makeClause } 
 
     let pmodule : Module = 
         { ModuleName = "rts_outstations"
