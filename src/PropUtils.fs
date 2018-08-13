@@ -57,8 +57,8 @@ let getPointName (source:string) : string =
 let getOsName (source:string) : string = 
     (strLeftOf '\\' source).Trim()
     
-/// Input is "SITE_NAME \POINT_NAME"
-let siteNameFromPath (source:string) : string = 
+/// Input is "DUDLINGTON/STF/.."
+let installationNameFromPath (source:string) : string = 
     let splits : string [] = source.Split([| '/' |])
     if splits.Length >= 2 then 
         String.concat "/" splits.[0 .. 1]
@@ -95,7 +95,13 @@ let isFlowMeterAdb (path:string) : bool =
     isRegexMatch1 path "EQUIPMENT: MAGNETIC FLOW INSTRUMENT\Z"
 
 let isPressureInstAdb (path:string) : bool = 
-    isRegexMatch path [ "EQUIPMENT: MAGNETIC FLOW INSTRUMENT\Z"
-                      ; "EQUIPMENT: MAGNETIC FLOW INSTRUMENT\Z"
+    isRegexMatch path [ "EQUIPMENT: PRESSURE FOR LEVEL INSTRUMENT\Z"
+                      ; "EQUIPMENT: PRESSURE INSTRUMENT\Z"
+                      ; "EQUIPMENT: PRESSURE FLOW INSTRUMENT\Z"
                       ]
-        
+
+let isDissolvedOxygenInstAdb (path:string) : bool = 
+    isRegexMatch1 path "EQUIPMENT: DISSOLVED OXYGEN INSTRUMENT\Z"
+
+
+                      

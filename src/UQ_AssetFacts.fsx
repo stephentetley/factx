@@ -43,33 +43,33 @@ let readAssetSpeadsheet (sourcePath:string) : AssetRow list =
 let equipmentClause (factName:string) (row:AssetRow) : Clause = 
         { FactName = factName  
           Values = [ PQuotedAtom    <| row.Reference
-                   ; PQuotedAtom    <| siteNameFromPath row.``Common Name`` 
+                   ; PQuotedAtom    <| installationNameFromPath row.``Common Name`` 
                    ; PQuotedAtom    <| row.``Common Name`` 
                    ; PQuotedAtom    <| row.AssetStatus 
                    ] }
 
 
-let genPumpFacts (allRows:AssetRow list) : unit = 
-    let outFile = outputFile "adb_ultrasonics.pl"
+let genUltrasonicInsts (allRows:AssetRow list) : unit = 
+    let outFile = outputFile "adb_ultrasonic_insts.pl"
     
     let ultrasonics = 
         List.filter (fun (row:AssetRow) -> isLevelControlAdb row.``Common Name``) allRows
 
     let facts : FactCollection = 
-        { FactName = "adb_ultrasonic"
+        { FactName = "adb_ultrasonic_inst"
           Arity = 4
-          Signature = "adb_ultrasonic(uid, site_name, path, op_status)."
-          Clauses = ultrasonics |> List.map (equipmentClause "adb_ultrasonic") } 
+          Signature = "adb_ultrasonic_inst(uid, site_name, path, op_status)."
+          Clauses = ultrasonics |> List.map (equipmentClause "adb_ultrasonic_inst") } 
     
     let pmodule : Module = 
-        { ModuleName = "adb_ultrasonics"
-          GlobalComment = "adb_ultrasonics.pl"
+        { ModuleName = "adb_ultrasonic_insts"
+          GlobalComment = "adb_ultrasonic_insts.pl"
           FactCols = [facts] }
 
     pmodule.Save(outFile)
 
 
-let genFlowMeterFacts (allRows:AssetRow list) : unit = 
+let genFlowMeters (allRows:AssetRow list) : unit = 
     let outFile = outputFile "adb_flow_meters.pl"
     
     let flowMeters = 
@@ -88,10 +88,87 @@ let genFlowMeterFacts (allRows:AssetRow list) : unit =
 
     pmodule.Save(outFile)
 
+let genPressureInsts (allRows:AssetRow list) : unit = 
+    let outFile = outputFile "adb_pressure_insts.pl"
+    
+    let doInsts = 
+        List.filter (fun (row:AssetRow) -> isPressureInstAdb row.``Common Name``) allRows
+
+    let facts : FactCollection = 
+        { FactName = "adb_pressure_inst"
+          Arity = 4
+          Signature = "adb_pressure_inst(uid, site_name, path, op_status)."
+          Clauses = doInsts |> List.map (equipmentClause "adb_pressure_inst") } 
+    
+    let pmodule : Module = 
+        { ModuleName = "adb_pressure_insts"
+          GlobalComment = "adb_pressure_insts.pl"
+          FactCols = [facts] }
+
+    pmodule.Save(outFile)
+
+let genDissolvedOxygenInsts (allRows:AssetRow list) : unit = 
+    let outFile = outputFile "adb_dissolved_oxygen_insts.pl"
+    
+    let doInsts = 
+        List.filter (fun (row:AssetRow) -> isDissolvedOxygenInstAdb row.``Common Name``) allRows
+
+    let facts : FactCollection = 
+        { FactName = "adb_dissolved_oxygen_inst"
+          Arity = 4
+          Signature = "adb_dissolved_oxygen_inst(uid, site_name, path, op_status)."
+          Clauses = doInsts |> List.map (equipmentClause "adb_dissolved_oxygen_inst") } 
+    
+    let pmodule : Module = 
+        { ModuleName = "adb_dissolved_oxygen_insts"
+          GlobalComment = "adb_dissolved_oxygen_insts.pl"
+          FactCols = [facts] }
+
+    pmodule.Save(outFile)
+
+// *************************************
+// Installation facts
+
+let getInstallations (rows:AssetRow list) : string list = 
+    let step (ac:Set<string>) (row:AssetRow) : Set<string> = 
+        let instName = installationNameFromPath row.``Common Name``
+        if not (ac.Contains instName) then 
+            ac.Add instName
+        else ac
+    
+    List.fold step Set.empty rows 
+        |> Set.toList
+
+let genInstallationFacts (allRows:AssetRow list) : unit = 
+    let outFile = outputFile "adb_installations.pl"
+
+    let makeClause (name:string) : Clause = 
+        { FactName = "adb_installation"  
+          Values = [ PQuotedAtom name ] }
+
+          
+    let facts : FactCollection = 
+        { FactName = "adb_installation"
+          Arity = 1
+          Signature = "adb_installation(installation_name)."
+          Clauses = getInstallations allRows |> List.map makeClause } 
+
+    let pmodule : Module = 
+        { ModuleName = "adb_installations"
+          GlobalComment = "adb_installations.pl"
+          FactCols = [facts] }
+
+    pmodule.Save(outFile)
+
 let main () = 
     let allAssetFiles = getFilesMatching @"G:\work\Projects\uquart\site-data\AssetDB" "AI*.xlsx"
     let allRows = 
         allAssetFiles |> List.map readAssetSpeadsheet |> List.concat
     
-    genPumpFacts allRows
-    genFlowMeterFacts allRows
+    genUltrasonicInsts allRows
+    genFlowMeters allRows
+    genPressureInsts allRows
+    genDissolvedOxygenInsts allRows
+    genInstallationFacts allRows
+
+
