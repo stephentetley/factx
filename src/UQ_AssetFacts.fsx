@@ -172,3 +172,57 @@ let main () =
     genInstallationFacts allRows
 
 
+// ** TEMP ** 
+
+
+
+    
+type SimpleTable = 
+    CsvProvider< Schema = "Site Name (string),Instrument Type(string),AI2 Asset Ref(string),Common Name(string)",
+                 HasHeaders = false >
+
+type SimpleRow = SimpleTable.Row
+
+let makeSimpleRow (instType:string) (row:AssetRow) : SimpleRow = 
+    SimpleTable.Row( siteName = installationNameFromPath row.``Common Name``
+                   , instrumentType = instType
+                   , ai2AssetRef = row.Reference
+                   , commonName = row.``Common Name`` )
+
+let genCsv (inputFile:string) : unit = 
+    let outputFile : string = 
+        let name1 = System.IO.Path.GetFileName(inputFile)
+        let name2 = System.IO.Path.Combine(@"G:\work\Projects\uquart\output", name1) 
+        System.IO.Path.ChangeExtension(name2, "csv")
+
+    let xlsxRows = readAssetSpeadsheet inputFile
+
+    let ultrasonics = 
+        List.filter (fun (row:AssetRow) -> isLevelControlAdb row.``Common Name``) xlsxRows
+            |> List.map (makeSimpleRow "ULTRASONIC")
+    
+    let flowInsts = 
+        List.filter (fun (row:AssetRow) -> isFlowMeterAdb row.``Common Name``) xlsxRows
+            |> List.map (makeSimpleRow "FLOW METER")
+
+    let pressureInsts = 
+        List.filter (fun (row:AssetRow) -> isPressureInstAdb row.``Common Name``) xlsxRows
+            |> List.map (makeSimpleRow "PRESSURE INST")
+
+    let doInsts = 
+        List.filter (fun (row:AssetRow) -> isDissolvedOxygenInstAdb row.``Common Name``) xlsxRows
+            |> List.map (makeSimpleRow "DISSOLVED OXYGEN")
+
+    let table = new SimpleTable(ultrasonics @ flowInsts @ pressureInsts @ doInsts) 
+    use sw = new System.IO.StreamWriter(outputFile)
+    sw.WriteLine "Site Name,Instrument Type,AI2 Asset Ref,Common Name"
+    table.Save(writer = sw, separator = ',', quote = '"' )
+
+    
+
+let temp01 () = 
+    let allAssetFiles = getFilesMatching @"G:\work\Projects\uquart\site-data\AssetDB" "AI*.xlsx"
+
+    List.iter genCsv allAssetFiles
+
+

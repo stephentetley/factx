@@ -235,8 +235,8 @@ let genScreenFacts (screenPoints:StemPoints) : unit =
     let makeClause (qualName:string, pointCodes:string list) : Clause = 
         { FactName = "rts_screen"  
           Values = [ PQuotedAtom    <| getOsName qualName
-                       ; PQuotedAtom    <| getPointName qualName
-                       ; PList          <| List.map PQuotedAtom pointCodes] }
+                   ; PQuotedAtom    <| getPointName qualName
+                   ; PList          <| List.map PQuotedAtom pointCodes] }
 
     let facts : FactCollection = 
         { FactName = "rts_screen"

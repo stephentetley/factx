@@ -10,10 +10,9 @@ open FSharp.ExcelProvider
 open FSharp.Data
 
 #load "FactX\Internal\FormatCombinators.fs"
-#load "FactX\Internal\FactWriter.fs"
+#load "FactX\FactOutput.fs"
 #load "FactX\ExcelProviderHelper.fs"
-open FactX.Internal.FormatCombinators
-open FactX.Internal.FactWriter
+open FactX
 open FactX.ExcelProviderHelper
 
 // *************************************
@@ -36,46 +35,58 @@ let readSaiRowRows () : SaiRow list =
          
     excelReadRowsAsList helper (new SaiTable())
 
-let outputFile (filename:string) : string = 
+let outputFileName (filename:string) : string = 
     System.IO.Path.Combine(@"G:\work\common_data\prolog", filename) 
 
 
 
-let factSiteName (row:SaiRow) : FactWriter<unit> = 
-     tell <| prologFact (simpleAtom "site_name")  
-                        [ quotedAtom row.InstReference
-                        ; prologString row.InstCommonName
-                        ]
+let clauseSiteName (row:SaiRow) : Clause = 
+     { FactName = "site_name"
+       Values = [ PQuotedAtom row.InstReference
+                ; PString row.InstCommonName ]}
 
-let factAssetType (row:SaiRow) : FactWriter<unit> = 
-     tell <| prologFact (simpleAtom "asset_type")  
-                        [ quotedAtom row.InstReference
-                        ; quotedAtom row.AssetType
-                        ]
+let siteNames (rows:SaiRow list) : FactCollection = 
+    { FactName = "site_name"
+      Arity = 2
+      Signature = "site_name(uid, common_name)."
+      Clauses = List.map clauseSiteName rows } 
 
-let factAssetStatus (row:SaiRow) : FactWriter<unit> = 
-     tell <| prologFact (simpleAtom "asset_status")  
-                        [ quotedAtom row.InstReference
-                        ; quotedAtom row.AssetStatus
-                        ]
 
+let clauseAssetType (row:SaiRow) : Clause = 
+     { FactName = "asset_type"
+       Values = [ PQuotedAtom row.InstReference
+                ; PQuotedAtom row.AssetType ] }
+
+let assetTypes (rows:SaiRow list) : FactCollection = 
+    { FactName = "asset_type"
+      Arity = 2
+      Signature = "asset_type(uid, type)."
+      Clauses = List.map clauseAssetType rows } 
+
+let clauseAssetStatus (row:SaiRow) : Clause = 
+     { FactName = "asset_status"
+       Values = [ PQuotedAtom row.InstReference
+                ; PQuotedAtom row.AssetStatus ]}
+                
+let assetStatus (rows:SaiRow list) : FactCollection = 
+    { FactName = "asset_status"
+      Arity = 2
+      Signature = "asset_status(uid, status)."
+      Clauses = List.map clauseAssetStatus rows } 
 
 let genSiteFacts (rows:SaiRow list) : unit = 
-    let outfile = outputFile "sai_facts.pl"
-    let procAll : FactWriter<unit> = 
-        factWriter {
-            let! _ = tell <| prologComment "sai_facts.pl"
-            let! _ = tell <| moduleDirective "sai_facts" 
-                        [ "site_name", 2
-                        ; "asset_type", 2
-                        ; "asset_status", 2
-                        ]
-            let! _ = mapMz factSiteName rows
-            let! _ = mapMz factAssetType rows
-            let! _ = mapMz factAssetStatus rows
-            return () 
-            }
-    runFactWriter outfile procAll
+    let outFile = outputFileName "sai_facts.pl"
+
+    
+    let pmodule : Module = 
+        { ModuleName = "sai_facts"
+          GlobalComment = "sai_facts.pl"
+          FactCols = [ siteNames rows
+                     ; assetTypes rows
+                     ; assetStatus rows ]}
+
+    pmodule.Save(outFile)
+
 
     
 // *************************************
@@ -93,43 +104,55 @@ let readOutstationRows () : OutstationRow list =
     (new OustationTable()).Rows |> Seq.toList
 
 
-let factOsName (row:OutstationRow) : FactWriter<unit> = 
-     tell <| prologFact (simpleAtom "os_name")  
-                        [ quotedAtom row.``OD name``
-                        ; quotedAtom row.``OS name``
-                        ]
+let clauseOsName (row:OutstationRow) : Clause = 
+    { FactName = "os_name"
+      Values = [ PQuotedAtom row.``OD name``
+               ; PQuotedAtom row.``OS name`` ]}
 
-let factOsType (row:OutstationRow) : FactWriter<unit> = 
-     tell <| prologFact (simpleAtom "os_type")  
-                        [ quotedAtom    row.``OD name``
-                        ; quotedAtom    row.``OS type``
-                        ]
+let osNames (rows:OutstationRow list) : FactCollection = 
+    { FactName = "os_name"
+      Arity = 2
+      Signature = "os_name(od_name, od_name)."
+      Clauses = List.map clauseOsName rows } 
 
-let factOdComment (row:OutstationRow) : FactWriter<unit> = 
-     tell <| prologFact (simpleAtom "od_comment")  
-                        [ quotedAtom    row.``OD name``
-                        ; prologString  row.``OD comment``
-                        ]
+let clauseOsType (row:OutstationRow) : Clause = 
+    { FactName = "os_type" 
+      Values = [ PQuotedAtom    row.``OD name``
+               ; PQuotedAtom    row.``OS type`` ]}
+
+let osTypes (rows:OutstationRow list) : FactCollection = 
+    { FactName = "os_type"
+      Arity = 2
+      Signature = "os_type(od_name, os_type)."
+      Clauses = List.map clauseOsType rows } 
+
+let clauseOdComment (row:OutstationRow) : Clause = 
+    { FactName = "od_comment"
+      Values = [ PQuotedAtom  row.``OD name``
+               ; PString  row.``OD comment`` ]}
+
+
+let odComments (rows:OutstationRow list) : FactCollection = 
+    { FactName = "od_comment"
+      Arity = 2
+      Signature = "od_comment(od_name,od_comment)."
+      Clauses = List.map clauseOdComment rows } 
 
 
 let genOsFacts (rows:OutstationRow list) : unit = 
-    let outfile = outputFile "os_facts.pl"
-    let procAll : FactWriter<unit> = 
-        factWriter {
-            let! _ = tell <| prologComment "os_facts.pl"
-            let! _ = 
-                tell <| moduleDirective "os_facts" 
-                                [ "os_name", 2
-                                ; "os_type", 2
-                                ; "od_comment", 2
-                                ]
-            let! _ = mapMz factOsName rows
-            let! _ = mapMz factOsType rows
-            let! _ = mapMz factOdComment rows
-            return () 
-            }
-    runFactWriter outfile procAll
+    let outFile = outputFileName "os_facts.pl"
+    
+    let pmodule : Module = 
+        { ModuleName = "os_facts"
+          GlobalComment = "os_facts.pl"
+          FactCols = [ osNames rows
+                     ; osTypes rows
+                     ; odComments rows ]}
+
+    pmodule.Save(outFile)
+
+
 
 let main () : unit = 
-     readSaiRowRows () |> genSiteFacts
-     readOutstationRows () |> genOsFacts
+     readSaiRowRows ()      |> genSiteFacts
+     readOutstationRows ()  |> genOsFacts
