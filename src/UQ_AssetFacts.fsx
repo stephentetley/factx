@@ -40,6 +40,8 @@ let readAssetSpeadsheet (sourcePath:string) : AssetRow list =
          
     excelReadRowsAsList helper (new AssetTable(sourcePath))
 
+
+
 let equipmentClause (factName:string) (row:AssetRow) : Clause = 
         { FactName = factName  
           Values = [ PQuotedAtom    <| row.Reference
@@ -64,6 +66,7 @@ let genUltrasonicInsts (allRows:AssetRow list) : unit =
     let pmodule : Module = 
         { ModuleName = "adb_ultrasonic_insts"
           GlobalComment = "adb_ultrasonic_insts.pl"
+          Exports = List.map factSignature [facts]
           FactCols = [facts] }
 
     pmodule.Save(outFile)
@@ -84,6 +87,7 @@ let genFlowMeters (allRows:AssetRow list) : unit =
     let pmodule : Module = 
         { ModuleName = "adb_flow_meters"
           GlobalComment = "adb_flow_meters.pl"
+          Exports = List.map factSignature [facts]          
           FactCols = [facts] }
 
     pmodule.Save(outFile)
@@ -103,6 +107,7 @@ let genPressureInsts (allRows:AssetRow list) : unit =
     let pmodule : Module = 
         { ModuleName = "adb_pressure_insts"
           GlobalComment = "adb_pressure_insts.pl"
+          Exports = List.map factSignature [facts]
           FactCols = [facts] }
 
     pmodule.Save(outFile)
@@ -121,7 +126,8 @@ let genDissolvedOxygenInsts (allRows:AssetRow list) : unit =
     
     let pmodule : Module = 
         { ModuleName = "adb_dissolved_oxygen_insts"
-          GlobalComment = "adb_dissolved_oxygen_insts.pl"
+          GlobalComment = "adb_dissolved_oxygen_insts.pl"          
+          Exports = List.map factSignature [facts]
           FactCols = [facts] }
 
     pmodule.Save(outFile)
@@ -156,6 +162,7 @@ let genInstallationFacts (allRows:AssetRow list) : unit =
     let pmodule : Module = 
         { ModuleName = "adb_installations"
           GlobalComment = "adb_installations.pl"
+          Exports = List.map factSignature [facts]
           FactCols = [facts] }
 
     pmodule.Save(outFile)

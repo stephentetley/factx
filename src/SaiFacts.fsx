@@ -79,11 +79,11 @@ let genSiteFacts (rows:SaiRow list) : unit =
 
     
     let pmodule : Module = 
+        let facts = [ siteNames rows; assetTypes rows; assetStatus rows ]
         { ModuleName = "sai_facts"
           GlobalComment = "sai_facts.pl"
-          FactCols = [ siteNames rows
-                     ; assetTypes rows
-                     ; assetStatus rows ]}
+          Exports = List.map factSignature facts
+          FactCols = facts }
 
     pmodule.Save(outFile)
 
@@ -143,11 +143,11 @@ let genOsFacts (rows:OutstationRow list) : unit =
     let outFile = outputFileName "os_facts.pl"
     
     let pmodule : Module = 
+        let facts = [ osNames rows ; osTypes rows ; odComments rows ]
         { ModuleName = "os_facts"
           GlobalComment = "os_facts.pl"
-          FactCols = [ osNames rows
-                     ; osTypes rows
-                     ; odComments rows ]}
+          Exports = List.map factSignature facts
+          FactCols = facts}
 
     pmodule.Save(outFile)
 

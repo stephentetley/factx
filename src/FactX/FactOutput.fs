@@ -45,18 +45,15 @@ module FactOutput =
             let ds = List.map (fun (clause:Clause) -> clause.Format) v.Clauses
             vcat <| (d1 :: ds)
 
-    let private genModuleDecl (moduleName:string) (factCols:FactCollection list) : Doc = 
-        let pairs1 (fcol:FactCollection) = (fcol.FactName, fcol.Arity)
-        let allPairs = List.map pairs1 factCols
-        moduleDirective moduleName allPairs
 
     type Module = 
         { ModuleName: string
           GlobalComment: string
+          Exports: (string * int ) list
           FactCols: FactCollection list }
         member v.Format = 
             let d1 = prologComment v.GlobalComment
-            let d2 = genModuleDecl v.ModuleName v.FactCols
+            let d2 = moduleDirective v.ModuleName v.Exports
             let ds = List.map (fun (col:FactCollection) -> col.Format) v.FactCols
             vcat <| (d1 :: empty :: d2 :: empty :: ds)
 
@@ -65,3 +62,7 @@ module FactOutput =
         member v.Save(filePath:string) = 
             use sw = new System.IO.StreamWriter(filePath)
             sw.Write (render v.Format)
+
+    /// get the export signature for a Fact
+    let factSignature (fc:FactCollection) : string * int = 
+        fc.FactName, fc.Arity

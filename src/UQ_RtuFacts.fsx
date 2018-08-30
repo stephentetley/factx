@@ -63,6 +63,7 @@ let genMimicNameFacts (rows:MimicRow list) : unit =
     let pmodule : Module= 
         { ModuleName = "rts_mimic_names"
           GlobalComment = "rts_mimic_names.pl"
+          Exports = List.map factSignature [facts]
           FactCols = [facts] }
     
     pmodule.Save(outFile)
@@ -105,6 +106,7 @@ let genMimicPoints (rows:PointsRow list) : unit =
     let pmodule : Module = 
         { ModuleName = "rts_mimic_points"
           GlobalComment = "rts_mimic_points.pl"
+          Exports = List.map factSignature [facts]
           FactCols = [facts] }
 
     pmodule.Save(outFile)
@@ -159,6 +161,7 @@ let genAssetToSignals (source:AssetToSignal list) : unit =
     let pmodule : Module = 
         { ModuleName = "rts_asset_to_signal"
           GlobalComment = "rts_asset_to_signal.pl"
+          Exports = List.map factSignature [facts]
           FactCols = [facts] }
 
     pmodule.Save(outFile)
@@ -211,6 +214,7 @@ let genPumpFacts (pumpPoints:StemPoints) : unit =
     let pmodule : Module = 
         { ModuleName = "rts_pump_facts"
           GlobalComment = "rts_pump_facts.pl"
+          Exports = List.map factSignature [facts]
           FactCols = [facts] }
 
     pmodule.Save(outFile)
@@ -247,6 +251,7 @@ let genScreenFacts (screenPoints:StemPoints) : unit =
     let pmodule : Module = 
         { ModuleName = "rts_screen_facts"
           GlobalComment = "rts_screen_facts.pl"
+          Exports = List.map factSignature [facts]
           FactCols = [facts] }
 
     pmodule.Save(outFile)
@@ -284,6 +289,7 @@ let genOutstationFacts (allRows:PointsRow list) : unit =
     let pmodule : Module = 
         { ModuleName = "rts_outstations"
           GlobalComment = "rts_outstations.pl"
+          Exports = List.map factSignature [facts]
           FactCols = [facts] }
 
     pmodule.Save(outFile)

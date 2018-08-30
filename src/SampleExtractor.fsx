@@ -51,6 +51,7 @@ let genAddresses () =
     let pmodule : Module = 
         { ModuleName = "addresses"
           GlobalComment = "addresses.pl"
+          Exports = List.map factSignature [facts]
           FactCols = [facts] }
 
     pmodule.Save(outFile)
@@ -71,6 +72,7 @@ let genAssetNames () =
     let pmodule : Module= 
         { ModuleName = "asset_names"
           GlobalComment = "asset_names.pl"
+          Exports = List.map factSignature [facts]
           FactCols = [facts] }
     
     pmodule.Save(outFile)
