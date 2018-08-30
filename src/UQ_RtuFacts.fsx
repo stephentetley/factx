@@ -54,17 +54,18 @@ let genMimicNameFacts (rows:MimicRow list) : unit =
         { FactName = "rts_mimic_name"
           Values = [PQuotedAtom row.``Mimic ID``; PString row.Name ] }
 
-    let facts : FactCollection = 
+    let facts : FactSet = 
         { FactName = "rts_mimic_name"
           Arity = 2
           Signature = "rts_mimic_name(mimic_id, mimic_name)."
           Clauses = readMimicRows () |> List.map makeClause } 
     
-    let pmodule : Module= 
+    let pmodule : Module = 
+        let db = [facts]
         { ModuleName = "rts_mimic_names"
           GlobalComment = "rts_mimic_names.pl"
-          Exports = List.map factSignature [facts]
-          FactCols = [facts] }
+          Exports = List.map factSignature db
+          Database = db }
     
     pmodule.Save(outFile)
 
@@ -97,17 +98,18 @@ let genMimicPoints (rows:PointsRow list) : unit =
                    ; PQuotedAtom (getPointName row.``OS\Point name``)
                    ] }
 
-    let facts : FactCollection = 
+    let facts : FactSet = 
         { FactName = "rts_mimic_point"
           Arity = 2
           Signature = "rts_mimic_point(picture, os_name, point_name)."
           Clauses = rows |> List.map makeClause } 
 
     let pmodule : Module = 
+        let db = [facts]
         { ModuleName = "rts_mimic_points"
           GlobalComment = "rts_mimic_points.pl"
-          Exports = List.map factSignature [facts]
-          FactCols = [facts] }
+          Exports = List.map factSignature db
+          Database = db }
 
     pmodule.Save(outFile)
 
@@ -152,17 +154,18 @@ let genAssetToSignals (source:AssetToSignal list) : unit =
                    ; PQuotedAtom    <| atos.SignalSuffix
                    ]}
 
-    let facts : FactCollection = 
+    let facts : FactSet = 
         { FactName = "asset_to_signal"
           Arity = 4
           Signature = "asset_to_signal(os_name, asset_name, signal_name, suffix)."
           Clauses = source |> List.map makeClause } 
     
     let pmodule : Module = 
+        let db = [facts]
         { ModuleName = "rts_asset_to_signal"
           GlobalComment = "rts_asset_to_signal.pl"
-          Exports = List.map factSignature [facts]
-          FactCols = [facts] }
+          Exports = List.map factSignature db
+          Database = db }
 
     pmodule.Save(outFile)
 
@@ -205,17 +208,18 @@ let genPumpFacts (pumpPoints:StemPoints) : unit =
                    ; PList          <| List.map PQuotedAtom pointCodes
                    ] }
 
-    let facts : FactCollection = 
+    let facts : FactSet = 
         { FactName = "rts_pump"
           Arity = 3
           Signature = "rts_pump(osname, pump_name, point_codes)."
           Clauses = pumps |> List.map makeClause } 
     
     let pmodule : Module = 
+        let db = [facts]
         { ModuleName = "rts_pump_facts"
           GlobalComment = "rts_pump_facts.pl"
-          Exports = List.map factSignature [facts]
-          FactCols = [facts] }
+          Exports = List.map factSignature db
+          Database = db }
 
     pmodule.Save(outFile)
 
@@ -242,17 +246,18 @@ let genScreenFacts (screenPoints:StemPoints) : unit =
                    ; PQuotedAtom    <| getPointName qualName
                    ; PList          <| List.map PQuotedAtom pointCodes] }
 
-    let facts : FactCollection = 
+    let facts : FactSet = 
         { FactName = "rts_screen"
           Arity = 3
           Signature = "rts_screen(os_name, screen_name, point_codes)."
           Clauses = screens |> List.map makeClause } 
     
     let pmodule : Module = 
+        let db = [facts]
         { ModuleName = "rts_screen_facts"
           GlobalComment = "rts_screen_facts.pl"
-          Exports = List.map factSignature [facts]
-          FactCols = [facts] }
+          Exports = List.map factSignature db
+          Database = db }
 
     pmodule.Save(outFile)
 
@@ -280,17 +285,18 @@ let genOutstationFacts (allRows:PointsRow list) : unit =
           Values = [ PQuotedAtom name ] }
 
           
-    let facts : FactCollection = 
+    let facts : FactSet = 
         { FactName = "rts_outstation"
           Arity = 1
           Signature = "rts_outstation(os_name)."
           Clauses = getOutstations allRows |> List.map makeClause } 
 
     let pmodule : Module = 
+        let db = [facts]
         { ModuleName = "rts_outstations"
           GlobalComment = "rts_outstations.pl"
-          Exports = List.map factSignature [facts]
-          FactCols = [facts] }
+          Exports = List.map factSignature db
+          Database = db }
 
     pmodule.Save(outFile)
 

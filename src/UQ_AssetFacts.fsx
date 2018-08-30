@@ -57,17 +57,18 @@ let genUltrasonicInsts (allRows:AssetRow list) : unit =
     let ultrasonics = 
         List.filter (fun (row:AssetRow) -> isLevelControlAdb row.``Common Name``) allRows
 
-    let facts : FactCollection = 
+    let facts : FactSet = 
         { FactName = "adb_ultrasonic_inst"
           Arity = 4
           Signature = "adb_ultrasonic_inst(uid, site_name, path, op_status)."
           Clauses = ultrasonics |> List.map (equipmentClause "adb_ultrasonic_inst") } 
     
     let pmodule : Module = 
+        let db = [facts]
         { ModuleName = "adb_ultrasonic_insts"
           GlobalComment = "adb_ultrasonic_insts.pl"
-          Exports = List.map factSignature [facts]
-          FactCols = [facts] }
+          Exports = List.map factSignature db
+          Database = db }
 
     pmodule.Save(outFile)
 
@@ -78,17 +79,18 @@ let genFlowMeters (allRows:AssetRow list) : unit =
     let flowMeters = 
         List.filter (fun (row:AssetRow) -> isFlowMeterAdb row.``Common Name``) allRows
 
-    let facts : FactCollection = 
+    let facts : FactSet = 
         { FactName = "adb_flow_meter"
           Arity = 4
           Signature = "adb_flow_meter(uid, site_name, path, op_status)."
           Clauses = flowMeters |> List.map (equipmentClause "adb_flow_meter") } 
     
     let pmodule : Module = 
+        let db = [facts]
         { ModuleName = "adb_flow_meters"
           GlobalComment = "adb_flow_meters.pl"
-          Exports = List.map factSignature [facts]          
-          FactCols = [facts] }
+          Exports = List.map factSignature db          
+          Database = db }
 
     pmodule.Save(outFile)
 
@@ -98,17 +100,18 @@ let genPressureInsts (allRows:AssetRow list) : unit =
     let doInsts = 
         List.filter (fun (row:AssetRow) -> isPressureInstAdb row.``Common Name``) allRows
 
-    let facts : FactCollection = 
+    let facts : FactSet = 
         { FactName = "adb_pressure_inst"
           Arity = 4
           Signature = "adb_pressure_inst(uid, site_name, path, op_status)."
           Clauses = doInsts |> List.map (equipmentClause "adb_pressure_inst") } 
     
     let pmodule : Module = 
+        let db = [facts]
         { ModuleName = "adb_pressure_insts"
           GlobalComment = "adb_pressure_insts.pl"
-          Exports = List.map factSignature [facts]
-          FactCols = [facts] }
+          Exports = List.map factSignature db
+          Database = db}
 
     pmodule.Save(outFile)
 
@@ -118,17 +121,18 @@ let genDissolvedOxygenInsts (allRows:AssetRow list) : unit =
     let doInsts = 
         List.filter (fun (row:AssetRow) -> isDissolvedOxygenInstAdb row.``Common Name``) allRows
 
-    let facts : FactCollection = 
+    let facts : FactSet = 
         { FactName = "adb_dissolved_oxygen_inst"
           Arity = 4
           Signature = "adb_dissolved_oxygen_inst(uid, site_name, path, op_status)."
           Clauses = doInsts |> List.map (equipmentClause "adb_dissolved_oxygen_inst") } 
     
     let pmodule : Module = 
+        let db = [facts]
         { ModuleName = "adb_dissolved_oxygen_insts"
           GlobalComment = "adb_dissolved_oxygen_insts.pl"          
-          Exports = List.map factSignature [facts]
-          FactCols = [facts] }
+          Exports = List.map factSignature db
+          Database = db }
 
     pmodule.Save(outFile)
 
@@ -153,17 +157,18 @@ let genInstallationFacts (allRows:AssetRow list) : unit =
           Values = [ PQuotedAtom name ] }
 
           
-    let facts : FactCollection = 
+    let facts : FactSet = 
         { FactName = "adb_installation"
           Arity = 1
           Signature = "adb_installation(installation_name)."
           Clauses = getInstallations allRows |> List.map makeClause } 
 
     let pmodule : Module = 
+        let db = [facts]
         { ModuleName = "adb_installations"
           GlobalComment = "adb_installations.pl"
-          Exports = List.map factSignature [facts]
-          FactCols = [facts] }
+          Exports = List.map factSignature db
+          Database = db }
 
     pmodule.Save(outFile)
 

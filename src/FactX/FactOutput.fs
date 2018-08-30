@@ -12,6 +12,7 @@ open FactX.Internal.FormatCombinators
 [<AutoOpen>]
 module FactOutput = 
 
+    type Identifier = string
 
     /// Note - Sequences/tuples not represented (should they be?)
     type Value = 
@@ -29,14 +30,14 @@ module FactOutput =
             | PList vs -> prologList (List.map (fun (x:Value) -> x.Format) vs)
 
     type Clause = 
-        { FactName: string
+        { FactName: Identifier
           Values : Value list }
         member v.Format = 
             prologFact (simpleAtom v.FactName) 
                         (List.map (fun (x:Value) -> x.Format) v.Values)
 
-    type FactCollection = 
-        { FactName: string 
+    type FactSet = 
+        { FactName: Identifier 
           Arity: int
           Signature: string
           Clauses: Clause list }
@@ -47,14 +48,14 @@ module FactOutput =
 
 
     type Module = 
-        { ModuleName: string
+        { ModuleName: Identifier
           GlobalComment: string
-          Exports: (string * int ) list
-          FactCols: FactCollection list }
+          Exports: (Identifier * int) list
+          Database: FactSet list }
         member v.Format = 
             let d1 = prologComment v.GlobalComment
             let d2 = moduleDirective v.ModuleName v.Exports
-            let ds = List.map (fun (col:FactCollection) -> col.Format) v.FactCols
+            let ds = List.map (fun (col:FactSet) -> col.Format) v.Database
             vcat <| (d1 :: empty :: d2 :: empty :: ds)
 
         member v.SaveToString () : string = 
@@ -64,5 +65,5 @@ module FactOutput =
             sw.Write (render v.Format)
 
     /// get the export signature for a Fact
-    let factSignature (fc:FactCollection) : string * int = 
+    let factSignature (fc:FactSet) : Identifier * int = 
         fc.FactName, fc.Arity

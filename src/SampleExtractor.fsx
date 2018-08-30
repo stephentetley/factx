@@ -42,17 +42,18 @@ let genAddresses () =
         { FactName = "address"  
           Values = [ PQuotedAtom row.InstReference; PString row.``Full Address``] }
 
-    let facts : FactCollection = 
+    let addresses : FactSet = 
         { FactName = "address"
           Arity = 2
           Signature = "address(refnum, addr)."
           Clauses = readInstallations () |> List.map makeClause } 
 
     let pmodule : Module = 
+        let db = [addresses] 
         { ModuleName = "addresses"
           GlobalComment = "addresses.pl"
-          Exports = List.map factSignature [facts]
-          FactCols = [facts] }
+          Exports = List.map factSignature db
+          Database = db }
 
     pmodule.Save(outFile)
 
@@ -63,17 +64,18 @@ let genAssetNames () =
         { FactName = "asset_name"
           Values = [PQuotedAtom row.InstReference; PString row.InstCommonName ] }
 
-    let facts : FactCollection = 
+    let assetNames : FactSet = 
         { FactName = "asset_name"
           Arity = 2
           Signature = "asset_name(refnum, name)."
           Clauses = readInstallations () |> List.map makeClause } 
 
     let pmodule : Module= 
+        let db = [assetNames]
         { ModuleName = "asset_names"
           GlobalComment = "asset_names.pl"
-          Exports = List.map factSignature [facts]
-          FactCols = [facts] }
+          Exports = List.map factSignature db
+          Database = db }
     
     pmodule.Save(outFile)
     

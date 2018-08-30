@@ -45,7 +45,7 @@ let clauseSiteName (row:SaiRow) : Clause =
        Values = [ PQuotedAtom row.InstReference
                 ; PString row.InstCommonName ]}
 
-let siteNames (rows:SaiRow list) : FactCollection = 
+let siteNames (rows:SaiRow list) : FactSet = 
     { FactName = "site_name"
       Arity = 2
       Signature = "site_name(uid, common_name)."
@@ -57,7 +57,7 @@ let clauseAssetType (row:SaiRow) : Clause =
        Values = [ PQuotedAtom row.InstReference
                 ; PQuotedAtom row.AssetType ] }
 
-let assetTypes (rows:SaiRow list) : FactCollection = 
+let assetTypes (rows:SaiRow list) : FactSet = 
     { FactName = "asset_type"
       Arity = 2
       Signature = "asset_type(uid, type)."
@@ -68,7 +68,7 @@ let clauseAssetStatus (row:SaiRow) : Clause =
        Values = [ PQuotedAtom row.InstReference
                 ; PQuotedAtom row.AssetStatus ]}
                 
-let assetStatus (rows:SaiRow list) : FactCollection = 
+let assetStatus (rows:SaiRow list) : FactSet = 
     { FactName = "asset_status"
       Arity = 2
       Signature = "asset_status(uid, status)."
@@ -79,11 +79,11 @@ let genSiteFacts (rows:SaiRow list) : unit =
 
     
     let pmodule : Module = 
-        let facts = [ siteNames rows; assetTypes rows; assetStatus rows ]
+        let db = [ siteNames rows; assetTypes rows; assetStatus rows ]
         { ModuleName = "sai_facts"
           GlobalComment = "sai_facts.pl"
-          Exports = List.map factSignature facts
-          FactCols = facts }
+          Exports = List.map factSignature db
+          Database = db }
 
     pmodule.Save(outFile)
 
@@ -109,7 +109,7 @@ let clauseOsName (row:OutstationRow) : Clause =
       Values = [ PQuotedAtom row.``OD name``
                ; PQuotedAtom row.``OS name`` ]}
 
-let osNames (rows:OutstationRow list) : FactCollection = 
+let osNames (rows:OutstationRow list) : FactSet = 
     { FactName = "os_name"
       Arity = 2
       Signature = "os_name(od_name, od_name)."
@@ -120,7 +120,7 @@ let clauseOsType (row:OutstationRow) : Clause =
       Values = [ PQuotedAtom    row.``OD name``
                ; PQuotedAtom    row.``OS type`` ]}
 
-let osTypes (rows:OutstationRow list) : FactCollection = 
+let osTypes (rows:OutstationRow list) : FactSet = 
     { FactName = "os_type"
       Arity = 2
       Signature = "os_type(od_name, os_type)."
@@ -132,7 +132,7 @@ let clauseOdComment (row:OutstationRow) : Clause =
                ; PString  row.``OD comment`` ]}
 
 
-let odComments (rows:OutstationRow list) : FactCollection = 
+let odComments (rows:OutstationRow list) : FactSet = 
     { FactName = "od_comment"
       Arity = 2
       Signature = "od_comment(od_name,od_comment)."
@@ -143,11 +143,11 @@ let genOsFacts (rows:OutstationRow list) : unit =
     let outFile = outputFileName "os_facts.pl"
     
     let pmodule : Module = 
-        let facts = [ osNames rows ; osTypes rows ; odComments rows ]
+        let db = [ osNames rows ; osTypes rows ; odComments rows ]
         { ModuleName = "os_facts"
           GlobalComment = "os_facts.pl"
-          Exports = List.map factSignature facts
-          FactCols = facts}
+          Exports = List.map factSignature db
+          Database = db}
 
     pmodule.Save(outFile)
 
