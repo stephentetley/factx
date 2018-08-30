@@ -44,7 +44,7 @@ let genAddresses () =
     let addressHelper = 
         { new IFactHelper<InstallationsRow> with
             member this.FactName = "address"
-            member this.FactSignature = "address(refnum, full_address)."
+            member this.Signature = "address(refnum, full_address)."
             member this.Arity = 2
             member this.ClauseBody row = 
                 [ PQuotedAtom    row.InstReference
@@ -68,7 +68,7 @@ let genAssetNames () =
     let namesHelper = 
         { new IFactHelper<InstallationsRow> with
             member this.FactName = "asset_name"
-            member this.FactSignature = "asset_name(refnum, name)."
+            member this.Signature = "asset_name(refnum, name)."
             member this.Arity = 2
             member this.ClauseBody row = 
                 [ PQuotedAtom    row.InstReference

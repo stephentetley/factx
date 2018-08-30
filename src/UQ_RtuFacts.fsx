@@ -50,16 +50,18 @@ let readMimicRows () : MimicRow list =
 let genMimicNameFacts (rows:MimicRow list) : unit = 
     let outFile = outputFile "rts_mimic_names.pl"
 
-    let makeClause (row:MimicRow) : Clause = 
-        { FactName = "rts_mimic_name"
-          Values = [PQuotedAtom row.``Mimic ID``; PString row.Name ] }
+    let mimicNameHelper : IFactHelper<MimicRow> = 
+        { new IFactHelper<MimicRow> with
+            member this.FactName = "rts_mimic_name"
+            member this.Signature = "rts_mimic_name(mimic_id, mimic_name)."
+            member this.Arity = 2
+            member this.ClauseBody row = 
+                [ PQuotedAtom   row.``Mimic ID``
+                ; PString       row.Name ]
+        }
 
     let facts : FactSet = 
-        { FactName = "rts_mimic_name"
-          Arity = 2
-          Signature = "rts_mimic_name(mimic_id, mimic_name)."
-          Comment = ""
-          Clauses = readMimicRows () |> List.map makeClause } 
+        readMimicRows () |> makeFactSet mimicNameHelper
     
     let pmodule : Module = 
         let db = [facts]
@@ -92,19 +94,19 @@ let readPoints (sourcePath:string) : PointsRow list =
 let genMimicPoints (rows:PointsRow list) : unit = 
     let outFile = outputFile "rts_mimic_points.pl"
 
-    let makeClause (row:PointsRow) : Clause = 
-        { FactName = "rts_mimic_point"  
-          Values = [ PQuotedAtom (row.``Ctrl pic  Alarm pic``)
-                   ; PQuotedAtom (getOsName row.``OS\Point name``)
-                   ; PQuotedAtom (getPointName row.``OS\Point name``)
-                   ] }
+    let mimicPointHelper : IFactHelper<PointsRow> = 
+        { new IFactHelper<PointsRow> with
+            member this.FactName = "rts_mimic_point"
+            member this.Signature = "rts_mimic_point(picture, os_name, point_name)."
+            member this.Arity = 3
+            member this.ClauseBody row = 
+                [ PQuotedAtom (row.``Ctrl pic  Alarm pic``)
+                ; PQuotedAtom (getOsName row.``OS\Point name``)
+                ; PQuotedAtom (getPointName row.``OS\Point name``) ]
+        }
 
     let facts : FactSet = 
-        { FactName = "rts_mimic_point"
-          Arity = 2
-          Signature = "rts_mimic_point(picture, os_name, point_name)."
-          Comment = ""
-          Clauses = rows |> List.map makeClause } 
+        rows |> makeFactSet mimicPointHelper
 
     let pmodule : Module = 
         let db = [facts]
@@ -148,26 +150,26 @@ let getAssetToSignals (rows:PointsRow list) : AssetToSignal list =
 let genAssetToSignals (source:AssetToSignal list) : unit = 
     let outFile = outputFile "rts_asset_to_signal.pl"
 
-    let makeClause (atos:AssetToSignal) : Clause = 
-        { FactName = "asset_to_signal"  
-          Values = [ PQuotedAtom    <| atos.OsName
-                   ; PQuotedAtom    <| atos.AssetName
-                   ; PQuotedAtom    <| atos.PointName
-                   ; PQuotedAtom    <| atos.SignalSuffix
-                   ]}
+    let assetSignalHelper : IFactHelper<AssetToSignal> = 
+        { new IFactHelper<AssetToSignal> with
+            member this.FactName = "asset_to_signal"
+            member this.Signature = "asset_to_signal(os_name, asset_name, signal_name, suffix)."
+            member this.Arity = 4
+            member this.ClauseBody row = 
+                [ PQuotedAtom    <| row.OsName
+                ; PQuotedAtom    <| row.AssetName
+                ; PQuotedAtom    <| row.PointName
+                ; PQuotedAtom    <| row.SignalSuffix ]
+        }
 
     let facts : FactSet = 
-        { FactName = "asset_to_signal"
-          Arity = 4
-          Signature = "asset_to_signal(os_name, asset_name, signal_name, suffix)."
-          Comment = ""
-          Clauses = source |> List.map makeClause } 
+        source |> makeFactSet assetSignalHelper
     
     let pmodule : Module = 
         let db = [facts]
         { ModuleName = "rts_asset_to_signal"
           GlobalComment = "rts_asset_to_signal.pl"
-          Exports = List.map factSignature db
+          Exports = db |> List.map (fun a -> a.ExportSignature)
           Database = db }
 
     pmodule.Save(outFile)
@@ -204,25 +206,28 @@ let genPumpFacts (pumpPoints:StemPoints) : unit =
     
     let pumps = Map.toList pumpPoints
     
-    let makeClause (qualName:string, pointCodes:string list) : Clause = 
-        { FactName = "rts_pump"  
-          Values = [ PQuotedAtom    <| getOsName qualName
-                   ; PQuotedAtom    <| getPointName qualName
-                   ; PList          <| List.map PQuotedAtom pointCodes
-                   ] }
-
+    let pumpPointsHelper : IFactHelper<string * string list> = 
+        { new IFactHelper<string * string list> with
+            member this.FactName = "rts_pump"
+            member this.Signature = "rts_pump(osname, pump_name, point_codes)."
+            member this.Arity = 3
+            member this.ClauseBody arg = 
+                match arg with
+                | (qualName, pointCodes) -> 
+                    [ PQuotedAtom    <| getOsName qualName
+                    ; PQuotedAtom    <| getPointName qualName
+                    ; PList          <| List.map PQuotedAtom pointCodes
+                    ]
+        }
+        
     let facts : FactSet = 
-        { FactName = "rts_pump"
-          Arity = 3
-          Signature = "rts_pump(osname, pump_name, point_codes)."
-          Comment = ""
-          Clauses = pumps |> List.map makeClause } 
+        pumps |> makeFactSet pumpPointsHelper
     
     let pmodule : Module = 
         let db = [facts]
         { ModuleName = "rts_pump_facts"
           GlobalComment = "rts_pump_facts.pl"
-          Exports = List.map factSignature db
+          Exports = db |> List.map (fun a -> a.ExportSignature)
           Database = db }
 
     pmodule.Save(outFile)
@@ -244,24 +249,29 @@ let genScreenFacts (screenPoints:StemPoints) : unit =
 
     let screens = Map.toList screenPoints
 
-    let makeClause (qualName:string, pointCodes:string list) : Clause = 
-        { FactName = "rts_screen"  
-          Values = [ PQuotedAtom    <| getOsName qualName
-                   ; PQuotedAtom    <| getPointName qualName
-                   ; PList          <| List.map PQuotedAtom pointCodes] }
+    let screenPointsHelper : IFactHelper<string * string list> = 
+        { new IFactHelper<string * string list> with
+            member this.FactName = "rts_screen"
+            member this.Signature = "rts_screen(os_name, screen_name, point_codes)."
+            member this.Arity = 3
+            member this.ClauseBody arg = 
+                match arg with
+                | (qualName, pointCodes) -> 
+                    [ PQuotedAtom    <| getOsName qualName
+                    ; PQuotedAtom    <| getPointName qualName
+                    ; PList          <| List.map PQuotedAtom pointCodes
+                    ]
+        }
+
 
     let facts : FactSet = 
-        { FactName = "rts_screen"
-          Arity = 3
-          Signature = "rts_screen(os_name, screen_name, point_codes)."
-          Comment = ""
-          Clauses = screens |> List.map makeClause } 
+        screens |> makeFactSet screenPointsHelper
     
     let pmodule : Module = 
         let db = [facts]
         { ModuleName = "rts_screen_facts"
           GlobalComment = "rts_screen_facts.pl"
-          Exports = List.map factSignature db
+          Exports = db |> List.map (fun a -> a.ExportSignature)
           Database = db }
 
     pmodule.Save(outFile)
@@ -285,23 +295,23 @@ let getOutstations (rows:PointsRow list) : string list =
 let genOutstationFacts (allRows:PointsRow list) : unit = 
     let outFile = outputFile "rts_outstations.pl"
 
-    let makeClause (name:string) : Clause = 
-        { FactName = "rts_outstation"  
-          Values = [ PQuotedAtom name ] }
-
-          
+    let outstationHelper : IFactHelper<string> = 
+        { new IFactHelper<string> with
+            member this.FactName = "rts_outstation"
+            member this.Signature = "rts_outstation(os_name)."
+            member this.Arity = 1
+            member this.ClauseBody row = 
+                [ PQuotedAtom row ]
+        }
+        
     let facts : FactSet = 
-        { FactName = "rts_outstation"
-          Arity = 1
-          Signature = "rts_outstation(os_name)."
-          Comment = ""
-          Clauses = getOutstations allRows |> List.map makeClause } 
+        getOutstations allRows |> makeFactSet outstationHelper
 
     let pmodule : Module = 
         let db = [facts]
         { ModuleName = "rts_outstations"
           GlobalComment = "rts_outstations.pl"
-          Exports = List.map factSignature db
+          Exports = db |> List.map (fun a -> a.ExportSignature)
           Database = db }
 
     pmodule.Save(outFile)

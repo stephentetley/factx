@@ -39,50 +39,48 @@ let outputFileName (filename:string) : string =
     System.IO.Path.Combine(@"G:\work\common_data\prolog", filename) 
 
 
-
-let clauseSiteName (row:SaiRow) : Clause = 
-     { FactName = "site_name"
-       Values = [ PQuotedAtom row.InstReference
-                ; PString row.InstCommonName ]}
-
-let siteNames (rows:SaiRow list) : FactSet = 
-    { FactName = "site_name"
-      Arity = 2
-      Signature = "site_name(uid, common_name)."
-      Comment = ""
-      Clauses = List.map clauseSiteName rows } 
+let siteNameHelper : IFactHelper<SaiRow> = 
+    { new IFactHelper<SaiRow> with 
+        member this.FactName = "site_name"
+        member this.Signature = "site_name(uid, common_name)."
+        member this.Arity = 2
+        member this.ClauseBody row = 
+            [ PQuotedAtom   row.InstReference
+            ; PString       row.InstCommonName ]
+    }
 
 
-let clauseAssetType (row:SaiRow) : Clause = 
-     { FactName = "asset_type"
-       Values = [ PQuotedAtom row.InstReference
-                ; PQuotedAtom row.AssetType ] }
+let assetTypeHelper : IFactHelper<SaiRow> = 
+    { new IFactHelper<SaiRow> with 
+        member this.FactName = "asset_type"
+        member this.Signature = "asset_type(uid, type)."
+        member this.Arity = 2
+        member this.ClauseBody row = 
+            [ PQuotedAtom   row.InstReference
+            ; PQuotedAtom   row.AssetType ]
+    }
 
-let assetTypes (rows:SaiRow list) : FactSet = 
-    { FactName = "asset_type"
-      Arity = 2
-      Signature = "asset_type(uid, type)."
-      Comment = ""
-      Clauses = List.map clauseAssetType rows } 
+let assetStatusHelper : IFactHelper<SaiRow> = 
+    { new IFactHelper<SaiRow> with 
+        member this.FactName = "asset_status"
+        member this.Signature = "asset_status(uid, status)."
+        member this.Arity = 2
+        member this.ClauseBody row = 
+            [ PQuotedAtom row.InstReference
+            ; PQuotedAtom row.AssetStatus ]
+    }
 
-let clauseAssetStatus (row:SaiRow) : Clause = 
-     { FactName = "asset_status"
-       Values = [ PQuotedAtom row.InstReference
-                ; PQuotedAtom row.AssetStatus ]}
-                
-let assetStatus (rows:SaiRow list) : FactSet = 
-    { FactName = "asset_status"
-      Arity = 2
-      Signature = "asset_status(uid, status)."
-      Comment = ""
-      Clauses = List.map clauseAssetStatus rows } 
+
 
 let genSiteFacts (rows:SaiRow list) : unit = 
     let outFile = outputFileName "sai_facts.pl"
 
-    
+    let siteNames : FactSet     = rows |> makeFactSet siteNameHelper
+    let assetTypes : FactSet    = rows |> makeFactSet assetTypeHelper
+    let assetStatus : FactSet   = rows |> makeFactSet assetStatusHelper
+
     let pmodule : Module = 
-        let db = [ siteNames rows; assetTypes rows; assetStatus rows ]
+        let db = [ siteNames; assetTypes; assetStatus ]
         { ModuleName = "sai_facts"
           GlobalComment = "sai_facts.pl"
           Exports = db |> List.map (fun a -> a.ExportSignature)
@@ -107,49 +105,47 @@ let readOutstationRows () : OutstationRow list =
     (new OustationTable()).Rows |> Seq.toList
 
 
-let clauseOsName (row:OutstationRow) : Clause = 
-    { FactName = "os_name"
-      Values = [ PQuotedAtom row.``OD name``
-               ; PQuotedAtom row.``OS name`` ]}
+let osNameHelper : IFactHelper<OutstationRow> = 
+    { new IFactHelper<OutstationRow> with 
+        member this.FactName = "os_name"
+        member this.Signature = "os_name(od_name, outstation_name)."
+        member this.Arity = 2
+        member this.ClauseBody row = 
+            [ PQuotedAtom    row.``OD name``
+            ; PQuotedAtom    row.``OS name`` ]
+    }
 
-let osNames (rows:OutstationRow list) : FactSet = 
-    { FactName = "os_name"
-      Arity = 2
-      Signature = "os_name(od_name, od_name)."
-      Comment = ""
-      Clauses = List.map clauseOsName rows } 
-
-let clauseOsType (row:OutstationRow) : Clause = 
-    { FactName = "os_type" 
-      Values = [ PQuotedAtom    row.``OD name``
-               ; PQuotedAtom    row.``OS type`` ]}
-
-let osTypes (rows:OutstationRow list) : FactSet = 
-    { FactName = "os_type"
-      Arity = 2
-      Signature = "os_type(od_name, os_type)."
-      Comment = ""
-      Clauses = List.map clauseOsType rows } 
-
-let clauseOdComment (row:OutstationRow) : Clause = 
-    { FactName = "od_comment"
-      Values = [ PQuotedAtom  row.``OD name``
-               ; PString  row.``OD comment`` ]}
+let osTypeHelper : IFactHelper<OutstationRow> = 
+    { new IFactHelper<OutstationRow> with 
+        member this.FactName = "os_type"
+        member this.Signature = "os_type(od_name, os_type)."
+        member this.Arity = 2
+        member this.ClauseBody row = 
+            [ PQuotedAtom    row.``OD name``
+            ; PQuotedAtom    row.``OS type`` ]
+    }
 
 
-let odComments (rows:OutstationRow list) : FactSet = 
-    { FactName = "od_comment"
-      Arity = 2
-      Signature = "od_comment(od_name,od_comment)."
-      Comment = ""
-      Clauses = List.map clauseOdComment rows } 
+let odCommentHelper : IFactHelper<OutstationRow> = 
+    { new IFactHelper<OutstationRow> with 
+        member this.FactName = "od_comment"
+        member this.Signature = "od_comment(od_name, comment)."
+        member this.Arity = 2
+        member this.ClauseBody row = 
+            [ PQuotedAtom   row.``OD name``
+            ; PString       row.``OD comment`` ]
+        }
 
 
 let genOsFacts (rows:OutstationRow list) : unit = 
     let outFile = outputFileName "os_facts.pl"
     
+    let osNames : FactSet   = rows |> makeFactSet osNameHelper
+    let osTypes : FactSet   = rows |> makeFactSet osTypeHelper
+    let comments : FactSet  = rows |> makeFactSet odCommentHelper
+
     let pmodule : Module = 
-        let db = [ osNames rows ; osTypes rows ; odComments rows ]
+        let db = [ osNames ; osTypes; comments ]
         { ModuleName = "os_facts"
           GlobalComment = "os_facts.pl"
           Exports = db |> List.map (fun a -> a.ExportSignature)

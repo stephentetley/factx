@@ -38,7 +38,7 @@ module FactOutput =
 
     type IFactHelper<'a> = 
         abstract FactName : string
-        abstract FactSignature : string
+        abstract Signature : string
         abstract Arity : int
         abstract ClauseBody : 'a -> Value list
 
@@ -62,7 +62,7 @@ module FactOutput =
               Values = helper.ClauseBody item }
         { FactName  = helper.FactName
           Arity     = helper.Arity 
-          Signature = helper.FactSignature 
+          Signature = helper.Signature 
           Comment   = "" 
           Clauses   = Seq.toList items |> List.map makeClause
         }
