@@ -68,7 +68,7 @@ let genUltrasonicInsts (allRows:AssetRow list) : unit =
         let db = [facts]
         { ModuleName = "adb_ultrasonic_insts"
           GlobalComment = "adb_ultrasonic_insts.pl"
-          Exports = List.map factSignature db
+          Exports = db |> List.map (fun a -> a.ExportSignature) 
           Database = db }
 
     pmodule.Save(outFile)
@@ -91,7 +91,7 @@ let genFlowMeters (allRows:AssetRow list) : unit =
         let db = [facts]
         { ModuleName = "adb_flow_meters"
           GlobalComment = "adb_flow_meters.pl"
-          Exports = List.map factSignature db          
+          Exports = db |> List.map (fun a -> a.ExportSignature)          
           Database = db }
 
     pmodule.Save(outFile)
@@ -113,7 +113,7 @@ let genPressureInsts (allRows:AssetRow list) : unit =
         let db = [facts]
         { ModuleName = "adb_pressure_insts"
           GlobalComment = "adb_pressure_insts.pl"
-          Exports = List.map factSignature db
+          Exports = db |> List.map (fun a -> a.ExportSignature) 
           Database = db}
 
     pmodule.Save(outFile)
@@ -132,11 +132,9 @@ let genDissolvedOxygenInsts (allRows:AssetRow list) : unit =
           Clauses = doInsts |> List.map (equipmentClause "adb_dissolved_oxygen_inst") } 
     
     let pmodule : Module = 
-        let db = [facts]
-        { ModuleName = "adb_dissolved_oxygen_insts"
-          GlobalComment = "adb_dissolved_oxygen_insts.pl"          
-          Exports = List.map factSignature db
-          Database = db }
+        let m = makeModule "adb_dissolved_oxygen_insts" "adb_dissolved_oxygen_insts.pl"
+        m.AddFacts(facts)
+
 
     pmodule.Save(outFile)
 
@@ -169,11 +167,8 @@ let genInstallationFacts (allRows:AssetRow list) : unit =
           Clauses = getInstallations allRows |> List.map makeClause } 
 
     let pmodule : Module = 
-        let db = [facts]
-        { ModuleName = "adb_installations"
-          GlobalComment = "adb_installations.pl"
-          Exports = List.map factSignature db
-          Database = db }
+        (makeModule "adb_installations" "adb_installations.pl").AddFacts(facts)
+
 
     pmodule.Save(outFile)
 

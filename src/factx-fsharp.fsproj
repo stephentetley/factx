@@ -61,6 +61,7 @@
     <Compile Include="PropUtils.fs" />
     <None Include="UQ_RtuFacts.fsx" />
     <None Include="UQ_AssetFacts.fsx" />
+    <None Include="Attributes.fsx" />
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

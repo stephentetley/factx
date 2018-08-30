@@ -65,7 +65,7 @@ let genMimicNameFacts (rows:MimicRow list) : unit =
         let db = [facts]
         { ModuleName = "rts_mimic_names"
           GlobalComment = "rts_mimic_names.pl"
-          Exports = List.map factSignature db
+          Exports = db |> List.map (fun a -> a.ExportSignature) 
           Database = db }
     
     pmodule.Save(outFile)
@@ -110,7 +110,7 @@ let genMimicPoints (rows:PointsRow list) : unit =
         let db = [facts]
         { ModuleName = "rts_mimic_points"
           GlobalComment = "rts_mimic_points.pl"
-          Exports = List.map factSignature db
+          Exports = db |> List.map (fun a -> a.ExportSignature) 
           Database = db }
 
     pmodule.Save(outFile)

@@ -12,7 +12,6 @@ open FactX.Internal.FormatCombinators
 [<AutoOpen>]
 module FactOutput = 
 
-
     type Identifier = string
 
     /// Note - Sequences/tuples not represented (should they be?)
@@ -37,6 +36,12 @@ module FactOutput =
             prologFact (simpleAtom v.FactName) 
                         (List.map (fun (x:Value) -> x.Format) v.Values)
 
+    type IFactHelper<'a> = 
+        abstract FactName : string
+        abstract FactSignature : string
+        abstract Arity : int
+        abstract ClauseBody : 'a -> Value list
+
     type FactSet = 
         { FactName: Identifier 
           Arity: int
@@ -48,16 +53,21 @@ module FactOutput =
             let d2 = prologComment v.Comment
             let ds = List.map (fun (clause:Clause) -> clause.Format) v.Clauses
             vcat <| (d1 :: d2 :: ds)
-    
-    //let makeFactSet (signature:string) (clauses: Clause list) : FactSet = 
-    //    { ModuleName = name
-    //      GlobalComment = comment
-    //      Exports = []
-    //      Database = [] }
 
-    /// get the export signature for a Fact
-    let factSignature (fc:FactSet) : Identifier * int = 
-        fc.FactName, fc.Arity
+        member v.ExportSignature = (v.FactName, v.Arity)
+    
+    let makeFactSet (helper:IFactHelper<'a>) (items:seq<'a>) : FactSet = 
+        let makeClause (item:'a) : Clause  = 
+            { FactName = helper.FactName
+              Values = helper.ClauseBody item }
+        { FactName  = helper.FactName
+          Arity     = helper.Arity 
+          Signature = helper.FactSignature 
+          Comment   = "" 
+          Clauses   = Seq.toList items |> List.map makeClause
+        }
+        
+
 
     /// Potentially this should be an object, not a record.
     type Module = 
@@ -79,7 +89,9 @@ module FactOutput =
             sw.Write (render v.Format)
 
         member v.AddFacts(facts:FactSet) = 
-            { v with Exports = (factSignature facts :: v.Exports) ; Database = (facts :: v.Database) }
+            { v with 
+                Exports = (facts.ExportSignature :: v.Exports) ; 
+                Database = (facts :: v.Database) }
 
     let makeModule (name:string) (comment:string) : Module = 
         { ModuleName = name

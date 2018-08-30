@@ -85,7 +85,7 @@ let genSiteFacts (rows:SaiRow list) : unit =
         let db = [ siteNames rows; assetTypes rows; assetStatus rows ]
         { ModuleName = "sai_facts"
           GlobalComment = "sai_facts.pl"
-          Exports = List.map factSignature db
+          Exports = db |> List.map (fun a -> a.ExportSignature)
           Database = db }
 
     pmodule.Save(outFile)
@@ -152,7 +152,7 @@ let genOsFacts (rows:OutstationRow list) : unit =
         let db = [ osNames rows ; osTypes rows ; odComments rows ]
         { ModuleName = "os_facts"
           GlobalComment = "os_facts.pl"
-          Exports = List.map factSignature db
+          Exports = db |> List.map (fun a -> a.ExportSignature)
           Database = db}
 
     pmodule.Save(outFile)

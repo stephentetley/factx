@@ -35,20 +35,23 @@ let makeOutputPath (fileName:string) : string =
     System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..", "data", fileName)
 
 
+
+
 // ** Generate Prolog facts.
 let genAddresses () = 
     let outFile = makeOutputPath "addresses.pl"
+    
+    let addressHelper = 
+        { new IFactHelper<InstallationsRow> with
+            member this.FactName = "address"
+            member this.FactSignature = "address(refnum, full_address)."
+            member this.Arity = 2
+            member this.ClauseBody row = 
+                [ PQuotedAtom    row.InstReference
+                ; PString        row.``Full Address`` ] 
+        } 
 
-    let makeClause (row:InstallationsRow) : Clause = 
-        { FactName = "address"  
-          Values = [ PQuotedAtom row.InstReference; PString row.``Full Address``] }
-
-    let addresses : FactSet = 
-        { FactName = "address"
-          Arity = 2
-          Signature = "address(refnum, addr)."
-          Comment = ""
-          Clauses = readInstallations () |> List.map makeClause } 
+    let addresses : FactSet = readInstallations () |> makeFactSet addressHelper
 
     let pmodule : Module = 
         (makeModule "addresses" "addresses.pl").AddFacts(addresses)
@@ -57,19 +60,22 @@ let genAddresses () =
 
 
     
+
+
 let genAssetNames () = 
     let outFile = makeOutputPath "asset_names.pl"
 
-    let makeClause (row:InstallationsRow) : Clause = 
-        { FactName = "asset_name"
-          Values = [PQuotedAtom row.InstReference; PString row.InstCommonName ] }
+    let namesHelper = 
+        { new IFactHelper<InstallationsRow> with
+            member this.FactName = "asset_name"
+            member this.FactSignature = "asset_name(refnum, name)."
+            member this.Arity = 2
+            member this.ClauseBody row = 
+                [ PQuotedAtom    row.InstReference
+                ; PString        row.InstCommonName ] 
+        }
 
-    let assetNames : FactSet = 
-        { FactName = "asset_name"
-          Arity = 2
-          Signature = "asset_name(refnum, name)."
-          Comment = ""
-          Clauses = readInstallations () |> List.map makeClause } 
+    let assetNames : FactSet = readInstallations () |> makeFactSet namesHelper
 
     let pmodule : Module= 
         (makeModule "asset_names" "asset_names.pl").AddFacts(assetNames)
