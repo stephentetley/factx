@@ -61,6 +61,7 @@ let genUltrasonicInsts (allRows:AssetRow list) : unit =
         { FactName = "adb_ultrasonic_inst"
           Arity = 4
           Signature = "adb_ultrasonic_inst(uid, site_name, path, op_status)."
+          Comment = ""
           Clauses = ultrasonics |> List.map (equipmentClause "adb_ultrasonic_inst") } 
     
     let pmodule : Module = 
@@ -83,6 +84,7 @@ let genFlowMeters (allRows:AssetRow list) : unit =
         { FactName = "adb_flow_meter"
           Arity = 4
           Signature = "adb_flow_meter(uid, site_name, path, op_status)."
+          Comment = ""
           Clauses = flowMeters |> List.map (equipmentClause "adb_flow_meter") } 
     
     let pmodule : Module = 
@@ -104,6 +106,7 @@ let genPressureInsts (allRows:AssetRow list) : unit =
         { FactName = "adb_pressure_inst"
           Arity = 4
           Signature = "adb_pressure_inst(uid, site_name, path, op_status)."
+          Comment = ""
           Clauses = doInsts |> List.map (equipmentClause "adb_pressure_inst") } 
     
     let pmodule : Module = 
@@ -125,6 +128,7 @@ let genDissolvedOxygenInsts (allRows:AssetRow list) : unit =
         { FactName = "adb_dissolved_oxygen_inst"
           Arity = 4
           Signature = "adb_dissolved_oxygen_inst(uid, site_name, path, op_status)."
+          Comment = ""
           Clauses = doInsts |> List.map (equipmentClause "adb_dissolved_oxygen_inst") } 
     
     let pmodule : Module = 
@@ -161,6 +165,7 @@ let genInstallationFacts (allRows:AssetRow list) : unit =
         { FactName = "adb_installation"
           Arity = 1
           Signature = "adb_installation(installation_name)."
+          Comment = ""
           Clauses = getInstallations allRows |> List.map makeClause } 
 
     let pmodule : Module = 

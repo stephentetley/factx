@@ -49,6 +49,7 @@ let siteNames (rows:SaiRow list) : FactSet =
     { FactName = "site_name"
       Arity = 2
       Signature = "site_name(uid, common_name)."
+      Comment = ""
       Clauses = List.map clauseSiteName rows } 
 
 
@@ -61,6 +62,7 @@ let assetTypes (rows:SaiRow list) : FactSet =
     { FactName = "asset_type"
       Arity = 2
       Signature = "asset_type(uid, type)."
+      Comment = ""
       Clauses = List.map clauseAssetType rows } 
 
 let clauseAssetStatus (row:SaiRow) : Clause = 
@@ -72,6 +74,7 @@ let assetStatus (rows:SaiRow list) : FactSet =
     { FactName = "asset_status"
       Arity = 2
       Signature = "asset_status(uid, status)."
+      Comment = ""
       Clauses = List.map clauseAssetStatus rows } 
 
 let genSiteFacts (rows:SaiRow list) : unit = 
@@ -113,6 +116,7 @@ let osNames (rows:OutstationRow list) : FactSet =
     { FactName = "os_name"
       Arity = 2
       Signature = "os_name(od_name, od_name)."
+      Comment = ""
       Clauses = List.map clauseOsName rows } 
 
 let clauseOsType (row:OutstationRow) : Clause = 
@@ -124,6 +128,7 @@ let osTypes (rows:OutstationRow list) : FactSet =
     { FactName = "os_type"
       Arity = 2
       Signature = "os_type(od_name, os_type)."
+      Comment = ""
       Clauses = List.map clauseOsType rows } 
 
 let clauseOdComment (row:OutstationRow) : Clause = 
@@ -136,6 +141,7 @@ let odComments (rows:OutstationRow list) : FactSet =
     { FactName = "od_comment"
       Arity = 2
       Signature = "od_comment(od_name,od_comment)."
+      Comment = ""
       Clauses = List.map clauseOdComment rows } 
 
 

@@ -58,6 +58,7 @@ let genMimicNameFacts (rows:MimicRow list) : unit =
         { FactName = "rts_mimic_name"
           Arity = 2
           Signature = "rts_mimic_name(mimic_id, mimic_name)."
+          Comment = ""
           Clauses = readMimicRows () |> List.map makeClause } 
     
     let pmodule : Module = 
@@ -102,6 +103,7 @@ let genMimicPoints (rows:PointsRow list) : unit =
         { FactName = "rts_mimic_point"
           Arity = 2
           Signature = "rts_mimic_point(picture, os_name, point_name)."
+          Comment = ""
           Clauses = rows |> List.map makeClause } 
 
     let pmodule : Module = 
@@ -158,6 +160,7 @@ let genAssetToSignals (source:AssetToSignal list) : unit =
         { FactName = "asset_to_signal"
           Arity = 4
           Signature = "asset_to_signal(os_name, asset_name, signal_name, suffix)."
+          Comment = ""
           Clauses = source |> List.map makeClause } 
     
     let pmodule : Module = 
@@ -212,6 +215,7 @@ let genPumpFacts (pumpPoints:StemPoints) : unit =
         { FactName = "rts_pump"
           Arity = 3
           Signature = "rts_pump(osname, pump_name, point_codes)."
+          Comment = ""
           Clauses = pumps |> List.map makeClause } 
     
     let pmodule : Module = 
@@ -250,6 +254,7 @@ let genScreenFacts (screenPoints:StemPoints) : unit =
         { FactName = "rts_screen"
           Arity = 3
           Signature = "rts_screen(os_name, screen_name, point_codes)."
+          Comment = ""
           Clauses = screens |> List.map makeClause } 
     
     let pmodule : Module = 
@@ -289,6 +294,7 @@ let genOutstationFacts (allRows:PointsRow list) : unit =
         { FactName = "rts_outstation"
           Arity = 1
           Signature = "rts_outstation(os_name)."
+          Comment = ""
           Clauses = getOutstations allRows |> List.map makeClause } 
 
     let pmodule : Module = 

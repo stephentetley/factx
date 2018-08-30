@@ -34,6 +34,7 @@ let readInstallations () : InstallationsRow list =
 let makeOutputPath (fileName:string) : string = 
     System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..", "data", fileName)
 
+
 // ** Generate Prolog facts.
 let genAddresses () = 
     let outFile = makeOutputPath "addresses.pl"
@@ -46,17 +47,16 @@ let genAddresses () =
         { FactName = "address"
           Arity = 2
           Signature = "address(refnum, addr)."
+          Comment = ""
           Clauses = readInstallations () |> List.map makeClause } 
 
     let pmodule : Module = 
-        let db = [addresses] 
-        { ModuleName = "addresses"
-          GlobalComment = "addresses.pl"
-          Exports = List.map factSignature db
-          Database = db }
+        (makeModule "addresses" "addresses.pl").AddFacts(addresses)
 
     pmodule.Save(outFile)
 
+
+    
 let genAssetNames () = 
     let outFile = makeOutputPath "asset_names.pl"
 
@@ -68,14 +68,12 @@ let genAssetNames () =
         { FactName = "asset_name"
           Arity = 2
           Signature = "asset_name(refnum, name)."
+          Comment = ""
           Clauses = readInstallations () |> List.map makeClause } 
 
     let pmodule : Module= 
-        let db = [assetNames]
-        { ModuleName = "asset_names"
-          GlobalComment = "asset_names.pl"
-          Exports = List.map factSignature db
-          Database = db }
+        (makeModule "asset_names" "asset_names.pl").AddFacts(assetNames)
+
     
     pmodule.Save(outFile)
     

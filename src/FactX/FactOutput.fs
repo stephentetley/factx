@@ -12,6 +12,7 @@ open FactX.Internal.FormatCombinators
 [<AutoOpen>]
 module FactOutput = 
 
+
     type Identifier = string
 
     /// Note - Sequences/tuples not represented (should they be?)
@@ -40,13 +41,25 @@ module FactOutput =
         { FactName: Identifier 
           Arity: int
           Signature: string
+          Comment: string
           Clauses: Clause list }
         member v.Format = 
             let d1 = prologComment v.Signature
+            let d2 = prologComment v.Comment
             let ds = List.map (fun (clause:Clause) -> clause.Format) v.Clauses
-            vcat <| (d1 :: ds)
+            vcat <| (d1 :: d2 :: ds)
+    
+    //let makeFactSet (signature:string) (clauses: Clause list) : FactSet = 
+    //    { ModuleName = name
+    //      GlobalComment = comment
+    //      Exports = []
+    //      Database = [] }
 
+    /// get the export signature for a Fact
+    let factSignature (fc:FactSet) : Identifier * int = 
+        fc.FactName, fc.Arity
 
+    /// Potentially this should be an object, not a record.
     type Module = 
         { ModuleName: Identifier
           GlobalComment: string
@@ -60,10 +73,16 @@ module FactOutput =
 
         member v.SaveToString () : string = 
             render v.Format
+        
         member v.Save(filePath:string) = 
             use sw = new System.IO.StreamWriter(filePath)
             sw.Write (render v.Format)
 
-    /// get the export signature for a Fact
-    let factSignature (fc:FactSet) : Identifier * int = 
-        fc.FactName, fc.Arity
+        member v.AddFacts(facts:FactSet) = 
+            { v with Exports = (factSignature facts :: v.Exports) ; Database = (facts :: v.Database) }
+
+    let makeModule (name:string) (comment:string) : Module = 
+        { ModuleName = name
+          GlobalComment = comment
+          Exports = []
+          Database = [] }
