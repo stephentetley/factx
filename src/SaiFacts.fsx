@@ -80,11 +80,8 @@ let genSiteFacts (rows:SaiRow list) : unit =
     let assetStatus : FactSet   = rows |> makeFactSet assetStatusHelper
 
     let pmodule : Module = 
-        let db = [ siteNames; assetTypes; assetStatus ]
-        { ModuleName = "sai_facts"
-          GlobalComment = "sai_facts.pl"
-          Exports = db |> List.map (fun a -> a.ExportSignature)
-          Database = db }
+        makeModule "sai_facts" "sai_facts.pl" [ siteNames; assetTypes; assetStatus ]
+
 
     pmodule.Save(outFile)
 

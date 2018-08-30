@@ -141,7 +141,7 @@ let hcat (source:Doc list) : Doc = concat (+++) source
 let hsep (source:Doc list) : Doc = concat (+^+) source
     
 let vcat (source:Doc list) : Doc = concat (@@@) source
-
+let vsep (source:Doc list) : Doc = concat (@^@) source
 
 let punctuate (sep:Doc) (source:Doc list) : Doc = 
     let rec work (ac:Doc) (xs:Doc list) : Doc = 

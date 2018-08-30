@@ -79,7 +79,7 @@ module FactOutput =
             let d1 = prologComment v.GlobalComment
             let d2 = moduleDirective v.ModuleName v.Exports
             let ds = List.map (fun (col:FactSet) -> col.Format) v.Database
-            vcat <| (d1 :: empty :: d2 :: empty :: ds)
+            vsep [ d1; d2; vsep ds ]
 
         member v.SaveToString () : string = 
             render v.Format
@@ -93,8 +93,8 @@ module FactOutput =
                 Exports = (facts.ExportSignature :: v.Exports) ; 
                 Database = (facts :: v.Database) }
 
-    let makeModule (name:string) (comment:string) : Module = 
+    let makeModule (name:string) (comment:string) (db:FactSet list) : Module = 
         { ModuleName = name
           GlobalComment = comment
-          Exports = []
-          Database = [] }
+          Exports = db |> List.map (fun a -> a.ExportSignature)
+          Database = db }

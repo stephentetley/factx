@@ -54,7 +54,7 @@ let genAddresses () =
     let addresses : FactSet = readInstallations () |> makeFactSet addressHelper
 
     let pmodule : Module = 
-        (makeModule "addresses" "addresses.pl").AddFacts(addresses)
+        makeModule "addresses" "addresses.pl" [addresses]
 
     pmodule.Save(outFile)
 
@@ -78,9 +78,8 @@ let genAssetNames () =
     let assetNames : FactSet = readInstallations () |> makeFactSet namesHelper
 
     let pmodule : Module= 
-        (makeModule "asset_names" "asset_names.pl").AddFacts(assetNames)
+        makeModule "asset_names" "asset_names.pl" [assetNames]
 
-    
     pmodule.Save(outFile)
     
 

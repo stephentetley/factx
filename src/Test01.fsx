@@ -31,3 +31,6 @@ let test03 () =
     let doc1 = indent 10 (formatString "start")
     testRender doc1
 
+let test04 () = 
+    vsep [formatString "start"; empty; formatString "end" ]
+        |> testRender

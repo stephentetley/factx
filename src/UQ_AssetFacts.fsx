@@ -132,8 +132,7 @@ let genDissolvedOxygenInsts (allRows:AssetRow list) : unit =
           Clauses = doInsts |> List.map (equipmentClause "adb_dissolved_oxygen_inst") } 
     
     let pmodule : Module = 
-        let m = makeModule "adb_dissolved_oxygen_insts" "adb_dissolved_oxygen_insts.pl"
-        m.AddFacts(facts)
+        makeModule "adb_dissolved_oxygen_insts" "adb_dissolved_oxygen_insts.pl" [facts]
 
 
     pmodule.Save(outFile)
@@ -167,7 +166,7 @@ let genInstallationFacts (allRows:AssetRow list) : unit =
           Clauses = getInstallations allRows |> List.map makeClause } 
 
     let pmodule : Module = 
-        (makeModule "adb_installations" "adb_installations.pl").AddFacts(facts)
+        makeModule "adb_installations" "adb_installations.pl" [facts]
 
 
     pmodule.Save(outFile)
