@@ -54,7 +54,7 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="FactX\Internal\FormatCombinators.fs" />
     <Compile Include="FactX\FactOutput.fs" />
-    <Compile Include="FactX\ExcelProviderHelper.fs" />
+    <Compile Include="FactX\Extra\ExcelProviderHelper.fs" />
     <None Include="Test01.fsx" />
     <None Include="SampleExtractor.fsx" />
     <None Include="SaiFacts.fsx" />

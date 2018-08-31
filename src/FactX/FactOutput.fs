@@ -36,6 +36,8 @@ module FactOutput =
             prologFact (simpleAtom v.FactName) 
                         (List.map (fun (x:Value) -> x.Format) v.Values)
 
+    /// Note - if we parsed/validated the signature we could save the user
+    /// having to specify name and arity.
     type IFactHelper<'a> = 
         abstract FactName : string
         abstract Signature : string
