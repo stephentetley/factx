@@ -9,7 +9,8 @@ open System.IO
 open System.Text
 
 open FParsec
-open FParsec.CharParsers
+
+open FactX
 
 [<AutoOpen>]
 module DirectoryListing = 
@@ -237,5 +238,39 @@ module DirectoryListing =
             List.iter (display1 sb) sortedKids
             sb.ToString ()
 
+[<AutoOpen>]
+module DirectoryFacts = 
 
-    
+
+    let fileStore (fs:FileStore) : FactSet = 
+        let helper = 
+            { new IFactHelper<FileStore> with
+                member this.FactName = "file_store"
+                member this.Signature = "file_store(path_to_root)."
+                member this.Arity = 1
+                member this.ClauseBody (x:FileStore) = 
+                    match x with
+                    | FileStore(path,_) -> [ PQuotedAtom path ] 
+            }
+        makeFactSet helper [fs]
+
+
+    let driveLetter (path:FilePath) : string = 
+        let arr = path.Split('\\')
+        if arr.Length > 1 then 
+            arr.[0]
+        else 
+            ""
+
+    let drive (fs:FileStore) : FactSet = 
+        let helper = 
+            { new IFactHelper<FileStore> with
+                member this.FactName = "file_store_drive"
+                member this.Signature = "file_store_drive(path_to_root, drive)."
+                member this.Arity = 2
+                member this.ClauseBody (x:FileStore) = 
+                    match x with
+                    | FileStore(path,_) -> 
+                        [ PQuotedAtom path; PQuotedAtom (driveLetter path) ] 
+            }
+        makeFactSet helper [fs]
