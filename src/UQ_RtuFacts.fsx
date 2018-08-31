@@ -64,11 +64,7 @@ let genMimicNameFacts (rows:MimicRow list) : unit =
         readMimicRows () |> makeFactSet mimicNameHelper
     
     let pmodule : Module = 
-        let db = [facts]
-        { ModuleName = "rts_mimic_names"
-          GlobalComment = "rts_mimic_names.pl"
-          Exports = db |> List.map (fun a -> a.ExportSignature) 
-          Database = db }
+        new Module ("rts_mimic_names", "rts_mimic_names.pl", facts)
     
     pmodule.Save(outFile)
 
@@ -110,10 +106,7 @@ let genMimicPoints (rows:PointsRow list) : unit =
 
     let pmodule : Module = 
         let db = [facts]
-        { ModuleName = "rts_mimic_points"
-          GlobalComment = "rts_mimic_points.pl"
-          Exports = db |> List.map (fun a -> a.ExportSignature) 
-          Database = db }
+        new Module ("rts_mimic_points", "rts_mimic_points.pl", facts) 
 
     pmodule.Save(outFile)
 
@@ -166,11 +159,7 @@ let genAssetToSignals (source:AssetToSignal list) : unit =
         source |> makeFactSet assetSignalHelper
     
     let pmodule : Module = 
-        let db = [facts]
-        { ModuleName = "rts_asset_to_signal"
-          GlobalComment = "rts_asset_to_signal.pl"
-          Exports = db |> List.map (fun a -> a.ExportSignature)
-          Database = db }
+        new Module ("rts_asset_to_signal", "rts_asset_to_signal.pl", facts) 
 
     pmodule.Save(outFile)
 
@@ -224,11 +213,7 @@ let genPumpFacts (pumpPoints:StemPoints) : unit =
         pumps |> makeFactSet pumpPointsHelper
     
     let pmodule : Module = 
-        let db = [facts]
-        { ModuleName = "rts_pump_facts"
-          GlobalComment = "rts_pump_facts.pl"
-          Exports = db |> List.map (fun a -> a.ExportSignature)
-          Database = db }
+        new Module ("rts_pump_facts", "rts_pump_facts.pl", facts) 
 
     pmodule.Save(outFile)
 
@@ -268,11 +253,7 @@ let genScreenFacts (screenPoints:StemPoints) : unit =
         screens |> makeFactSet screenPointsHelper
     
     let pmodule : Module = 
-        let db = [facts]
-        { ModuleName = "rts_screen_facts"
-          GlobalComment = "rts_screen_facts.pl"
-          Exports = db |> List.map (fun a -> a.ExportSignature)
-          Database = db }
+        new Module ("rts_screen_facts", "rts_screen_facts.pl", facts)
 
     pmodule.Save(outFile)
 
@@ -308,11 +289,7 @@ let genOutstationFacts (allRows:PointsRow list) : unit =
         getOutstations allRows |> makeFactSet outstationHelper
 
     let pmodule : Module = 
-        let db = [facts]
-        { ModuleName = "rts_outstations"
-          GlobalComment = "rts_outstations.pl"
-          Exports = db |> List.map (fun a -> a.ExportSignature)
-          Database = db }
+        new Module ("rts_outstations", "rts_outstations.pl", facts) 
 
     pmodule.Save(outFile)
 

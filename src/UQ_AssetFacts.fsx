@@ -41,98 +41,93 @@ let readAssetSpeadsheet (sourcePath:string) : AssetRow list =
     excelReadRowsAsList helper (new AssetTable(sourcePath))
 
 
-
-let equipmentClause (factName:string) (row:AssetRow) : Clause = 
-        { FactName = factName  
-          Values = [ PQuotedAtom    <| row.Reference
-                   ; PQuotedAtom    <| installationNameFromPath row.``Common Name`` 
-                   ; PQuotedAtom    <| row.``Common Name`` 
-                   ; PQuotedAtom    <| row.AssetStatus 
-                   ] }
-
+let equipmentBody (row:AssetRow) : Value list = 
+    [ PQuotedAtom    <| row.Reference
+    ; PQuotedAtom    <| installationNameFromPath row.``Common Name`` 
+    ; PQuotedAtom    <| row.``Common Name`` 
+    ; PQuotedAtom    <| row.AssetStatus 
+    ]
 
 let genUltrasonicInsts (allRows:AssetRow list) : unit = 
     let outFile = outputFile "adb_ultrasonic_insts.pl"
     
+    let helper : IFactHelper<AssetRow> = 
+        { new IFactHelper<AssetRow> with
+            member this.FactName = "adb_ultrasonic_inst"
+            member this.Signature = "adb_ultrasonic_inst(uid, site_name, path, op_status)."
+            member this.Arity = 4
+            member this.ClauseBody row = equipmentBody row }
+              
+    
     let ultrasonics = 
         List.filter (fun (row:AssetRow) -> isLevelControlAdb row.``Common Name``) allRows
 
-    let facts : FactSet = 
-        { FactName = "adb_ultrasonic_inst"
-          Arity = 4
-          Signature = "adb_ultrasonic_inst(uid, site_name, path, op_status)."
-          Comment = ""
-          Clauses = ultrasonics |> List.map (equipmentClause "adb_ultrasonic_inst") } 
-    
+    let facts : FactSet = ultrasonics |> makeFactSet helper
+
     let pmodule : Module = 
-        let db = [facts]
-        { ModuleName = "adb_ultrasonic_insts"
-          GlobalComment = "adb_ultrasonic_insts.pl"
-          Exports = db |> List.map (fun a -> a.ExportSignature) 
-          Database = db }
+        new Module("adb_ultrasonic_insts", "adb_ultrasonic_insts.pl", facts)
 
     pmodule.Save(outFile)
 
 
 let genFlowMeters (allRows:AssetRow list) : unit = 
     let outFile = outputFile "adb_flow_meters.pl"
-    
+
+    let helper : IFactHelper<AssetRow> = 
+        { new IFactHelper<AssetRow> with
+            member this.FactName = "adb_flow_meter"
+            member this.Signature = "adb_flow_meter(uid, site_name, path, op_status)."
+            member this.Arity = 4
+            member this.ClauseBody row = equipmentBody row }
+            
     let flowMeters = 
         List.filter (fun (row:AssetRow) -> isFlowMeterAdb row.``Common Name``) allRows
 
-    let facts : FactSet = 
-        { FactName = "adb_flow_meter"
-          Arity = 4
-          Signature = "adb_flow_meter(uid, site_name, path, op_status)."
-          Comment = ""
-          Clauses = flowMeters |> List.map (equipmentClause "adb_flow_meter") } 
-    
+    let facts : FactSet = flowMeters |> makeFactSet helper
+
     let pmodule : Module = 
-        let db = [facts]
-        { ModuleName = "adb_flow_meters"
-          GlobalComment = "adb_flow_meters.pl"
-          Exports = db |> List.map (fun a -> a.ExportSignature)          
-          Database = db }
+        new Module("adb_flow_meters", "adb_flow_meters.pl", facts)
 
     pmodule.Save(outFile)
 
 let genPressureInsts (allRows:AssetRow list) : unit = 
     let outFile = outputFile "adb_pressure_insts.pl"
-    
-    let doInsts = 
+
+    let helper : IFactHelper<AssetRow> = 
+        { new IFactHelper<AssetRow> with
+            member this.FactName = "adb_pressure_inst"
+            member this.Signature = "adb_pressure_inst(uid, site_name, path, op_status)."
+            member this.Arity = 4
+            member this.ClauseBody row = equipmentBody row }
+            
+    let pressureInsts = 
         List.filter (fun (row:AssetRow) -> isPressureInstAdb row.``Common Name``) allRows
 
-    let facts : FactSet = 
-        { FactName = "adb_pressure_inst"
-          Arity = 4
-          Signature = "adb_pressure_inst(uid, site_name, path, op_status)."
-          Comment = ""
-          Clauses = doInsts |> List.map (equipmentClause "adb_pressure_inst") } 
+    let facts : FactSet = pressureInsts |> makeFactSet helper
     
     let pmodule : Module = 
-        let db = [facts]
-        { ModuleName = "adb_pressure_insts"
-          GlobalComment = "adb_pressure_insts.pl"
-          Exports = db |> List.map (fun a -> a.ExportSignature) 
-          Database = db}
+        new Module ("adb_pressure_insts", "adb_pressure_insts.pl", facts)
 
     pmodule.Save(outFile)
+
 
 let genDissolvedOxygenInsts (allRows:AssetRow list) : unit = 
     let outFile = outputFile "adb_dissolved_oxygen_insts.pl"
     
-    let doInsts = 
+    let helper : IFactHelper<AssetRow> = 
+        { new IFactHelper<AssetRow> with
+            member this.FactName = "adb_dissolved_oxygen_inst"
+            member this.Signature = "adb_dissolved_oxygen_inst(uid, site_name, path, op_status)."
+            member this.Arity = 4
+            member this.ClauseBody row = equipmentBody row }
+            
+    let doxyInsts = 
         List.filter (fun (row:AssetRow) -> isDissolvedOxygenInstAdb row.``Common Name``) allRows
 
-    let facts : FactSet = 
-        { FactName = "adb_dissolved_oxygen_inst"
-          Arity = 4
-          Signature = "adb_dissolved_oxygen_inst(uid, site_name, path, op_status)."
-          Comment = ""
-          Clauses = doInsts |> List.map (equipmentClause "adb_dissolved_oxygen_inst") } 
-    
+    let facts : FactSet = doxyInsts |> makeFactSet helper
+
     let pmodule : Module = 
-        makeModule "adb_dissolved_oxygen_insts" "adb_dissolved_oxygen_insts.pl" [facts]
+        new Module("adb_dissolved_oxygen_insts", "adb_dissolved_oxygen_insts.pl", facts)
 
 
     pmodule.Save(outFile)
@@ -153,21 +148,17 @@ let getInstallations (rows:AssetRow list) : string list =
 let genInstallationFacts (allRows:AssetRow list) : unit = 
     let outFile = outputFile "adb_installations.pl"
 
-    let makeClause (name:string) : Clause = 
-        { FactName = "adb_installation"  
-          Values = [ PQuotedAtom name ] }
-
-          
-    let facts : FactSet = 
-        { FactName = "adb_installation"
-          Arity = 1
-          Signature = "adb_installation(installation_name)."
-          Comment = ""
-          Clauses = getInstallations allRows |> List.map makeClause } 
+    let helper : IFactHelper<string> = 
+        { new IFactHelper<string> with
+            member this.FactName = "adb_installation"
+            member this.Signature = "adb_installation(installation_name)."
+            member this.Arity = 1
+            member this.ClauseBody name = [ PQuotedAtom name ] }
+     
+    let facts : FactSet =  getInstallations allRows |> makeFactSet helper
 
     let pmodule : Module = 
-        makeModule "adb_installations" "adb_installations.pl" [facts]
-
+        new Module("adb_installations", "adb_installations.pl", facts)
 
     pmodule.Save(outFile)
 

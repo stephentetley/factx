@@ -71,10 +71,34 @@ module FactOutput =
 
     /// Potentially this should be an object, not a record.
     type Module = 
-        { ModuleName: Identifier
-          GlobalComment: string
-          Exports: (Identifier * int) list
-          Database: FactSet list }
+        val ModuleName : string
+        val GlobalComment : string
+        val Exports : (Identifier * int) list
+        val Database : FactSet list
+        new (name:string, comment:string, db:FactSet list) = 
+            { ModuleName = name
+            ; GlobalComment = comment
+            ; Exports = db |> List.map (fun a -> a.ExportSignature)
+            ; Database = db }
+
+        new (name:string, db:FactSet list) = 
+            { ModuleName = name
+            ; GlobalComment = sprintf "%s.pl" name
+            ; Exports = db |> List.map (fun a -> a.ExportSignature)
+            ; Database = db }
+
+        new (name:string, comment:string, db:FactSet) = 
+            { ModuleName = name
+            ; GlobalComment = comment
+            ; Exports = [db.ExportSignature]
+            ; Database = [db] }
+        
+        new (name:string, db:FactSet) = 
+            { ModuleName = name
+            ; GlobalComment = sprintf "%s.pl" name
+            ; Exports = [db.ExportSignature]
+            ; Database = [db] }
+
         member v.Format = 
             let d1 = prologComment v.GlobalComment
             let d2 = moduleDirective v.ModuleName v.Exports
@@ -88,13 +112,4 @@ module FactOutput =
             use sw = new System.IO.StreamWriter(filePath)
             sw.Write (render v.Format)
 
-        member v.AddFacts(facts:FactSet) = 
-            { v with 
-                Exports = (facts.ExportSignature :: v.Exports) ; 
-                Database = (facts :: v.Database) }
 
-    let makeModule (name:string) (comment:string) (db:FactSet list) : Module = 
-        { ModuleName = name
-          GlobalComment = comment
-          Exports = db |> List.map (fun a -> a.ExportSignature)
-          Database = db }

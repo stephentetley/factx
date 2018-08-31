@@ -71,6 +71,12 @@
     <Reference Include="ExcelProvider">
       <HintPath>..\packages\ExcelProvider.0.8.2\lib\ExcelProvider.dll</HintPath>
     </Reference>
+    <Reference Include="FParsec">
+      <HintPath>..\packages\FParsec.1.0.4-RC3\lib\net40-client\FParsec.dll</HintPath>
+    </Reference>
+    <Reference Include="FParsecCS">
+      <HintPath>..\packages\FParsec.1.0.4-RC3\lib\net40-client\FParsecCS.dll</HintPath>
+    </Reference>
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.0.0.1\lib\net40\FSharp.Core.dll</HintPath>
     </Reference>
