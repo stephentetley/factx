@@ -41,9 +41,7 @@ let outputFileName (filename:string) : string =
 
 let siteNameHelper : IFactHelper<SaiRow> = 
     { new IFactHelper<SaiRow> with 
-        member this.FactName = "site_name"
         member this.Signature = "site_name(uid, common_name)."
-        member this.Arity = 2
         member this.ClauseBody row = 
             [ PQuotedAtom   row.InstReference
             ; PString       row.InstCommonName ]
@@ -52,9 +50,7 @@ let siteNameHelper : IFactHelper<SaiRow> =
 
 let assetTypeHelper : IFactHelper<SaiRow> = 
     { new IFactHelper<SaiRow> with 
-        member this.FactName = "asset_type"
         member this.Signature = "asset_type(uid, type)."
-        member this.Arity = 2
         member this.ClauseBody row = 
             [ PQuotedAtom   row.InstReference
             ; PQuotedAtom   row.AssetType ]
@@ -62,9 +58,7 @@ let assetTypeHelper : IFactHelper<SaiRow> =
 
 let assetStatusHelper : IFactHelper<SaiRow> = 
     { new IFactHelper<SaiRow> with 
-        member this.FactName = "asset_status"
         member this.Signature = "asset_status(uid, status)."
-        member this.Arity = 2
         member this.ClauseBody row = 
             [ PQuotedAtom row.InstReference
             ; PQuotedAtom row.AssetStatus ]
@@ -104,9 +98,7 @@ let readOutstationRows () : OutstationRow list =
 
 let osNameHelper : IFactHelper<OutstationRow> = 
     { new IFactHelper<OutstationRow> with 
-        member this.FactName = "os_name"
         member this.Signature = "os_name(od_name, outstation_name)."
-        member this.Arity = 2
         member this.ClauseBody row = 
             [ PQuotedAtom    row.``OD name``
             ; PQuotedAtom    row.``OS name`` ]
@@ -114,9 +106,7 @@ let osNameHelper : IFactHelper<OutstationRow> =
 
 let osTypeHelper : IFactHelper<OutstationRow> = 
     { new IFactHelper<OutstationRow> with 
-        member this.FactName = "os_type"
         member this.Signature = "os_type(od_name, os_type)."
-        member this.Arity = 2
         member this.ClauseBody row = 
             [ PQuotedAtom    row.``OD name``
             ; PQuotedAtom    row.``OS type`` ]
@@ -125,9 +115,7 @@ let osTypeHelper : IFactHelper<OutstationRow> =
 
 let odCommentHelper : IFactHelper<OutstationRow> = 
     { new IFactHelper<OutstationRow> with 
-        member this.FactName = "od_comment"
         member this.Signature = "od_comment(od_name, comment)."
-        member this.Arity = 2
         member this.ClauseBody row = 
             [ PQuotedAtom   row.``OD name``
             ; PString       row.``OD comment`` ]

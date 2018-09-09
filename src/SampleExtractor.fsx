@@ -3,6 +3,10 @@
 #I @"..\packages\FSharp.Data.3.0.0-beta3\lib\net45"
 #r @"FSharp.Data.dll"
 open FSharp.Data
+#I @"..\packages\FParsec.1.0.4-RC3\lib\portable-net45+win8+wp8+wpa81"
+#r "FParsec"
+#r "FParsecCS"
+
 
 #I @"..\packages\ExcelProvider.0.8.2\lib"
 #r "ExcelProvider.dll"
@@ -43,9 +47,7 @@ let genAddresses () =
     
     let addressHelper = 
         { new IFactHelper<InstallationsRow> with
-            member this.FactName = "address"
             member this.Signature = "address(refnum, full_address)."
-            member this.Arity = 2
             member this.ClauseBody row = 
                 [ PQuotedAtom    row.InstReference
                 ; PString        row.``Full Address`` ] 
@@ -67,9 +69,7 @@ let genAssetNames () =
 
     let namesHelper = 
         { new IFactHelper<InstallationsRow> with
-            member this.FactName = "asset_name"
             member this.Signature = "asset_name(refnum, name)."
-            member this.Arity = 2
             member this.ClauseBody row = 
                 [ PQuotedAtom    row.InstReference
                 ; PString        row.InstCommonName ] 

@@ -53,9 +53,7 @@ let genUltrasonicInsts (allRows:AssetRow list) : unit =
     
     let helper : IFactHelper<AssetRow> = 
         { new IFactHelper<AssetRow> with
-            member this.FactName = "adb_ultrasonic_inst"
             member this.Signature = "adb_ultrasonic_inst(uid, site_name, path, op_status)."
-            member this.Arity = 4
             member this.ClauseBody row = equipmentBody row }
               
     
@@ -75,9 +73,7 @@ let genFlowMeters (allRows:AssetRow list) : unit =
 
     let helper : IFactHelper<AssetRow> = 
         { new IFactHelper<AssetRow> with
-            member this.FactName = "adb_flow_meter"
             member this.Signature = "adb_flow_meter(uid, site_name, path, op_status)."
-            member this.Arity = 4
             member this.ClauseBody row = equipmentBody row }
             
     let flowMeters = 
@@ -95,9 +91,7 @@ let genPressureInsts (allRows:AssetRow list) : unit =
 
     let helper : IFactHelper<AssetRow> = 
         { new IFactHelper<AssetRow> with
-            member this.FactName = "adb_pressure_inst"
             member this.Signature = "adb_pressure_inst(uid, site_name, path, op_status)."
-            member this.Arity = 4
             member this.ClauseBody row = equipmentBody row }
             
     let pressureInsts = 
@@ -116,9 +110,7 @@ let genDissolvedOxygenInsts (allRows:AssetRow list) : unit =
     
     let helper : IFactHelper<AssetRow> = 
         { new IFactHelper<AssetRow> with
-            member this.FactName = "adb_dissolved_oxygen_inst"
             member this.Signature = "adb_dissolved_oxygen_inst(uid, site_name, path, op_status)."
-            member this.Arity = 4
             member this.ClauseBody row = equipmentBody row }
             
     let doxyInsts = 
@@ -150,9 +142,7 @@ let genInstallationFacts (allRows:AssetRow list) : unit =
 
     let helper : IFactHelper<string> = 
         { new IFactHelper<string> with
-            member this.FactName = "adb_installation"
             member this.Signature = "adb_installation(installation_name)."
-            member this.Arity = 1
             member this.ClauseBody name = [ PQuotedAtom name ] }
      
     let facts : FactSet =  getInstallations allRows |> makeFactSet helper

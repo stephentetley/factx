@@ -12,9 +12,18 @@ open FactX.Internal.FormatCombinators
 
 
 module FactSignature = 
+    open System.Runtime.Remoting.Metadata.W3cXsd2001
+    open System.Runtime.Remoting.Metadata.W3cXsd2001
 
 
-    type Signature = Signature of string * string list
+    type Signature = 
+        | Signature of string * string list
+        member v.Arity : int = match v with | Signature(_,xs) -> List.length xs
+        member v.Name : string = match v with | Signature(x,_) -> x
+
+
+    let exportSignature (signature:Signature) : string = 
+        sprintf "%s/%d" signature.Name signature.Arity
 
     // Temp - parsing signatures.
 
@@ -31,6 +40,12 @@ module FactSignature =
     let pSignature : Parser<Signature,  unit> =
         let body = between lparen rparen (sepBy lexeme comma)
         pipe3 lexeme body dot (fun x xs _ -> Signature(x,xs))
+
+    let parseSignature (source:string) : Signature = 
+        match runParserOnString pSignature () "NONE" source with
+        | Success(ans,_,_) -> ans
+        | Failure(_,_,_) -> failwithf "Parsing failed on signature: '%s'" source
+        
 
 [<AutoOpen>]
 module FactOutput = 
@@ -62,9 +77,7 @@ module FactOutput =
     /// Note - if we parsed/validated the signature we could save the user
     /// having to specify name and arity.
     type IFactHelper<'a> = 
-        abstract FactName : string
         abstract Signature : string
-        abstract Arity : int
         abstract ClauseBody : 'a -> Value list
 
     type FactSet = 
@@ -82,11 +95,12 @@ module FactOutput =
         member v.ExportSignature = (v.FactName, v.Arity)
     
     let makeFactSet (helper:IFactHelper<'a>) (items:seq<'a>) : FactSet = 
+        let signature = FactSignature.parseSignature helper.Signature
         let makeClause (item:'a) : Clause  = 
-            { FactName = helper.FactName
+            { FactName = signature.Name
               Values = helper.ClauseBody item }
-        { FactName  = helper.FactName
-          Arity     = helper.Arity 
+        { FactName  = signature.Name
+          Arity     = signature.Arity
           Signature = helper.Signature 
           Comment   = "" 
           Clauses   = Seq.toList items |> List.map makeClause

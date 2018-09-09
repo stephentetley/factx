@@ -52,9 +52,7 @@ let genMimicNameFacts (rows:MimicRow list) : unit =
 
     let mimicNameHelper : IFactHelper<MimicRow> = 
         { new IFactHelper<MimicRow> with
-            member this.FactName = "rts_mimic_name"
             member this.Signature = "rts_mimic_name(mimic_id, mimic_name)."
-            member this.Arity = 2
             member this.ClauseBody row = 
                 [ PQuotedAtom   row.``Mimic ID``
                 ; PString       row.Name ]
@@ -92,9 +90,7 @@ let genMimicPoints (rows:PointsRow list) : unit =
 
     let mimicPointHelper : IFactHelper<PointsRow> = 
         { new IFactHelper<PointsRow> with
-            member this.FactName = "rts_mimic_point"
             member this.Signature = "rts_mimic_point(picture, os_name, point_name)."
-            member this.Arity = 3
             member this.ClauseBody row = 
                 [ PQuotedAtom (row.``Ctrl pic  Alarm pic``)
                 ; PQuotedAtom (getOsName row.``OS\Point name``)
@@ -145,9 +141,7 @@ let genAssetToSignals (source:AssetToSignal list) : unit =
 
     let assetSignalHelper : IFactHelper<AssetToSignal> = 
         { new IFactHelper<AssetToSignal> with
-            member this.FactName = "asset_to_signal"
             member this.Signature = "asset_to_signal(os_name, asset_name, signal_name, suffix)."
-            member this.Arity = 4
             member this.ClauseBody row = 
                 [ PQuotedAtom    <| row.OsName
                 ; PQuotedAtom    <| row.AssetName
@@ -197,9 +191,7 @@ let genPumpFacts (pumpPoints:StemPoints) : unit =
     
     let pumpPointsHelper : IFactHelper<string * string list> = 
         { new IFactHelper<string * string list> with
-            member this.FactName = "rts_pump"
             member this.Signature = "rts_pump(osname, pump_name, point_codes)."
-            member this.Arity = 3
             member this.ClauseBody arg = 
                 match arg with
                 | (qualName, pointCodes) -> 
@@ -236,9 +228,7 @@ let genScreenFacts (screenPoints:StemPoints) : unit =
 
     let screenPointsHelper : IFactHelper<string * string list> = 
         { new IFactHelper<string * string list> with
-            member this.FactName = "rts_screen"
             member this.Signature = "rts_screen(os_name, screen_name, point_codes)."
-            member this.Arity = 3
             member this.ClauseBody arg = 
                 match arg with
                 | (qualName, pointCodes) -> 
@@ -278,9 +268,7 @@ let genOutstationFacts (allRows:PointsRow list) : unit =
 
     let outstationHelper : IFactHelper<string> = 
         { new IFactHelper<string> with
-            member this.FactName = "rts_outstation"
             member this.Signature = "rts_outstation(os_name)."
-            member this.Arity = 1
             member this.ClauseBody row = 
                 [ PQuotedAtom row ]
         }
