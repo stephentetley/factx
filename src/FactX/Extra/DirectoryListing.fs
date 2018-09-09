@@ -198,7 +198,8 @@ module DirectoryListing =
 
 
     let readDirRecurseOutput (inputPath:string) : Choice<string,FileStore> = 
-        match runParserOnFile pListing () inputPath Text.ASCIIEncoding.ASCII with
+        let source = File.ReadAllText(inputPath)
+        match runParserOnString pListing () inputPath source with
         | Success(a,_,_) ->  
             match buildTopDown a with
             | None -> Choice1Of2 "Parsed, but could not build FileStore"

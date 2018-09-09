@@ -6,8 +6,31 @@ namespace FactX
 open System
 open System.IO
 
+open FParsec
+
 open FactX.Internal.FormatCombinators
 
+
+module FactSignature = 
+
+
+    type Signature = Signature of string * string list
+
+    // Temp - parsing signatures.
+
+    let lexeme : Parser<string, unit> = 
+        let opts = IdentifierOptions(isAsciiIdStart = isLetter)
+        identifier opts .>> spaces
+
+    let lparen : Parser<unit, unit> = (pchar '(') >>. spaces
+    let rparen : Parser<unit, unit> = (pchar ')') >>. spaces
+    let comma : Parser<unit, unit> = (pchar ',') >>. spaces
+    let dot : Parser<unit, unit> = (pchar '.') >>. spaces
+
+
+    let pSignature : Parser<Signature,  unit> =
+        let body = between lparen rparen (sepBy lexeme comma)
+        pipe3 lexeme body dot (fun x xs _ -> Signature(x,xs))
 
 [<AutoOpen>]
 module FactOutput = 
