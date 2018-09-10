@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
-
-open System.IO 
+#I @"..\packages\FParsec.1.0.4-RC3\lib\portable-net45+win8+wp8+wpa81"
+#r "FParsec"
+#r "FParsecCS"
 
 
 #I @"..\packages\ExcelProvider.0.8.2\lib"
@@ -12,9 +13,12 @@ open FSharp.ExcelProvider
 #r @"FSharp.Data.dll"
 open FSharp.Data
 
-#load "FactX\Internal\FormatCombinators.fs"
-#load "FactX\FactOutput.fs"
-#load "FactX\Extra\ExcelProviderHelper.fs"
+open System.IO 
+
+
+#load "..\FactX\FactX\Internal\FormatCombinators.fs"
+#load "..\FactX\FactX\FactOutput.fs"
+#load "..\FactX\FactX\Extra\ExcelProviderHelper.fs"
 open FactX
 open FactX.Extra.ExcelProviderHelper
 

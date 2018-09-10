@@ -56,14 +56,6 @@
     <Compile Include="FactX\FactOutput.fs" />
     <Compile Include="FactX\Extra\ExcelProviderHelper.fs" />
     <Compile Include="FactX\Extra\DirectoryListing.fs" />
-    <None Include="Test01.fsx" />
-    <None Include="SampleExtractor.fsx" />
-    <None Include="SaiFacts.fsx" />
-    <Compile Include="PropUtils.fs" />
-    <None Include="UQ_RtuFacts.fsx" />
-    <None Include="UQ_AssetFacts.fsx" />
-    <None Include="Attributes.fsx" />
-    <None Include="DirectoryFacts.fsx" />
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

@@ -5,9 +5,9 @@
 #r "FParsec"
 #r "FParsecCS"
 
-#load "FactX\Internal\FormatCombinators.fs"
-#load "FactX\FactOutput.fs"
-#load "FactX\Extra\DirectoryListing.fs"
+#load "..\FactX\FactX\Internal\FormatCombinators.fs"
+#load "..\FactX\FactX\FactOutput.fs"
+#load "..\FactX\FactX\Extra\DirectoryListing.fs"
 open FactX
 open FactX.Internal.FormatCombinators
 open FactX.Extra.DirectoryListing

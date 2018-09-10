@@ -3,8 +3,8 @@
 #r "FParsecCS"
 open FParsec
 
-#load "FactX\Internal\FormatCombinators.fs"
-#load "FactX\FactOutput.fs"
+#load "..\FactX\FactX\Internal\FormatCombinators.fs"
+#load "..\FactX\FactX\FactOutput.fs"
 open FactX.Internal.FormatCombinators
 open FactX.FactSignature
 
