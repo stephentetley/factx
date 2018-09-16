@@ -99,9 +99,9 @@ let genMimicPoints (rows:PointsRow list) : unit =
         { new IFactHelper<PointsRow> with
             member this.Signature = "rts_mimic_point(picture, os_name, point_name)."
             member this.ClauseBody row = 
-                [ PQuotedAtom (row.``Ctrl pic  Alarm pic``)
-                ; PQuotedAtom (getOsName row.``OS\Point name``)
-                ; PQuotedAtom (getPointName row.``OS\Point name``) ]
+                Some [ PQuotedAtom (row.``Ctrl pic  Alarm pic``)
+                     ; PQuotedAtom (getOsName row.``OS\Point name``)
+                     ; PQuotedAtom (getPointName row.``OS\Point name``) ]
         }
 
     let facts : FactSet = 
@@ -150,10 +150,10 @@ let genAssetToSignals (source:AssetToSignal list) : unit =
         { new IFactHelper<AssetToSignal> with
             member this.Signature = "asset_to_signal(os_name, asset_name, signal_name, suffix)."
             member this.ClauseBody row = 
-                [ PQuotedAtom    <| row.OsName
-                ; PQuotedAtom    <| row.AssetName
-                ; PQuotedAtom    <| row.PointName
-                ; PQuotedAtom    <| row.SignalSuffix ]
+                Some [ PQuotedAtom    <| row.OsName
+                     ; PQuotedAtom    <| row.AssetName
+                     ; PQuotedAtom    <| row.PointName
+                     ; PQuotedAtom    <| row.SignalSuffix ]
         }
 
     let facts : FactSet = 
@@ -202,10 +202,9 @@ let genPumpFacts (pumpPoints:StemPoints) : unit =
             member this.ClauseBody arg = 
                 match arg with
                 | (qualName, pointCodes) -> 
-                    [ PQuotedAtom    <| getOsName qualName
-                    ; PQuotedAtom    <| getPointName qualName
-                    ; PList          <| List.map PQuotedAtom pointCodes
-                    ]
+                    Some [ PQuotedAtom    <| getOsName qualName
+                         ; PQuotedAtom    <| getPointName qualName
+                         ; PList          <| List.map PQuotedAtom pointCodes ]
         }
         
     let facts : FactSet = 
@@ -239,10 +238,9 @@ let genScreenFacts (screenPoints:StemPoints) : unit =
             member this.ClauseBody arg = 
                 match arg with
                 | (qualName, pointCodes) -> 
-                    [ PQuotedAtom    <| getOsName qualName
-                    ; PQuotedAtom    <| getPointName qualName
-                    ; PList          <| List.map PQuotedAtom pointCodes
-                    ]
+                    Some [ PQuotedAtom    <| getOsName qualName
+                         ; PQuotedAtom    <| getPointName qualName
+                         ; PList          <| List.map PQuotedAtom pointCodes ]
         }
 
 
@@ -276,8 +274,7 @@ let genOutstationFacts (allRows:PointsRow list) : unit =
     let outstationHelper : IFactHelper<string> = 
         { new IFactHelper<string> with
             member this.Signature = "rts_outstation(os_name)."
-            member this.ClauseBody row = 
-                [ PQuotedAtom row ]
+            member this.ClauseBody row = Some [ PQuotedAtom row ]
         }
         
     let facts : FactSet = 

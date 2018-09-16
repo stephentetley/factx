@@ -52,12 +52,11 @@ let genAddresses () =
         { new IFactHelper<InstallationsRow> with
             member this.Signature = "address(refnum, full_address)."
             member this.ClauseBody row = 
-                let addr = 
-                    match row.``Full Address`` with
-                    | null -> ""
-                    | s -> s                            
-                [ PQuotedAtom    row.InstReference
-                ; PString        addr ] 
+                match row.``Full Address`` with
+                | null -> None
+                | addr -> 
+                    Some [ PQuotedAtom    row.InstReference
+                         ; PString        addr ] 
         } 
 
     let addresses : FactSet = readInstallations () |> makeFactSet addressHelper
@@ -78,8 +77,8 @@ let genAssetNames () =
         { new IFactHelper<InstallationsRow> with
             member this.Signature = "asset_name(refnum, name)."
             member this.ClauseBody row = 
-                [ PQuotedAtom    row.InstReference
-                ; PString        row.InstCommonName ] 
+                Some [ PQuotedAtom    row.InstReference
+                     ; PString        row.InstCommonName ] 
         }
 
     let assetNames : FactSet = readInstallations () |> makeFactSet namesHelper

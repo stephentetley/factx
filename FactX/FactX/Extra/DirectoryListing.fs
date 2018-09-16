@@ -249,7 +249,7 @@ module DirectoryFacts =
                 member this.Signature = "file_store(path_to_root)."
                 member this.ClauseBody (x:FileStore) = 
                     match x with
-                    | FileStore(path,_) -> [ PQuotedAtom path ] 
+                    | FileStore(path,_) -> Some [ PQuotedAtom path ] 
             }
         makeFactSet helper [fs]
 
@@ -268,6 +268,6 @@ module DirectoryFacts =
                 member this.ClauseBody (x:FileStore) = 
                     match x with
                     | FileStore(path,_) -> 
-                        [ PQuotedAtom path; PQuotedAtom (driveLetter path) ] 
+                        Some [ PQuotedAtom path; PQuotedAtom (driveLetter path) ] 
             }
         makeFactSet helper [fs]

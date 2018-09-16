@@ -47,12 +47,14 @@ let readAssetSpeadsheet (sourcePath:string) : AssetRow list =
     excelReadRowsAsList helper (new AssetTable(sourcePath))
 
 
-let equipmentBody (row:AssetRow) : Value list = 
-    [ PQuotedAtom    <| row.Reference
-    ; PQuotedAtom    <| installationNameFromPath row.``Common Name`` 
-    ; PQuotedAtom    <| row.``Common Name`` 
-    ; PQuotedAtom    <| row.AssetStatus 
-    ]
+let equipmentBody (row:AssetRow) : Option<Value list> = 
+    match row.``Common Name`` with
+    | null -> None
+    | cname ->
+        Some [ PQuotedAtom      <| row.Reference
+             ; PQuotedAtom      <| installationNameFromPath row.``Common Name`` 
+             ; PQuoted Atom     <| row.``Common Name`` 
+             ; PQuotedAtom      <| row.AssetStatus ]
 
 let genUltrasonicInsts (allRows:AssetRow list) : unit = 
     let outFile = outputFile "adb_ultrasonic_insts.pl"
@@ -149,7 +151,7 @@ let genInstallationFacts (allRows:AssetRow list) : unit =
     let helper : IFactHelper<string> = 
         { new IFactHelper<string> with
             member this.Signature = "adb_installation(installation_name)."
-            member this.ClauseBody name = [ PQuotedAtom name ] }
+            member this.ClauseBody name = Some [ PQuotedAtom name ] }
      
     let facts : FactSet =  getInstallations allRows |> makeFactSet helper
 

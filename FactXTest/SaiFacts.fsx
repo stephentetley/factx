@@ -49,8 +49,8 @@ let siteNameHelper : IFactHelper<SaiRow> =
     { new IFactHelper<SaiRow> with 
         member this.Signature = "site_name(uid, common_name)."
         member this.ClauseBody row = 
-            [ PQuotedAtom   row.InstReference
-            ; PString       row.InstCommonName ]
+            Some [ PQuotedAtom   row.InstReference
+                 ; PString       row.InstCommonName ]
     }
 
 
@@ -58,16 +58,16 @@ let assetTypeHelper : IFactHelper<SaiRow> =
     { new IFactHelper<SaiRow> with 
         member this.Signature = "asset_type(uid, type)."
         member this.ClauseBody row = 
-            [ PQuotedAtom   row.InstReference
-            ; PQuotedAtom   row.AssetType ]
+            Some [ PQuotedAtom   row.InstReference
+                 ; PQuotedAtom   row.AssetType ]
     }
 
 let assetStatusHelper : IFactHelper<SaiRow> = 
     { new IFactHelper<SaiRow> with 
         member this.Signature = "asset_status(uid, status)."
         member this.ClauseBody row = 
-            [ PQuotedAtom row.InstReference
-            ; PQuotedAtom row.AssetStatus ]
+           Some [ PQuotedAtom row.InstReference
+                ; PQuotedAtom row.AssetStatus ]
     }
 
 
@@ -106,16 +106,16 @@ let osNameHelper : IFactHelper<OutstationRow> =
     { new IFactHelper<OutstationRow> with 
         member this.Signature = "os_name(od_name, outstation_name)."
         member this.ClauseBody row = 
-            [ PQuotedAtom    row.``OD name``
-            ; PQuotedAtom    row.``OS name`` ]
+            Some [ PQuotedAtom    row.``OD name``
+                 ; PQuotedAtom    row.``OS name`` ]
     }
 
 let osTypeHelper : IFactHelper<OutstationRow> = 
     { new IFactHelper<OutstationRow> with 
         member this.Signature = "os_type(od_name, os_type)."
         member this.ClauseBody row = 
-            [ PQuotedAtom    row.``OD name``
-            ; PQuotedAtom    row.``OS type`` ]
+            Some [ PQuotedAtom    row.``OD name``
+                 ; PQuotedAtom    row.``OS type`` ]
     }
 
 
@@ -123,8 +123,8 @@ let odCommentHelper : IFactHelper<OutstationRow> =
     { new IFactHelper<OutstationRow> with 
         member this.Signature = "od_comment(od_name, comment)."
         member this.ClauseBody row = 
-            [ PQuotedAtom   row.``OD name``
-            ; PString       row.``OD comment`` ]
+            Some [ PQuotedAtom   row.``OD name``
+                 ; PString       row.``OD comment`` ]
         }
 
 

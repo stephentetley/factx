@@ -76,7 +76,7 @@ module FactOutput =
     /// having to specify name and arity.
     type IFactHelper<'a> = 
         abstract Signature : string
-        abstract ClauseBody : 'a -> Value list
+        abstract ClauseBody : 'a -> Option<Value list>
 
     type FactSet = 
         { FactName: Identifier 
@@ -94,14 +94,16 @@ module FactOutput =
     
     let makeFactSet (helper:IFactHelper<'a>) (items:seq<'a>) : FactSet = 
         let signature = FactSignature.parseSignature helper.Signature
-        let makeClause (item:'a) : Clause  = 
-            { FactName = signature.Name
-              Values = helper.ClauseBody item }
+        let makeClause (item:'a) : Option<Clause>  = 
+            let make1 (values:Value list) : Clause = 
+                { FactName = signature.Name; Values = values }
+            Option.map make1 (helper.ClauseBody item)
+            
         { FactName  = signature.Name
           Arity     = signature.Arity
           Signature = helper.Signature 
           Comment   = "" 
-          Clauses   = Seq.toList items |> List.map makeClause
+          Clauses   = Seq.toList items |> List.map makeClause |> List.choose id
         }
         
 
