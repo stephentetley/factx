@@ -21,3 +21,4 @@ module ExcelProviderHelper =
     let excelReadRowsAsList (helper:IExcelProviderHelper<'table,'row>) (table:'table) : 'row list = 
         excelReadRows helper table |> Seq.toList
 
+    

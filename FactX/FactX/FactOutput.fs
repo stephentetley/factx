@@ -54,14 +54,14 @@ module FactOutput =
     type Value = 
         | PString of string
         | PInt of int
-        | PDouble of double
+        | PDecimal of decimal
         | PQuotedAtom of string
         | PList of Value list
         member v.Format = 
             match v with
             | PString s -> prologString s
             | PInt i -> formatInt i
-            | PDouble d -> formatDouble d
+            | PDecimal d -> formatDecimal d
             | PQuotedAtom s -> quotedAtom s
             | PList vs -> prologList (List.map (fun (x:Value) -> x.Format) vs)
 

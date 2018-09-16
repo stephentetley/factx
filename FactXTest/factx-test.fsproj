@@ -50,6 +50,7 @@
     <None Include="UQ_AssetFacts.fsx" />
     <None Include="Attributes.fsx" />
     <None Include="DirectoryFacts.fsx" />
+    <None Include="AssetFacts.fsx" />
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
