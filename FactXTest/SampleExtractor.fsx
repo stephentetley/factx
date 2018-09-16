@@ -8,9 +8,12 @@ open FSharp.Data
 #r "FParsecCS"
 
 
-#I @"..\packages\ExcelProvider.0.8.2\lib"
-#r "ExcelProvider.dll"
-open FSharp.ExcelProvider
+#I @"..\packages\ExcelProvider.1.0.1\typeproviders\fsharp41\net45"
+#r "ExcelDataReader.DataSet.dll"
+#r "ExcelDataReader.dll"
+#r "ExcelProvider.DesignTime.dll"
+open FSharp.Interop.Excel
+
 
 #load "..\FactX\FactX\Internal\FormatCombinators.fs"
 #load "..\FactX\FactX\FactOutput.fs"
@@ -33,7 +36,7 @@ let readInstallations () : InstallationsRow list =
           with member this.ReadTableRows table = table.Data 
                member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
          
-    excelReadRowsAsList helper (new InstallationsTable())
+    excelReadRowsAsList helper (new InstallationsTable()) // |> List.take 100
 
 let makeOutputPath (fileName:string) : string = 
     System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..", "data", fileName)
@@ -49,8 +52,12 @@ let genAddresses () =
         { new IFactHelper<InstallationsRow> with
             member this.Signature = "address(refnum, full_address)."
             member this.ClauseBody row = 
+                let addr = 
+                    match row.``Full Address`` with
+                    | null -> ""
+                    | s -> s                            
                 [ PQuotedAtom    row.InstReference
-                ; PString        row.``Full Address`` ] 
+                ; PString        addr ] 
         } 
 
     let addresses : FactSet = readInstallations () |> makeFactSet addressHelper

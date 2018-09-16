@@ -12,8 +12,6 @@ open FactX.Internal.FormatCombinators
 
 
 module FactSignature = 
-    open System.Runtime.Remoting.Metadata.W3cXsd2001
-    open System.Runtime.Remoting.Metadata.W3cXsd2001
 
 
     type Signature = 
