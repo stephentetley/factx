@@ -101,6 +101,23 @@ let readRelay13Spreadsheet () : Relay13Row list =
          
     excelReadRowsAsList helper (new Relay13Table())
 
+
+type Relay46Table = 
+    ExcelFile< @"G:\work\AI2-exports\Ultrasonics_relays_4_6.xlsx",
+               SheetName = "Sheet1!",
+               ForceString = true >
+
+
+type Relay46Row = Relay46Table.Row
+
+let readRelay46Spreadsheet () : Relay46Row list = 
+    let helper = 
+        { new IExcelProviderHelper<Relay46Table,Relay46Row>
+          with member this.ReadTableRows table = table.Data 
+               member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
+         
+    excelReadRowsAsList helper (new Relay46Table())
+
 type FixedRelay = 
     { Uid: string
       Number: int
@@ -148,20 +165,6 @@ let parseFixed1 (uid:string) (number:int) (funName:string) : ValueReader<FixedRe
     }  
 
 
-let parseSilly (uid:string) (number:int) (funName:string) : ValueReader<string> = 
-    valueReader {
-        let! uid1    = readStringRaw uid    
-        return (uid1 + "!!!")
-    }  
-
-let temp () = 
-    let xs = [Choice1Of2 1; Choice2Of2 "name"]
-    List.choose (fun x -> match x with | Choice1Of2 y -> Some y | _ -> None) xs
-
-let temp2 () = 
-    runValueReader <| valueReader { 
-        return ("Raw" + "!!!") 
-        }
 
 // TODO this would be much easier if we could add to FactSets
 let getRelays13 (rows:Relay13Row list) : FixedRelay list * ActiveRelay list = 
@@ -170,19 +173,40 @@ let getRelays13 (rows:Relay13Row list) : FixedRelay list * ActiveRelay list =
         | None -> ac
         | Some a -> a::ac
 
-    let rec work ac xs =
-        match xs with
-        | [] -> List.rev ac
-        | (z : Relay13Row) :: zs -> 
-            let r1 = decodeRelay (z.Reference) 1 (z.``Relay 1 Function``) 
-                                 (z.``Relay 1 on Level (m)``) (z.``Relay 1 off Level (m)``)
-            let r2 = decodeRelay (z.Reference) 2 (z.``Relay 2 Function``) 
-                                 (z.``Relay 2 on Level (m)``) (z.``Relay 2 off Level (m)``)    
-            let r3 = decodeRelay (z.Reference) 3 (z.``Relay 3 Function``) 
-                                 (z.``Relay 3 on Level (m)``) (z.``Relay 3 off Level (m)``)    
-            work (cons r3 (cons r1 ac)) zs
+    let rec work1 (row:Relay13Row) ac =
+        let r1 = decodeRelay (row.Reference) 1 (row.``Relay 1 Function``) 
+                                (row.``Relay 1 on Level (m)``) 
+                                (row.``Relay 1 off Level (m)``)
+        let r2 = decodeRelay (row.Reference) 2 (row.``Relay 2 Function``) 
+                                (row.``Relay 2 on Level (m)``) 
+                                (row.``Relay 2 off Level (m)``)    
+        let r3 = decodeRelay (row.Reference) 3 (row.``Relay 3 Function``) 
+                                (row.``Relay 3 on Level (m)``) (row.``Relay 3 off Level (m)``)    
+        cons r3 (cons r2 (cons r1 ac))
 
-    let answers = work [] rows
+    let answers = List.foldBack work1 rows []
+    let fixeds = List.choose (fun x -> match x with | Choice1Of2 y -> Some y | _ -> None) answers
+    let actives = List.choose (fun x -> match x with | Choice2Of2 y -> Some y | _ -> None) answers
+    fixeds, actives
+
+let getRelays46 (rows:Relay46Row list) : FixedRelay list * ActiveRelay list = 
+    let cons (opt:Option<'a>) (ac:'a list) : 'a list = 
+        match opt with
+        | None -> ac
+        | Some a -> a::ac
+
+    let rec work1 (row:Relay46Row) ac =
+        let r1 = decodeRelay (row.Reference) 4 (row.``Relay 4 Function``) 
+                                (row.``Relay 4 on Level (m)``) 
+                                (row.``Relay 4 off Level (m)``)
+        let r2 = decodeRelay (row.Reference) 5 (row.``Relay 5 Function``) 
+                                (row.``Relay 5 on Level (m)``) 
+                                (row.``Relay 5 off Level (m)``)    
+        let r3 = decodeRelay (row.Reference) 6 (row.``Relay 6 Function``) 
+                                (row.``Relay 6 on Level (m)``) (row.``Relay 6 off Level (m)``)    
+        cons r3 (cons r2 (cons r1 ac))
+
+    let answers = List.foldBack work1 rows []
     let fixeds = List.choose (fun x -> match x with | Choice1Of2 y -> Some y | _ -> None) answers
     let actives = List.choose (fun x -> match x with | Choice2Of2 y -> Some y | _ -> None) answers
     fixeds, actives
@@ -212,12 +236,14 @@ let genRelayFacts () : unit =
         }
      
     let fixeds1, actives1 = readRelay13Spreadsheet () |> getRelays13
+    let fixeds2, actives2 = readRelay46Spreadsheet () |> getRelays46
 
-    let fixedFacts : FactSet = fixeds1 |> makeFactSet fixedRelayHelper
-    let activeFacts : FactSet = actives1 |> makeFactSet activeRelayHelper
+    let fixedFacts : FactSet = fixeds1 @ fixeds2 |> makeFactSet fixedRelayHelper
+    let activeFacts : FactSet = actives1 @ actives2 |> makeFactSet activeRelayHelper
 
     let pmodule : Module = 
         new Module( name = "us_relay_facts"
                   , db = [fixedFacts; activeFacts] )
 
     pmodule.Save(outFile)
+
