@@ -5,6 +5,9 @@
 #r "FParsecCS"
 
 
+#I @"..\packages\ExcelProvider.1.0.1\lib\net45"
+#r "ExcelProvider.Runtime.dll"
+
 #I @"..\packages\ExcelProvider.1.0.1\typeproviders\fsharp41\net45"
 #r "ExcelDataReader.DataSet.dll"
 #r "ExcelDataReader.dll"
@@ -53,7 +56,7 @@ let equipmentBody (row:AssetRow) : Option<Value list> =
     | cname ->
         Some [ PQuotedAtom      <| row.Reference
              ; PQuotedAtom      <| installationNameFromPath row.``Common Name`` 
-             ; PQuoted Atom     <| row.``Common Name`` 
+             ; PQuotedAtom      <| row.``Common Name`` 
              ; PQuotedAtom      <| row.AssetStatus ]
 
 let genUltrasonicInsts (allRows:AssetRow list) : unit = 

@@ -4,7 +4,8 @@
 #r "FParsec"
 #r "FParsecCS"
 
-
+#I @"..\packages\ExcelProvider.1.0.1\lib\net45"
+#r "ExcelProvider.Runtime.dll"
 
 #I @"..\packages\ExcelProvider.1.0.1\typeproviders\fsharp41\net45"
 #r "ExcelDataReader.DataSet.dll"
@@ -22,8 +23,10 @@ open System.IO
 #load "..\FactX\FactX\Internal\FormatCombinators.fs"
 #load "..\FactX\FactX\FactOutput.fs"
 #load "..\FactX\FactX\Extra\ExcelProviderHelper.fs"
+#load "..\FactX\FactX\Extra\ValueReader.fs"
 open FactX
 open FactX.Extra.ExcelProviderHelper
+open FactX.Extra.ValueReader
 
 #load @"PropUtils.fs"
 open PropUtils
@@ -61,8 +64,11 @@ let genMimicNameFacts (rows:MimicRow list) : unit =
         { new IFactHelper<MimicRow> with
             member this.Signature = "rts_mimic_name(mimic_id, mimic_name)."
             member this.ClauseBody row = 
-                [ PQuotedAtom   row.``Mimic ID``
-                ; PString       row.Name ]
+                runValueReader <| valueReader { 
+                    let! uid    = readSymbol row.``Mimic ID``
+                    let! name   = readString row.Name
+                    return [uid; name]
+                    }
         }
 
     let facts : FactSet = 

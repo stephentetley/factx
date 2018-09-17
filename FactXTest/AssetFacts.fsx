@@ -26,7 +26,7 @@ open FactX.Extra.ValueReader
 
 
 let outputFile (filename:string) : string = 
-    System.IO.Path.Combine(@"E:\coding\prolog\assets\facts", filename) 
+    System.IO.Path.Combine(@"D:\coding\prolog\assets\facts", filename) 
 
 
 type UsMiscTable = 
@@ -48,10 +48,10 @@ let readUsMiscSpreadsheet () : UsMiscRow list =
     excelReadRowsAsList helper (new UsMiscTable())
 
 
-let genUltrasonicInsts () : unit = 
+let genSensorDistances () : unit = 
     let outFile = outputFile "sensor_distances.pl"
     
-    let helper : IFactHelper<UsMiscRow> = 
+    let distHelper : IFactHelper<UsMiscRow> = 
         { new IFactHelper<UsMiscRow> with
             member this.Signature = "sensor_distances(pli_code, empty_distance, working_span)."
             member this.ClauseBody (row:UsMiscRow) = 
@@ -64,9 +64,9 @@ let genUltrasonicInsts () : unit =
         }
               
 
-    let facts : FactSet = readUsMiscSpreadsheet () |> makeFactSet helper
+    let distFacts : FactSet = readUsMiscSpreadsheet () |> makeFactSet distHelper
 
     let pmodule : Module = 
-        new Module("sensor_distances", "sensor_distances.pl", facts)
+        new Module("sensor_distances", "sensor_distances.pl", distFacts)
 
     pmodule.Save(outFile)

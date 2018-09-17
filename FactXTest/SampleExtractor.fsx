@@ -7,6 +7,8 @@ open FSharp.Data
 #r "FParsec"
 #r "FParsecCS"
 
+#I @"..\packages\ExcelProvider.1.0.1\lib\net45"
+#r "ExcelProvider.Runtime.dll"
 
 #I @"..\packages\ExcelProvider.1.0.1\typeproviders\fsharp41\net45"
 #r "ExcelDataReader.DataSet.dll"
