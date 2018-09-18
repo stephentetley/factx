@@ -51,7 +51,7 @@ let makeOutputPath (fileName:string) : string =
 // ** Generate Prolog facts.
 let genAddresses () = 
     let outFile = makeOutputPath "addresses.pl"
-    let signature = FactSignature.parseSignature "address(refnum, full_address)."
+    let signature = parseSignature "address(refnum, full_address)."
 
     let makeClause (row:InstallationsRow) : Option<Clause>= 
         match row.``Full Address`` with
@@ -75,8 +75,9 @@ let genAddresses () =
 
 let genAssetNames () = 
     let outFile = makeOutputPath "asset_names.pl"
-    let signature = FactSignature.parseSignature "asset_name(refnum, name)."
-    let makeClause (row:InstallationsRow) = 
+    let signature = parseSignature "asset_name(refnum, name)."
+    
+    let makeClause (row:InstallationsRow) : Clause = 
         { Signature = signature; 
           Body = [ PrologSyntax.PQuotedAtom    row.InstReference
                  ; PrologSyntax.PString        row.InstCommonName ] }

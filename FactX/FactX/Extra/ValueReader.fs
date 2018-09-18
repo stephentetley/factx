@@ -3,7 +3,7 @@
 
 namespace FactX.Extra.ValueReader
 
-open FactX.FactOutput
+open FactX.Internal
 
 [<AutoOpen>]
 module ValueReader = 
@@ -84,11 +84,11 @@ module ValueReader =
             | null -> None
             | str -> Some str
 
-    let readString (input:string) : ValueReader<Value> = 
-        readStringRaw input |>> PString
+    let readString (input:string) : ValueReader<PrologSyntax.Value> = 
+        readStringRaw input |>> PrologSyntax.PString
 
-    let readSymbol (input:string) : ValueReader<Value> = 
-        readStringRaw input |>> PQuotedAtom
+    let readSymbol (input:string) : ValueReader<PrologSyntax.Value> = 
+        readStringRaw input |>> PrologSyntax.PQuotedAtom
 
     let readDecimalRaw (input:string) : ValueReader<decimal> = 
         ValueReader <|
@@ -97,8 +97,8 @@ module ValueReader =
             with
             | _ -> None
 
-    let readDecimal (input:string) : ValueReader<Value> = 
-        readDecimalRaw input |>> PDecimal
+    let readDecimal (input:string) : ValueReader<PrologSyntax.Value> = 
+        readDecimalRaw input |>> PrologSyntax.PDecimal
 
     let readIntRaw (input:string) : ValueReader<int> = 
         ValueReader <|
@@ -107,5 +107,5 @@ module ValueReader =
             with
             | _ -> None
 
-    let readInt (input:string) : ValueReader<Value> = 
-        readIntRaw input |>> PInt
+    let readInt (input:string) : ValueReader<PrologSyntax.Value> = 
+        readIntRaw input |>> PrologSyntax.PInt

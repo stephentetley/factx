@@ -11,6 +11,45 @@ open FParsec
 open FactX.Internal.FormatCombinators
 
 
+[<AutoOpen>]
+module FactSignature = 
+
+
+    type Signature = 
+        | Signature of string * string list
+        member v.Arity : int = match v with | Signature(_,xs) -> List.length xs
+        member v.Name : string = match v with | Signature(x,_) -> x
+        override v.ToString() = 
+            match v with 
+            | Signature(name,args) -> sprintf "%s(%s)." name (String.concat ", " args)
+            
+
+
+    let exportSignature (signature:Signature) : string = 
+        sprintf "%s/%d" signature.Name signature.Arity
+
+    // Parsing signatures.
+
+    let private lexeme : Parser<string, unit> = 
+        let opts = IdentifierOptions(isAsciiIdStart = isLetter)
+        identifier opts .>> spaces
+
+    let private lparen : Parser<unit, unit> = (pchar '(') >>. spaces
+    let private rparen : Parser<unit, unit> = (pchar ')') >>. spaces
+    let private comma : Parser<unit, unit> = (pchar ',') >>. spaces
+    let private dot : Parser<unit, unit> = (pchar '.') >>. spaces
+
+
+    let private pSignature : Parser<Signature,  unit> =
+        let body = between lparen rparen (sepBy lexeme comma)
+        pipe3 lexeme body dot (fun x xs _ -> Signature(x,xs))
+
+    let parseSignature (source:string) : Signature = 
+        match runParserOnString pSignature () "NONE" source with
+        | Success(ans,_,_) -> ans
+        | Failure(_,_,_) -> failwithf "Parsing failed on signature: '%s'" source
+
+
              
 [<RequireQualifiedAccess>]
 module PrologSyntax = 

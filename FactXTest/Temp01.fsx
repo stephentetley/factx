@@ -5,7 +5,7 @@ open FParsec
 
 #load "..\FactX\FactX\Internal\FormatCombinators.fs"
 #load "..\FactX\FactX\Internal\PrologSyntax.fs"
-#load "..\FactX\FactX\NewFactOutput.fs"
+#load "..\FactX\FactX\FactOutput.fs"
 open FactX.Internal.FormatCombinators
 open FactX.Internal
 open FactX

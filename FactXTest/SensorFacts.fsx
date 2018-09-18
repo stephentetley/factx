@@ -17,9 +17,11 @@ open FSharp.Interop.Excel
 
 
 #load "..\FactX\FactX\Internal\FormatCombinators.fs"
-#load "..\FactX\FactX\OldFactOutput.fs"
+#load "..\FactX\FactX\Internal\PrologSyntax.fs"
+#load "..\FactX\FactX\FactOutput.fs"
 #load "..\FactX\FactX\Extra\ExcelProviderHelper.fs"
 #load "..\FactX\FactX\Extra\ValueReader.fs"
+open FactX.Internal
 open FactX
 open FactX.Extra.ExcelProviderHelper
 open FactX.Extra.ValueReader
@@ -50,37 +52,42 @@ let readUsMiscSpreadsheet () : UsMiscRow list =
 let genSensorFacts () : unit = 
     let outFile = outputFile "us_sensor_facts.pl"
     
-    let distHelper : IFactHelper<UsMiscRow> = 
-        { new IFactHelper<UsMiscRow> with
-            member this.Signature = "us_sensor_distances(pli_code, empty_distance, working_span)."
-            member this.ClauseBody (row:UsMiscRow) = 
-                runValueReader <| valueReader { 
+
+    let makeDistClause (row:UsMiscRow) : option<Clause> = 
+        let signature = parseSignature "us_sensor_distances(pli_code, empty_distance, working_span)."
+        runValueReader 
+            <| valueReader { 
                     let! uid        = readSymbol row.Reference
                     let! emptyDist  = readDecimal row.``Transducer face to bottom of well (m)``
                     let! span       = readDecimal row.``Working Span (m)``
-                    return [uid; emptyDist; span]
-                    }
-        }
+                    return { Signature = signature; Body = [uid; emptyDist; span] }
+                }
              
-    let distFacts : FactSet = readUsMiscSpreadsheet () |> makeFactSet distHelper
-    
-    let modelHelper : IFactHelper<UsMiscRow> = 
-        { new IFactHelper<UsMiscRow> with
-            member this.Signature = "us_model(pli_code, manufacturer, model)."
-            member this.ClauseBody (row:UsMiscRow) = 
-                runValueReader <| valueReader { 
+    let distFacts : FactBase = 
+        readUsMiscSpreadsheet () 
+            |> List.map makeDistClause 
+            |> FactBase.ofOptionList
+
+
+    let makeModelClause (row:UsMiscRow) : option<Clause>  = 
+        let signature = parseSignature "us_model(pli_code, manufacturer, model)."
+        runValueReader 
+            <| valueReader { 
                     let! uid        = readSymbol row.Reference
                     let! emptyDist  = readString row.Manufacturer
                     let! span       = readString row.Model
-                    return [uid; emptyDist; span]
-                    }
-        }
+                    return { Signature = signature; Body = [uid; emptyDist; span] }
+                }
 
-    let modelFacts : FactSet = readUsMiscSpreadsheet () |> makeFactSet modelHelper
+
+    let modelFacts : FactBase = 
+        readUsMiscSpreadsheet () 
+            |> List.map makeModelClause 
+            |> FactBase.ofOptionList
 
     let pmodule : Module = 
         new Module( name = "us_sensor_facts"
-                  , db = [modelFacts; distFacts] )
+                  , dbs = [ modelFacts; distFacts] )
 
     pmodule.Save(outFile)
 
@@ -214,36 +221,36 @@ let getRelays46 (rows:Relay46Row list) : FixedRelay list * ActiveRelay list =
 let genRelayFacts () : unit = 
     let outFile = outputFile "us_relay_facts.pl"
     
-    let fixedRelayHelper : IFactHelper<FixedRelay> = 
-        { new IFactHelper<FixedRelay> with
-            member this.Signature = "us_fixed_relay(pli_code, relay_number, relay_function)."
-            member this.ClauseBody (relay:FixedRelay) = 
-                Some <| [ PQuotedAtom relay.Uid
-                        ; PInt relay.Number
-                        ; PString relay.Function ]
+    //let fixedRelayHelper : IFactHelper<FixedRelay> = 
+    //    { new IFactHelper<FixedRelay> with
+    //        member this.Signature = "us_fixed_relay(pli_code, relay_number, relay_function)."
+    //        member this.ClauseBody (relay:FixedRelay) = 
+    //            Some <| [ PQuotedAtom relay.Uid
+    //                    ; PInt relay.Number
+    //                    ; PString relay.Function ]
                     
-        }
+    //    }
 
-    let activeRelayHelper : IFactHelper<ActiveRelay> = 
-        { new IFactHelper<ActiveRelay> with
-            member this.Signature = "us_active_relay(pli_code, manufacturer, model, on_setpoint, off_setpoint)."
-            member this.ClauseBody (relay:ActiveRelay) = 
-                Some <| [ PQuotedAtom relay.Uid
-                        ; PInt relay.Number
-                        ; PString relay.Function 
-                        ; PDecimal relay.OnSetpoint
-                        ; PDecimal relay.OffSetpoint ]
-        }
+    //let activeRelayHelper : IFactHelper<ActiveRelay> = 
+    //    { new IFactHelper<ActiveRelay> with
+    //        member this.Signature = "us_active_relay(pli_code, manufacturer, model, on_setpoint, off_setpoint)."
+    //        member this.ClauseBody (relay:ActiveRelay) = 
+    //            Some <| [ PQuotedAtom relay.Uid
+    //                    ; PInt relay.Number
+    //                    ; PString relay.Function 
+    //                    ; PDecimal relay.OnSetpoint
+    //                    ; PDecimal relay.OffSetpoint ]
+    //    }
      
-    let fixeds1, actives1 = readRelay13Spreadsheet () |> getRelays13
-    let fixeds2, actives2 = readRelay46Spreadsheet () |> getRelays46
+    //let fixeds1, actives1 = readRelay13Spreadsheet () |> getRelays13
+    //let fixeds2, actives2 = readRelay46Spreadsheet () |> getRelays46
 
-    let fixedFacts : FactSet = fixeds1 @ fixeds2 |> makeFactSet fixedRelayHelper
-    let activeFacts : FactSet = actives1 @ actives2 |> makeFactSet activeRelayHelper
+    //let fixedFacts : FactSet = fixeds1 @ fixeds2 |> makeFactSet fixedRelayHelper
+    //let activeFacts : FactSet = actives1 @ actives2 |> makeFactSet activeRelayHelper
 
     let pmodule : Module = 
         new Module( name = "us_relay_facts"
-                  , db = [fixedFacts; activeFacts] )
+                  , dbs = [] ) //  [fixedFacts; activeFacts] )
 
     pmodule.Save(outFile)
 
