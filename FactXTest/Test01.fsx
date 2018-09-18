@@ -4,8 +4,10 @@
 open FParsec
 
 #load "..\FactX\FactX\Internal\FormatCombinators.fs"
+#load "..\FactX\FactX\Internal\PrologSyntax.fs"
 #load "..\FactX\FactX\FactOutput.fs"
 open FactX.Internal.FormatCombinators
+open FactX.Internal
 open FactX.FactSignature
 
 
@@ -62,3 +64,7 @@ let test05 () =
 
 let test06 () = 
     runParserOnString pSignature () "NONE" "identifier_one(blue, yellow)."
+
+let test07 () = 
+    testRender (PrologSyntax.PDecimal 1.078M).Format 
+
