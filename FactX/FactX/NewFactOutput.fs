@@ -99,10 +99,22 @@ module FactOutput =
             match opt with
             | None -> v
             | Some clause -> v.Add(clause)
+
         member v.Concat (facts:FactBase) : FactBase = 
             let (FactBase db0) = v 
             let (FactBase db1) = facts
             FactBase <| List.foldBack (fun (key,value) ac -> ac) (Map.toList db1) db0
+
+        static member ofList(clauses:Clause list) : FactBase =
+            List.foldBack (fun (clz:Clause) ac -> ac.Add(clz)) clauses FactBase.empty
+
+        static member ofOptionList(optClauses:option<Clause> list) : FactBase =
+            List.foldBack (fun (opt:option<Clause>) ac -> 
+                                match opt with
+                                | None -> ac
+                                | Some clz -> ac.Add(clz) ) 
+                          optClauses 
+                          FactBase.empty
 
         member v.ToProlog() : PrologSyntax.FactSet list = 
             let (FactBase db) = v in 

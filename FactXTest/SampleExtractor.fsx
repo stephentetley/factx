@@ -62,11 +62,9 @@ let genAddresses () =
                           ; PrologSyntax.PString        addr ] } 
 
     let addresses : FactBase = 
-        List.fold (fun ac row -> match makeClause row with 
-                                 | None -> ac
-                                 | Some clause -> ac.Add(clause)) 
-                  FactBase.empty 
-                  (readInstallations ())
+        readInstallations () 
+            |> List.map makeClause 
+            |> FactBase.ofOptionList
 
 
     let pmodule : Module = 
@@ -75,30 +73,27 @@ let genAddresses () =
     pmodule.Save(outFile)
 
 
-    
+let genAssetNames () = 
+    let outFile = makeOutputPath "asset_names.pl"
+    let signature = FactSignature.parseSignature "asset_name(refnum, name)."
+    let makeClause (row:InstallationsRow) = 
+        { Signature = signature; 
+          Body = [ PrologSyntax.PQuotedAtom    row.InstReference
+                 ; PrologSyntax.PString        row.InstCommonName ] }
 
+    let assetNames : FactBase = 
+        readInstallations ()             
+            |> List.map makeClause 
+            |> FactBase.ofList
 
-//let genAssetNames () = 
-//    let outFile = makeOutputPath "asset_names.pl"
+    let pmodule : Module= 
+        new Module("asset_names", "asset_names.pl", assetNames)
 
-//    let namesHelper = 
-//        { new IFactHelper<InstallationsRow> with
-//            member this.Signature = "asset_name(refnum, name)."
-//            member this.ClauseBody row = 
-//                Some [ PQuotedAtom    row.InstReference
-//                     ; PString        row.InstCommonName ] 
-//        }
-
-//    let assetNames : FactSet = readInstallations () |> makeFactSet namesHelper
-
-//    let pmodule : Module= 
-//        new Module("asset_names", "asset_names.pl", assetNames)
-
-//    pmodule.Save(outFile)
+    pmodule.Save(outFile)
     
 
 let main () : unit = 
     genAddresses ()
-    // genAssetNames ()
+    genAssetNames ()
     printfn "Done."
 
