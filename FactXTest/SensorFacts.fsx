@@ -23,7 +23,7 @@ open FSharp.Interop.Excel
 open FactX
 open FactX.Extra.ExcelProviderHelper
 open FactX.Extra.ValueReader
-open System.Security.AccessControl
+
 
 
 let outputFile (filename:string) : string = 
@@ -166,7 +166,7 @@ let parseFixed1 (uid:string) (number:int) (funName:string) : ValueReader<FixedRe
 
 
 
-// TODO this would be much easier if we could add to FactSets
+// TODO this would likely be simpler if we could add to FactSets
 let getRelays13 (rows:Relay13Row list) : FixedRelay list * ActiveRelay list = 
     let cons (opt:Option<'a>) (ac:'a list) : 'a list = 
         match opt with
@@ -247,3 +247,6 @@ let genRelayFacts () : unit =
 
     pmodule.Save(outFile)
 
+let main () : unit = 
+    genRelayFacts ()
+    genSensorFacts () 

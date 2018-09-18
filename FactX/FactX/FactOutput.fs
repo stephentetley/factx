@@ -48,6 +48,11 @@ module FactSignature =
 [<AutoOpen>]
 module FactOutput = 
 
+    /// Note - this syntax favours output not creation.
+    /// It could be considered as "abstract syntax" implying
+    /// we need a "concrete syntax" for librarty users writing
+    /// their own Fact Extractors.
+
     type Identifier = string
 
     /// Note - Sequences/tuples not represented (should they be?)
@@ -65,6 +70,11 @@ module FactOutput =
             | PQuotedAtom s -> quotedAtom s
             | PList vs -> prologList (List.map (fun (x:Value) -> x.Format) vs)
 
+    /// To consider...
+    /// If Clause rather than FactSet had a signature we could add
+    /// clauses to a (more-or-less opaque) factbase. 
+    /// This would let factbase creating traversals to easily add 
+    /// variously typed Clauses to the factbase.
     type Clause = 
         { FactName: Identifier
           Values : Value list }
