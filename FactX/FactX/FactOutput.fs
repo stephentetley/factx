@@ -161,4 +161,3 @@ module FactOutput =
             use sw = new System.IO.StreamWriter(filePath)
             sw.Write (render v.Format)
 
-

@@ -28,13 +28,13 @@ module PrologSyntax =
         | PDecimal of decimal
         | PQuotedAtom of string
         | PList of Value list
-        member v.Format = 
+        member v.Format () = 
             match v with
             | PString s -> prologString s
             | PInt i -> formatInt i
             | PDecimal d -> formatDecimal d
             | PQuotedAtom s -> quotedAtom s
-            | PList vs -> prologList (List.map (fun (x:Value) -> x.Format) vs)
+            | PList vs -> prologList (List.map (fun (x:Value) -> x.Format()) vs)
 
     /// To consider...
     /// If Clause rather than FactSet had a signature we could add
@@ -44,9 +44,9 @@ module PrologSyntax =
     type Clause = 
         { FactName: Identifier
           Values : Value list }
-        member v.Format = 
+        member v.Format () = 
             prologFact (simpleAtom v.FactName) 
-                        (List.map (fun (x:Value) -> x.Format) v.Values)
+                        (List.map (fun (x:Value) -> x.Format()) v.Values)
 
 
     type FactSet = 
@@ -55,10 +55,10 @@ module PrologSyntax =
           Signature: string
           Comment: string
           Clauses: Clause list }
-        member v.Format : Doc = 
+        member v.Format () : Doc = 
             let d1 = prologComment v.Signature
             let d2 = prologComment v.Comment
-            let ds = List.map (fun (clause:Clause) -> clause.Format) v.Clauses
+            let ds = List.map (fun (clause:Clause) -> clause.Format()) v.Clauses
             vcat <| (d1 :: d2 :: ds)
 
         member v.ExportSignature = (v.FactName, v.Arity)
@@ -96,17 +96,17 @@ module PrologSyntax =
             ; Exports = [db.ExportSignature]
             ; Database = [db] }
 
-        member v.Format = 
+        member v.Format () = 
             let d1 = prologComment v.GlobalComment
             let d2 = moduleDirective v.ModuleName v.Exports
-            let ds = List.map (fun (col:FactSet) -> col.Format) v.Database
+            let ds = List.map (fun (col:FactSet) -> col.Format()) v.Database
             vsep [ d1; d2; vsep ds ]
 
         member v.SaveToString () : string = 
-            render v.Format
+            render <| v.Format()
         
         member v.Save(filePath:string) = 
             use sw = new System.IO.StreamWriter(filePath)
-            sw.Write (render v.Format)
+            sw.Write (render <| v.Format())
 
 

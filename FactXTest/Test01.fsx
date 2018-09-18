@@ -66,5 +66,5 @@ let test06 () =
     runParserOnString pSignature () "NONE" "identifier_one(blue, yellow)."
 
 let test07 () = 
-    testRender (PrologSyntax.PDecimal 1.078M).Format 
+    testRender <| (PrologSyntax.PDecimal 1.078M).Format()
 
