@@ -139,37 +139,27 @@ type ActiveRelay =
 
 /// Use ValueReader
 let decodeRelay (uid:string) (number:int) (funName:string) 
-            (ons:string) (offs:string) : Option<Choice<FixedRelay,ActiveRelay>> = 
+            (ons:string) (offs:string) : Option<Clause> = 
     let parseActive = 
+        let signature = parseSignature "us_active_relay(pli_code, relay_number, relay_function, on_setpoint, off_setpoint)."
         valueReader {
-            let! uid1    = readStringRaw uid
-            let! name   = readStringRaw funName
-            let! on1     = readDecimalRaw ons
-            let! off1    = readDecimalRaw offs
-            return { Uid = uid1
-                     Number = number
-                     Function = name
-                     OnSetpoint = on1
-                     OffSetpoint = off1 }
+            let! uid1       = readSymbol uid
+            let! funName1   = readString funName
+            let! on1        = readDecimal ons
+            let! off1       = readDecimal offs
+            return { Signature = signature 
+                   ; Body = [ uid1; PrologSyntax.PInt number; funName1; on1; off1 ] }
         }
     let parseFixed = 
+        let signature = parseSignature "us_fixed_relay(pli_code, relay_number, relay_function)."
         valueReader {
-            let! uid1    = readStringRaw uid 
-            let! name    = readStringRaw funName  
-            return { Uid = uid1
-                     Number = number
-                     Function = name }
+            let! uid1       = readSymbol uid 
+            let! funName1   = readString funName  
+            return { Signature = signature
+                   ; Body = [ uid1; PrologSyntax.PInt number; funName1 ] }
         }
-    let parser = (parseActive |>> Choice2Of2) <||> (parseFixed |>> Choice1Of2)
+    let parser = parseActive <||> parseFixed 
     runValueReader parser
-
-let parseFixed1 (uid:string) (number:int) (funName:string) : ValueReader<FixedRelay> = 
-    valueReader {
-        let! uid1    = readStringRaw uid    
-        return { Uid = uid1
-                 Number = number
-                 Function = funName }
-    }  
 
 
 
