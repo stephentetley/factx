@@ -6,7 +6,7 @@
 #r "FParsecCS"
 
 #load "..\FactX\FactX\Internal\FormatCombinators.fs"
-#load "..\FactX\FactX\FactOutput.fs"
+#load "..\FactX\FactX\OldFactOutput.fs"
 #load "..\FactX\FactX\Extra\DirectoryListing.fs"
 open FactX
 open FactX.Internal.FormatCombinators

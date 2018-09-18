@@ -59,12 +59,12 @@ let test04 () =
 //    let body = between lparen rparen (sepBy lexeme comma)
 //    pipe3 lexeme body dot (fun x xs _ -> Signature(x,xs))
 
+//let test05 () = 
+//    runParserOnString lexeme () "NONE" "identifier_one()."
+
+//let test06 () = 
+//    runParserOnString pSignature () "NONE" "identifier_one(blue, yellow)."
+
 let test05 () = 
-    runParserOnString lexeme () "NONE" "identifier_one()."
-
-let test06 () = 
-    runParserOnString pSignature () "NONE" "identifier_one(blue, yellow)."
-
-let test07 () = 
     testRender <| (PrologSyntax.PDecimal 1.078M).Format()
 

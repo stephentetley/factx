@@ -19,7 +19,7 @@ open FSharp.Interop.Excel
 
 #load "..\FactX\FactX\Internal\FormatCombinators.fs"
 #load "..\FactX\FactX\Internal\PrologSyntax.fs"
-#load "..\FactX\FactX\NewFactOutput.fs"
+#load "..\FactX\FactX\FactOutput.fs"
 #load "..\FactX\FactX\Extra\ExcelProviderHelper.fs"
 open FactX.Internal
 open FactX.Extra.ExcelProviderHelper

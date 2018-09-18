@@ -9,6 +9,7 @@ open System.IO
 open FParsec
 
 open FactX.Internal.FormatCombinators
+open FactX.Internal
 
 
 module FactSignature = 
@@ -18,24 +19,28 @@ module FactSignature =
         | Signature of string * string list
         member v.Arity : int = match v with | Signature(_,xs) -> List.length xs
         member v.Name : string = match v with | Signature(x,_) -> x
+        override v.ToString() = 
+            match v with 
+            | Signature(name,args) -> sprintf "%s(%s)." name (String.concat ", " args)
+            
 
 
     let exportSignature (signature:Signature) : string = 
         sprintf "%s/%d" signature.Name signature.Arity
 
-    // Temp - parsing signatures.
+    // Parsing signatures.
 
-    let lexeme : Parser<string, unit> = 
+    let private lexeme : Parser<string, unit> = 
         let opts = IdentifierOptions(isAsciiIdStart = isLetter)
         identifier opts .>> spaces
 
-    let lparen : Parser<unit, unit> = (pchar '(') >>. spaces
-    let rparen : Parser<unit, unit> = (pchar ')') >>. spaces
-    let comma : Parser<unit, unit> = (pchar ',') >>. spaces
-    let dot : Parser<unit, unit> = (pchar '.') >>. spaces
+    let private lparen : Parser<unit, unit> = (pchar '(') >>. spaces
+    let private rparen : Parser<unit, unit> = (pchar ')') >>. spaces
+    let private comma : Parser<unit, unit> = (pchar ',') >>. spaces
+    let private dot : Parser<unit, unit> = (pchar '.') >>. spaces
 
 
-    let pSignature : Parser<Signature,  unit> =
+    let private pSignature : Parser<Signature,  unit> =
         let body = between lparen rparen (sepBy lexeme comma)
         pipe3 lexeme body dot (fun x xs _ -> Signature(x,xs))
 
@@ -43,121 +48,112 @@ module FactSignature =
         match runParserOnString pSignature () "NONE" source with
         | Success(ans,_,_) -> ans
         | Failure(_,_,_) -> failwithf "Parsing failed on signature: '%s'" source
-        
+
 
 [<AutoOpen>]
 module FactOutput = 
 
-    /// Note - this syntax favours output not creation.
-    /// It could be considered as "abstract syntax" implying
-    /// we need a "concrete syntax" for librarty users writing
-    /// their own Fact Extractors.
+    type ClauseBody = PrologSyntax.Value list
 
-    type Identifier = string
-
-    /// Note - Sequences/tuples not represented (should they be?)
-    type Value = 
-        | PString of string
-        | PInt of int
-        | PDecimal of decimal
-        | PQuotedAtom of string
-        | PList of Value list
-        member v.Format = 
-            match v with
-            | PString s -> prologString s
-            | PInt i -> formatInt i
-            | PDecimal d -> formatDecimal d
-            | PQuotedAtom s -> quotedAtom s
-            | PList vs -> prologList (List.map (fun (x:Value) -> x.Format) vs)
-
-    /// To consider...
-    /// If Clause rather than FactSet had a signature we could add
-    /// clauses to a (more-or-less opaque) factbase. 
-    /// This would let factbase creating traversals to easily add 
-    /// variously typed Clauses to the factbase.
     type Clause = 
-        { FactName: Identifier
-          Values : Value list }
-        member v.Format = 
-            prologFact (simpleAtom v.FactName) 
-                        (List.map (fun (x:Value) -> x.Format) v.Values)
+        { Signature: FactSignature.Signature
+          Body : ClauseBody }
+        member v.ToProlog() : PrologSyntax.Clause = 
+            { FactName = v.Signature.Name
+            ; Values = v.Body }
 
-    /// Note - if we parsed/validated the signature we could save the user
-    /// having to specify name and arity.
-    type IFactHelper<'a> = 
-        abstract Signature : string
-        abstract ClauseBody : 'a -> Option<Value list>
-
-    type FactSet = 
-        { FactName: Identifier 
-          Arity: int
-          Signature: string
-          Comment: string
-          Clauses: Clause list }
-        member v.Format : Doc = 
-            let d1 = prologComment v.Signature
-            let d2 = prologComment v.Comment
-            let ds = List.map (fun (clause:Clause) -> clause.Format) v.Clauses
-            vcat <| (d1 :: d2 :: ds)
-
-        member v.ExportSignature = (v.FactName, v.Arity)
     
-    let makeFactSet (helper:IFactHelper<'a>) (items:seq<'a>) : FactSet = 
-        let signature = FactSignature.parseSignature helper.Signature
-        let makeClause (item:'a) : Option<Clause>  = 
-            let make1 (values:Value list) : Clause = 
-                { FactName = signature.Name; Values = values }
-            Option.map make1 (helper.ClauseBody item)
-            
-        { FactName  = signature.Name
-          Arity     = signature.Arity
-          Signature = helper.Signature 
-          Comment   = "" 
-          Clauses   = Seq.toList items |> List.map makeClause |> List.choose id
-        }
-        
+    let private makeFactSet (signature:FactSignature.Signature) 
+                            (clauses: ClauseBody list) : PrologSyntax.FactSet =
+        let makeClause1 (body:ClauseBody)  = 
+            { Signature = signature; Body = body }
+        { FactName = signature.Name
+          Arity = signature.Arity
+          Signature = signature.ToString()
+          Comment = ""
+          Clauses = List.map (fun (v:ClauseBody) -> (makeClause1 v).ToProlog()) clauses
+          }
 
 
-    /// Potentially this should be an object, not a record.
+    /// Extending FactBase to include e.g comments on clauses, would be 
+    /// nice but we lose the simplicity (and potentially the efficiency) 
+    /// of just wrapping Map<>.
+    /// Also we want FactBase to be immutable so we can have e.g backtracking 
+    /// fact extractors.
+    [<Struct>]
+    type FactBase = 
+        | FactBase of Map<FactSignature.Signature, ClauseBody list>
+     
+        static member empty : FactBase = 
+            FactBase Map.empty
+
+        member v.Add (clause:Clause) : FactBase = 
+            let (FactBase db) = v
+            let db1 = 
+                match Map.tryFind clause.Signature db with
+                | None -> db.Add(clause.Signature, [clause.Body])
+                | Some xs -> db.Add(clause.Signature, clause.Body :: xs)
+            FactBase db1
+
+        member v.Add(opt:option<Clause>) : FactBase = 
+            match opt with
+            | None -> v
+            | Some clause -> v.Add(clause)
+
+        member v.Concat (facts:FactBase) : FactBase = 
+            let (FactBase db0) = v 
+            let (FactBase db1) = facts
+            FactBase <| List.foldBack (fun (key,value) ac -> ac) (Map.toList db1) db0
+
+        static member ofList(clauses:Clause list) : FactBase =
+            List.foldBack (fun (clz:Clause) ac -> ac.Add(clz)) clauses FactBase.empty
+
+        static member ofOptionList(optClauses:option<Clause> list) : FactBase =
+            List.foldBack (fun (opt:option<Clause>) ac -> 
+                                match opt with
+                                | None -> ac
+                                | Some clz -> ac.Add(clz) ) 
+                          optClauses 
+                          FactBase.empty
+
+        member v.ToProlog() : PrologSyntax.FactSet list = 
+            let (FactBase db) = v in 
+            Map.toList db |> List.map (fun (k,x) -> makeFactSet k x)
+    
+    let mergeFactBases (dbs:FactBase list) : FactBase = 
+        match dbs with
+        | [] -> FactBase.empty
+        | x :: xs -> List.foldBack (fun e ac -> ac.Concat(e)) xs x
+
     type Module = 
         val ModuleName : string
         val GlobalComment : string
-        val Exports : (Identifier * int) list
-        val Database : FactSet list
-        new (name:string, comment:string, db:FactSet list) = 
+        val Database : FactBase
+        new (name:string, db:FactBase) = 
             { ModuleName = name
-            ; GlobalComment = comment
-            ; Exports = db |> List.map (fun a -> a.ExportSignature)
+            ; GlobalComment = ""
             ; Database = db }
 
-        new (name:string, db:FactSet list) = 
+        new (name:string, dbs:FactBase list) = 
             { ModuleName = name
-            ; GlobalComment = sprintf "%s.pl" name
-            ; Exports = db |> List.map (fun a -> a.ExportSignature)
-            ; Database = db }
+            ; GlobalComment = ""
+            ; Database = mergeFactBases dbs }
 
-        new (name:string, comment:string, db:FactSet) = 
+        new (name:string, comment:string, db:FactBase) = 
             { ModuleName = name
             ; GlobalComment = comment
-            ; Exports = [db.ExportSignature]
-            ; Database = [db] }
-        
-        new (name:string, db:FactSet) = 
+            ; Database = db }
+
+        new (name:string, comment:string, dbs:FactBase list) = 
             { ModuleName = name
-            ; GlobalComment = sprintf "%s.pl" name
-            ; Exports = [db.ExportSignature]
-            ; Database = [db] }
+            ; GlobalComment = comment
+            ; Database = mergeFactBases dbs }
 
-        member v.Format = 
-            let d1 = prologComment v.GlobalComment
-            let d2 = moduleDirective v.ModuleName v.Exports
-            let ds = List.map (fun (col:FactSet) -> col.Format) v.Database
-            vsep [ d1; d2; vsep ds ]
+        member v.ToProlog() : PrologSyntax.Module = 
+            let prologFacts = v.Database.ToProlog () 
+            new PrologSyntax.Module (name = v.ModuleName, comment = v.GlobalComment, db = prologFacts)
 
-        member v.SaveToString () : string = 
-            render v.Format
-        
         member v.Save(filePath:string) = 
+            let prologModule = v.ToProlog()
             use sw = new System.IO.StreamWriter(filePath)
-            sw.Write (render v.Format)
-
+            sw.Write (render <| prologModule.Format ())

@@ -22,7 +22,7 @@ open System.IO
 
 
 #load "..\FactX\FactX\Internal\FormatCombinators.fs"
-#load "..\FactX\FactX\FactOutput.fs"
+#load "..\FactX\FactX\OldFactOutput.fs"
 #load "..\FactX\FactX\Extra\ExcelProviderHelper.fs"
 open FactX
 open FactX.Extra.ExcelProviderHelper
