@@ -40,3 +40,8 @@ let temp03 () =
     let abssyn = csyn.ToProlog()
     printfn "%s" << render <| abssyn.Format() 
 
+let temp04 () = 
+    let m1 : Map<string,int list> = Map.empty.Add("four",[4])
+    let m2 : Map<string,int list> = Map.empty.Add("five",[5]) 
+    List.fold (fun ac (n,v) -> Map.add n v ac) m1 (Map.toList m2)
+

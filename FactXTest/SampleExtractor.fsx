@@ -18,10 +18,12 @@ open FSharp.Interop.Excel
 
 
 #load "..\FactX\FactX\Internal\FormatCombinators.fs"
-#load "..\FactX\FactX\FactOutput.fs"
+#load "..\FactX\FactX\Internal\PrologSyntax.fs"
+#load "..\FactX\FactX\NewFactOutput.fs"
 #load "..\FactX\FactX\Extra\ExcelProviderHelper.fs"
-open FactX
+open FactX.Internal
 open FactX.Extra.ExcelProviderHelper
+open FactX
 
 // ********** DATA SETUP **********
 
@@ -49,19 +51,23 @@ let makeOutputPath (fileName:string) : string =
 // ** Generate Prolog facts.
 let genAddresses () = 
     let outFile = makeOutputPath "addresses.pl"
-    
-    let addressHelper = 
-        { new IFactHelper<InstallationsRow> with
-            member this.Signature = "address(refnum, full_address)."
-            member this.ClauseBody row = 
-                match row.``Full Address`` with
-                | null -> None
-                | addr -> 
-                    Some [ PQuotedAtom    row.InstReference
-                         ; PString        addr ] 
-        } 
+    let signature = FactSignature.parseSignature "address(refnum, full_address)."
 
-    let addresses : FactSet = readInstallations () |> makeFactSet addressHelper
+    let makeClause (row:InstallationsRow) : Option<Clause>= 
+        match row.``Full Address`` with
+        | null -> None
+        | addr -> 
+            Some { Signature = signature; 
+                   Body = [ PrologSyntax.PQuotedAtom    row.InstReference
+                          ; PrologSyntax.PString        addr ] } 
+
+    let addresses : FactBase = 
+        List.fold (fun ac row -> match makeClause row with 
+                                 | None -> ac
+                                 | Some clause -> ac.Add(clause)) 
+                  FactBase.empty 
+                  (readInstallations ())
+
 
     let pmodule : Module = 
         new Module("addresses", "addresses.pl", addresses)
@@ -72,27 +78,27 @@ let genAddresses () =
     
 
 
-let genAssetNames () = 
-    let outFile = makeOutputPath "asset_names.pl"
+//let genAssetNames () = 
+//    let outFile = makeOutputPath "asset_names.pl"
 
-    let namesHelper = 
-        { new IFactHelper<InstallationsRow> with
-            member this.Signature = "asset_name(refnum, name)."
-            member this.ClauseBody row = 
-                Some [ PQuotedAtom    row.InstReference
-                     ; PString        row.InstCommonName ] 
-        }
+//    let namesHelper = 
+//        { new IFactHelper<InstallationsRow> with
+//            member this.Signature = "asset_name(refnum, name)."
+//            member this.ClauseBody row = 
+//                Some [ PQuotedAtom    row.InstReference
+//                     ; PString        row.InstCommonName ] 
+//        }
 
-    let assetNames : FactSet = readInstallations () |> makeFactSet namesHelper
+//    let assetNames : FactSet = readInstallations () |> makeFactSet namesHelper
 
-    let pmodule : Module= 
-        new Module("asset_names", "asset_names.pl", assetNames)
+//    let pmodule : Module= 
+//        new Module("asset_names", "asset_names.pl", assetNames)
 
-    pmodule.Save(outFile)
+//    pmodule.Save(outFile)
     
 
 let main () : unit = 
     genAddresses ()
-    genAssetNames ()
+    // genAssetNames ()
     printfn "Done."
 
