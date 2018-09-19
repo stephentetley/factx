@@ -10,6 +10,7 @@ open System.Text
 
 open FParsec
 
+open FactX.Internal
 open FactX
 
 [<AutoOpen>]
@@ -243,15 +244,14 @@ module DirectoryListing =
 module DirectoryFacts = 
 
 
-    let fileStore (fs:FileStore) : FactSet = 
-        let helper = 
-            { new IFactHelper<FileStore> with
-                member this.Signature = "file_store(path_to_root)."
-                member this.ClauseBody (x:FileStore) = 
+    let fileStore (fs:FileStore) : FactBase = 
+        let makeClause (x:FileStore) = 
+            { Signature = parseSignature "file_store(path_to_root)."
+              Body = 
                     match x with
-                    | FileStore(path,_) -> Some [ PQuotedAtom path ] 
+                    | FileStore(path,_) -> [ PrologSyntax.PQuotedAtom path ] 
             }
-        makeFactSet helper [fs]
+        FactBase.ofList [makeClause fs]
 
 
     let driveLetter (path:FilePath) : string = 
@@ -261,13 +261,12 @@ module DirectoryFacts =
         else 
             ""
 
-    let drive (fs:FileStore) : FactSet = 
-        let helper = 
-            { new IFactHelper<FileStore> with
-                member this.Signature = "file_store_drive(path_to_root, drive)."
-                member this.ClauseBody (x:FileStore) = 
+    let drive (fs:FileStore) : FactBase = 
+        let makeClause (x:FileStore) = 
+            { Signature = parseSignature "file_store_drive(path_to_root, drive)."
+              Body = 
                     match x with
                     | FileStore(path,_) -> 
-                        Some [ PQuotedAtom path; PQuotedAtom (driveLetter path) ] 
+                        [ PrologSyntax.PQuotedAtom path; PrologSyntax.PQuotedAtom (driveLetter path) ] 
             }
-        makeFactSet helper [fs]
+        FactBase.ofList [makeClause fs]

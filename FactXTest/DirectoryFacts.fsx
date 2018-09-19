@@ -6,10 +6,11 @@
 #r "FParsecCS"
 
 #load "..\FactX\FactX\Internal\FormatCombinators.fs"
-#load "..\FactX\FactX\OldFactOutput.fs"
+#load "..\FactX\FactX\Internal\PrologSyntax.fs"
+#load "..\FactX\FactX\FactOutput.fs"
 #load "..\FactX\FactX\Extra\DirectoryListing.fs"
 open FactX
-open FactX.Internal.FormatCombinators
+open FactX.Internal
 open FactX.Extra.DirectoryListing
 
 
@@ -33,13 +34,13 @@ let test02 () =
     match readDirRecurseOutput path1 with
     | Choice1Of2 err -> failwith err
     | Choice2Of2 ans -> 
-        let fs:FactSet = fileStore ans in render (fs.Format) |> printfn "%s" 
-        let fs:FactSet = drive ans in render (fs.Format) |> printfn "%s" 
+        let fs:FactBase = fileStore ans in (fs.ToProlog()) |> printfn "%A" 
+        let fs:FactBase = drive ans in (fs.ToProlog()) |> printfn "%A" 
 
 // SWI-Prolog has a pcre module which suggests representing paths
 // as lists of strings might be useful.
-let pathList (path:FilePath) : Value = 
-    path.Split('\\') |> Array.toList |> List.map PString |> PList
+let pathList (path:FilePath) : PrologSyntax.Value = 
+    path.Split('\\') |> Array.toList |> List.map PrologSyntax.PString |> PrologSyntax.PList
 
 /// If we encode LastWriteTime use something that can be parsed with
 /// parse_time (SWI Prolog).
