@@ -5,6 +5,9 @@
 #r "FParsec"
 #r "FParsecCS"
 
+#I @"..\packages\ExcelProvider.1.0.1\lib\net45"
+#r "ExcelProvider.Runtime.dll"
+
 #I @"..\packages\ExcelProvider.1.0.1\typeproviders\fsharp41\net45"
 #r "ExcelDataReader.DataSet.dll"
 #r "ExcelDataReader.dll"
@@ -16,8 +19,10 @@ open FSharp.Interop.Excel
 open FSharp.Data
 
 #load "..\FactX\FactX\Internal\FormatCombinators.fs"
-#load "..\FactX\FactX\OldFactOutput.fs"
+#load "..\FactX\FactX\Internal\PrologSyntax.fs"
+#load "..\FactX\FactX\FactOutput.fs"
 #load "..\FactX\FactX\Extra\ExcelProviderHelper.fs"
+open FactX.Internal
 open FactX
 open FactX.Extra.ExcelProviderHelper
 
@@ -45,29 +50,23 @@ let outputFileName (filename:string) : string =
     System.IO.Path.Combine(@"G:\work\common_data\prolog", filename) 
 
 
-let siteNameHelper : IFactHelper<SaiRow> = 
-    { new IFactHelper<SaiRow> with 
-        member this.Signature = "site_name(uid, common_name)."
-        member this.ClauseBody row = 
-            Some [ PQuotedAtom   row.InstReference
-                 ; PString       row.InstCommonName ]
+let siteNameHelper (row:SaiRow) : Clause = 
+    { Signature = parseSignature "site_name(uid, common_name)."
+      Body = [ PrologSyntax.PQuotedAtom   row.InstReference
+             ; PrologSyntax.PString       row.InstCommonName ]
     }
 
 
-let assetTypeHelper : IFactHelper<SaiRow> = 
-    { new IFactHelper<SaiRow> with 
-        member this.Signature = "asset_type(uid, type)."
-        member this.ClauseBody row = 
-            Some [ PQuotedAtom   row.InstReference
-                 ; PQuotedAtom   row.AssetType ]
+let assetTypeHelper (row:SaiRow) : Clause = 
+    { Signature = parseSignature "asset_type(uid, type)."
+      Body = [ PrologSyntax.PQuotedAtom   row.InstReference
+             ; PrologSyntax.PQuotedAtom   row.AssetType ]
     }
 
-let assetStatusHelper : IFactHelper<SaiRow> = 
-    { new IFactHelper<SaiRow> with 
-        member this.Signature = "asset_status(uid, status)."
-        member this.ClauseBody row = 
-           Some [ PQuotedAtom row.InstReference
-                ; PQuotedAtom row.AssetStatus ]
+let assetStatusHelper (row:SaiRow) : Clause = 
+    { Signature = parseSignature "asset_status(uid, status)."
+      Body = [ PrologSyntax.PQuotedAtom row.InstReference
+             ; PrologSyntax.PQuotedAtom row.AssetStatus ]
     }
 
 
@@ -75,9 +74,9 @@ let assetStatusHelper : IFactHelper<SaiRow> =
 let genSiteFacts (rows:SaiRow list) : unit = 
     let outFile = outputFileName "sai_facts.pl"
 
-    let siteNames : FactSet     = rows |> makeFactSet siteNameHelper
-    let assetTypes : FactSet    = rows |> makeFactSet assetTypeHelper
-    let assetStatus : FactSet   = rows |> makeFactSet assetStatusHelper
+    let siteNames : FactBase     = rows |> List.map siteNameHelper |> FactBase.ofList
+    let assetTypes : FactBase    = rows |> List.map assetTypeHelper |> FactBase.ofList
+    let assetStatus : FactBase   = rows |> List.map assetStatusHelper |> FactBase.ofList
 
     let pmodule : Module = 
         new Module("sai_facts", "sai_facts.pl", [ siteNames; assetTypes; assetStatus ])
@@ -102,38 +101,29 @@ let readOutstationRows () : OutstationRow list =
     (new OustationTable()).Rows |> Seq.toList
 
 
-let osNameHelper : IFactHelper<OutstationRow> = 
-    { new IFactHelper<OutstationRow> with 
-        member this.Signature = "os_name(od_name, outstation_name)."
-        member this.ClauseBody row = 
-            Some [ PQuotedAtom    row.``OD name``
-                 ; PQuotedAtom    row.``OS name`` ]
-    }
+let osNameHelper (row:OutstationRow) : Clause = 
+    { Signature = parseSignature "os_name(od_name, outstation_name)."
+      Body = [ PrologSyntax.PQuotedAtom    row.``OD name``
+             ; PrologSyntax.PQuotedAtom    row.``OS name`` ] }
 
-let osTypeHelper : IFactHelper<OutstationRow> = 
-    { new IFactHelper<OutstationRow> with 
-        member this.Signature = "os_type(od_name, os_type)."
-        member this.ClauseBody row = 
-            Some [ PQuotedAtom    row.``OD name``
-                 ; PQuotedAtom    row.``OS type`` ]
-    }
+let osTypeHelper (row:OutstationRow) : Clause = 
+    { Signature = parseSignature "os_type(od_name, os_type)."
+      Body = [ PrologSyntax.PQuotedAtom    row.``OD name``
+             ; PrologSyntax.PQuotedAtom    row.``OS type`` ] }
 
 
-let odCommentHelper : IFactHelper<OutstationRow> = 
-    { new IFactHelper<OutstationRow> with 
-        member this.Signature = "od_comment(od_name, comment)."
-        member this.ClauseBody row = 
-            Some [ PQuotedAtom   row.``OD name``
-                 ; PString       row.``OD comment`` ]
-        }
+let odCommentHelper (row:OutstationRow) : Clause = 
+    { Signature = parseSignature "od_comment(od_name, comment)."
+      Body = [ PrologSyntax.PQuotedAtom   row.``OD name``
+             ; PrologSyntax.PString       row.``OD comment`` ] }
 
 
 let genOsFacts (rows:OutstationRow list) : unit = 
     let outFile = outputFileName "os_facts.pl"
     
-    let osNames : FactSet   = rows |> makeFactSet osNameHelper
-    let osTypes : FactSet   = rows |> makeFactSet osTypeHelper
-    let comments : FactSet  = rows |> makeFactSet odCommentHelper
+    let osNames : FactBase  = rows |> List.map osNameHelper |> FactBase.ofList
+    let osTypes : FactBase  = rows |> List.map osTypeHelper |> FactBase.ofList
+    let comments : FactBase = rows |> List.map odCommentHelper |> FactBase.ofList
 
     let pmodule : Module = 
         new Module ("os_facts", "os_facts.pl", [osNames; osTypes; comments])

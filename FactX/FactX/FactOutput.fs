@@ -4,9 +4,9 @@
 namespace FactX
 
 
-open FactX.Internal.FormatCombinators
-open FactX.Internal
 
+open FactX.Internal
+open FactX.Internal.FormatCombinators
 
 [<AutoOpen>]
 module FactOutput = 

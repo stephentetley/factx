@@ -22,8 +22,10 @@ open System.IO
 
 
 #load "..\FactX\FactX\Internal\FormatCombinators.fs"
-#load "..\FactX\FactX\OldFactOutput.fs"
+#load "..\FactX\FactX\Internal\PrologSyntax.fs"
+#load "..\FactX\FactX\FactOutput.fs"
 #load "..\FactX\FactX\Extra\ExcelProviderHelper.fs"
+open FactX.Internal         // TEMP
 open FactX
 open FactX.Extra.ExcelProviderHelper
 
@@ -32,7 +34,7 @@ open PropUtils
 
 
 let outputFile (filename:string) : string = 
-    System.IO.Path.Combine(@"D:\coding\prolog\asset\facts", filename) 
+    System.IO.Path.Combine(@"D:\coding\prolog\_old\asset\facts", filename) 
 
 
 type AssetTable = 
@@ -50,28 +52,30 @@ let readAssetSpeadsheet (sourcePath:string) : AssetRow list =
     excelReadRowsAsList helper (new AssetTable(sourcePath))
 
 
-let equipmentBody (row:AssetRow) : Option<Value list> = 
+let equipmentBody (row:AssetRow) : Option<PrologSyntax.Value list> = 
     match row.``Common Name`` with
     | null -> None
     | cname ->
-        Some [ PQuotedAtom      <| row.Reference
-             ; PQuotedAtom      <| installationNameFromPath row.``Common Name`` 
-             ; PQuotedAtom      <| row.``Common Name`` 
-             ; PQuotedAtom      <| row.AssetStatus ]
+        Some [ PrologSyntax.PQuotedAtom      <| row.Reference
+             ; PrologSyntax.PQuotedAtom      <| installationNameFromPath row.``Common Name`` 
+             ; PrologSyntax.PQuotedAtom      <| row.``Common Name`` 
+             ; PrologSyntax.PQuotedAtom      <| row.AssetStatus ]
 
 let genUltrasonicInsts (allRows:AssetRow list) : unit = 
     let outFile = outputFile "adb_ultrasonic_insts.pl"
     
-    let helper : IFactHelper<AssetRow> = 
-        { new IFactHelper<AssetRow> with
-            member this.Signature = "adb_ultrasonic_inst(uid, site_name, path, op_status)."
-            member this.ClauseBody row = equipmentBody row }
+    let helper (row:AssetRow) : option<Clause> = 
+        match equipmentBody row with
+        | None -> None
+        | Some values -> 
+            Some <| { Signature = parseSignature "adb_ultrasonic_inst(uid, site_name, path, op_status)."
+                      Body = values }
               
     
     let ultrasonics = 
         List.filter (fun (row:AssetRow) -> isLevelControlAdb row.``Common Name``) allRows
 
-    let facts : FactSet = ultrasonics |> makeFactSet helper
+    let facts : FactBase = ultrasonics |> List.map helper |> FactBase.ofOptionList
 
     let pmodule : Module = 
         new Module("adb_ultrasonic_insts", "adb_ultrasonic_insts.pl", facts)
@@ -82,15 +86,17 @@ let genUltrasonicInsts (allRows:AssetRow list) : unit =
 let genFlowMeters (allRows:AssetRow list) : unit = 
     let outFile = outputFile "adb_flow_meters.pl"
 
-    let helper : IFactHelper<AssetRow> = 
-        { new IFactHelper<AssetRow> with
-            member this.Signature = "adb_flow_meter(uid, site_name, path, op_status)."
-            member this.ClauseBody row = equipmentBody row }
+    let helper (row:AssetRow) : option<Clause> = 
+        match equipmentBody row with
+        | None -> None
+        | Some values -> 
+            Some <| { Signature = parseSignature "adb_flow_meter(uid, site_name, path, op_status)."
+                      Body = values }
             
     let flowMeters = 
         List.filter (fun (row:AssetRow) -> isFlowMeterAdb row.``Common Name``) allRows
 
-    let facts : FactSet = flowMeters |> makeFactSet helper
+    let facts : FactBase = flowMeters |> List.map helper |> FactBase.ofOptionList
 
     let pmodule : Module = 
         new Module("adb_flow_meters", "adb_flow_meters.pl", facts)
@@ -100,15 +106,17 @@ let genFlowMeters (allRows:AssetRow list) : unit =
 let genPressureInsts (allRows:AssetRow list) : unit = 
     let outFile = outputFile "adb_pressure_insts.pl"
 
-    let helper : IFactHelper<AssetRow> = 
-        { new IFactHelper<AssetRow> with
-            member this.Signature = "adb_pressure_inst(uid, site_name, path, op_status)."
-            member this.ClauseBody row = equipmentBody row }
+    let helper (row:AssetRow) : option<Clause> = 
+        match equipmentBody row with
+        | None -> None
+        | Some values -> 
+            Some <| { Signature = parseSignature "adb_pressure_inst(uid, site_name, path, op_status)."
+                      Body = values }
             
     let pressureInsts = 
         List.filter (fun (row:AssetRow) -> isPressureInstAdb row.``Common Name``) allRows
 
-    let facts : FactSet = pressureInsts |> makeFactSet helper
+    let facts : FactBase = pressureInsts |> List.map helper |> FactBase.ofOptionList
     
     let pmodule : Module = 
         new Module ("adb_pressure_insts", "adb_pressure_insts.pl", facts)
@@ -119,15 +127,17 @@ let genPressureInsts (allRows:AssetRow list) : unit =
 let genDissolvedOxygenInsts (allRows:AssetRow list) : unit = 
     let outFile = outputFile "adb_dissolved_oxygen_insts.pl"
     
-    let helper : IFactHelper<AssetRow> = 
-        { new IFactHelper<AssetRow> with
-            member this.Signature = "adb_dissolved_oxygen_inst(uid, site_name, path, op_status)."
-            member this.ClauseBody row = equipmentBody row }
+    let helper (row:AssetRow) : option<Clause> = 
+        match equipmentBody row with
+        | None -> None
+        | Some values -> 
+            Some <| { Signature = parseSignature "adb_dissolved_oxygen_inst(uid, site_name, path, op_status)."
+                      Body = values }
             
     let doxyInsts = 
         List.filter (fun (row:AssetRow) -> isDissolvedOxygenInstAdb row.``Common Name``) allRows
 
-    let facts : FactSet = doxyInsts |> makeFactSet helper
+    let facts : FactBase = doxyInsts |> List.map helper |> FactBase.ofOptionList
 
     let pmodule : Module = 
         new Module("adb_dissolved_oxygen_insts", "adb_dissolved_oxygen_insts.pl", facts)
@@ -151,12 +161,11 @@ let getInstallations (rows:AssetRow list) : string list =
 let genInstallationFacts (allRows:AssetRow list) : unit = 
     let outFile = outputFile "adb_installations.pl"
 
-    let helper : IFactHelper<string> = 
-        { new IFactHelper<string> with
-            member this.Signature = "adb_installation(installation_name)."
-            member this.ClauseBody name = Some [ PQuotedAtom name ] }
+    let helper (name:string) : Clause = 
+        { Signature = parseSignature "adb_installation(installation_name)."
+          Body = [ PrologSyntax.PQuotedAtom name ] }
      
-    let facts : FactSet =  getInstallations allRows |> makeFactSet helper
+    let facts : FactBase =  getInstallations allRows |> List.map helper |> FactBase.ofList
 
     let pmodule : Module = 
         new Module("adb_installations", "adb_installations.pl", facts)

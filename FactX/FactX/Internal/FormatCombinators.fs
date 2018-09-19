@@ -6,7 +6,6 @@ namespace FactX.Internal
 
 open System.Text
 open System
-open System
 
 [<AutoOpen>]
 module FormatCombinators = 
