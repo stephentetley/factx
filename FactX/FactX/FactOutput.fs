@@ -33,6 +33,13 @@ module FactOutput =
           }
 
 
+    let private mapToClauseList (omap: Map<Signature, ClauseBody list>) : Clause list = 
+        let makeClauses (key:Signature, bodies:ClauseBody list) = 
+            List.map (fun body -> { Signature = key; Body = body}) bodies
+        Map.toList omap 
+            |> List.map makeClauses
+            |> List.concat
+
     /// Extending FactBase to include e.g comments on clauses, would be 
     /// nice but we lose the simplicity (and potentially the efficiency) 
     /// of just wrapping Map<>.
@@ -58,10 +65,17 @@ module FactOutput =
             | None -> v
             | Some clause -> v.Add(clause)
 
+        member v.AddList (clauses: Clause list) : FactBase = 
+            List.foldBack (fun (c:Clause) (ac:FactBase) -> ac.Add(c)) clauses v
+
+        member v.AddList (opts: option<Clause> list) : FactBase = 
+            List.foldBack (fun (c:option<Clause>) (ac:FactBase) -> ac.Add(c)) opts v
+
         member v.Concat (facts:FactBase) : FactBase = 
-            let (FactBase db0) = v 
-            let (FactBase db1) = facts
-            FactBase <| List.foldBack (fun (key,value) ac -> ac) (Map.toList db1) db0
+            let (FactBase db) = v
+            let clauses = mapToClauseList db
+            facts.AddList(clauses)
+
 
         static member ofList(clauses:Clause list) : FactBase =
             List.foldBack (fun (clz:Clause) ac -> ac.Add(clz)) clauses FactBase.empty
