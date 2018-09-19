@@ -125,17 +125,7 @@ let readRelay46Spreadsheet () : Relay46Row list =
          
     excelReadRowsAsList helper (new Relay46Table())
 
-type FixedRelay = 
-    { Uid: string
-      Number: int
-      Function: string }
 
-type ActiveRelay = 
-    { Uid: string
-      Number: int
-      Function: string
-      OnSetpoint: decimal
-      OffSetpoint: decimal }
 
 /// Use ValueReader
 let decodeRelay (uid:string) (number:int) (funName:string) 
@@ -164,86 +154,52 @@ let decodeRelay (uid:string) (number:int) (funName:string)
 
 
 // TODO this would likely be simpler if we could add to FactSets
-let getRelays13 (rows:Relay13Row list) : FixedRelay list * ActiveRelay list = 
-    let cons (opt:Option<'a>) (ac:'a list) : 'a list = 
-        match opt with
-        | None -> ac
-        | Some a -> a::ac
+let getRelays13 (row:Relay13Row) : option<Clause> list  = 
+    let r1 = decodeRelay (row.Reference) 1 (row.``Relay 1 Function``) 
+                            (row.``Relay 1 on Level (m)``) 
+                            (row.``Relay 1 off Level (m)``)
+    let r2 = decodeRelay (row.Reference) 2 (row.``Relay 2 Function``) 
+                            (row.``Relay 2 on Level (m)``) 
+                            (row.``Relay 2 off Level (m)``)    
+    let r3 = decodeRelay (row.Reference) 3 (row.``Relay 3 Function``) 
+                            (row.``Relay 3 on Level (m)``) (row.``Relay 3 off Level (m)``)    
+    [ r1; r2; r3 ]
 
-    let rec work1 (row:Relay13Row) ac =
-        let r1 = decodeRelay (row.Reference) 1 (row.``Relay 1 Function``) 
-                                (row.``Relay 1 on Level (m)``) 
-                                (row.``Relay 1 off Level (m)``)
-        let r2 = decodeRelay (row.Reference) 2 (row.``Relay 2 Function``) 
-                                (row.``Relay 2 on Level (m)``) 
-                                (row.``Relay 2 off Level (m)``)    
-        let r3 = decodeRelay (row.Reference) 3 (row.``Relay 3 Function``) 
-                                (row.``Relay 3 on Level (m)``) (row.``Relay 3 off Level (m)``)    
-        cons r3 (cons r2 (cons r1 ac))
 
-    let answers = List.foldBack work1 rows []
-    let fixeds = List.choose (fun x -> match x with | Choice1Of2 y -> Some y | _ -> None) answers
-    let actives = List.choose (fun x -> match x with | Choice2Of2 y -> Some y | _ -> None) answers
-    fixeds, actives
+let getRelays46 (row:Relay46Row) : option<Clause> list  = 
+    let r1 = decodeRelay (row.Reference) 4 (row.``Relay 4 Function``) 
+                            (row.``Relay 4 on Level (m)``) 
+                            (row.``Relay 4 off Level (m)``)
+    let r2 = decodeRelay (row.Reference) 5 (row.``Relay 5 Function``) 
+                            (row.``Relay 5 on Level (m)``) 
+                            (row.``Relay 5 off Level (m)``)    
+    let r3 = decodeRelay (row.Reference) 6 (row.``Relay 6 Function``) 
+                            (row.``Relay 6 on Level (m)``) (row.``Relay 6 off Level (m)``)    
+    [ r1; r2; r3 ]
 
-let getRelays46 (rows:Relay46Row list) : FixedRelay list * ActiveRelay list = 
-    let cons (opt:Option<'a>) (ac:'a list) : 'a list = 
-        match opt with
-        | None -> ac
-        | Some a -> a::ac
-
-    let rec work1 (row:Relay46Row) ac =
-        let r1 = decodeRelay (row.Reference) 4 (row.``Relay 4 Function``) 
-                                (row.``Relay 4 on Level (m)``) 
-                                (row.``Relay 4 off Level (m)``)
-        let r2 = decodeRelay (row.Reference) 5 (row.``Relay 5 Function``) 
-                                (row.``Relay 5 on Level (m)``) 
-                                (row.``Relay 5 off Level (m)``)    
-        let r3 = decodeRelay (row.Reference) 6 (row.``Relay 6 Function``) 
-                                (row.``Relay 6 on Level (m)``) (row.``Relay 6 off Level (m)``)    
-        cons r3 (cons r2 (cons r1 ac))
-
-    let answers = List.foldBack work1 rows []
-    let fixeds = List.choose (fun x -> match x with | Choice1Of2 y -> Some y | _ -> None) answers
-    let actives = List.choose (fun x -> match x with | Choice2Of2 y -> Some y | _ -> None) answers
-    fixeds, actives
 
 let genRelayFacts () : unit = 
     let outFile = outputFile "us_relay_facts.pl"
     
-    //let fixedRelayHelper : IFactHelper<FixedRelay> = 
-    //    { new IFactHelper<FixedRelay> with
-    //        member this.Signature = "us_fixed_relay(pli_code, relay_number, relay_function)."
-    //        member this.ClauseBody (relay:FixedRelay) = 
-    //            Some <| [ PQuotedAtom relay.Uid
-    //                    ; PInt relay.Number
-    //                    ; PString relay.Function ]
-                    
-    //    }
+    let relays13 : FactBase = 
+        readRelay13Spreadsheet () 
+            |> List.map getRelays13
+            |> List.concat 
+            |> FactBase.ofOptionList
 
-    //let activeRelayHelper : IFactHelper<ActiveRelay> = 
-    //    { new IFactHelper<ActiveRelay> with
-    //        member this.Signature = "us_active_relay(pli_code, manufacturer, model, on_setpoint, off_setpoint)."
-    //        member this.ClauseBody (relay:ActiveRelay) = 
-    //            Some <| [ PQuotedAtom relay.Uid
-    //                    ; PInt relay.Number
-    //                    ; PString relay.Function 
-    //                    ; PDecimal relay.OnSetpoint
-    //                    ; PDecimal relay.OffSetpoint ]
-    //    }
-     
-    //let fixeds1, actives1 = readRelay13Spreadsheet () |> getRelays13
-    //let fixeds2, actives2 = readRelay46Spreadsheet () |> getRelays46
-
-    //let fixedFacts : FactSet = fixeds1 @ fixeds2 |> makeFactSet fixedRelayHelper
-    //let activeFacts : FactSet = actives1 @ actives2 |> makeFactSet activeRelayHelper
+    let relays46 : FactBase = 
+        readRelay46Spreadsheet () 
+            |> List.map getRelays46
+            |> List.concat 
+            |> FactBase.ofOptionList
 
     let pmodule : Module = 
         new Module( name = "us_relay_facts"
-                  , dbs = [] ) //  [fixedFacts; activeFacts] )
+                  , dbs = [relays13; relays46] )
 
     pmodule.Save(outFile)
 
 let main () : unit = 
     genRelayFacts ()
     genSensorFacts () 
+
