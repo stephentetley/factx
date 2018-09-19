@@ -8,7 +8,6 @@ open FParsec
 #load "..\FactX\FactX\FactOutput.fs"
 open FactX.Internal.FormatCombinators
 open FactX.Internal
-open FactX.FactSignature
 
 
 let test01 () = 

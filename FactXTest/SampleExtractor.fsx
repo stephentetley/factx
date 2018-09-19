@@ -39,7 +39,7 @@ let readInstallations () : InstallationsRow list =
           with member this.ReadTableRows table = table.Data 
                member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
          
-    excelReadRowsAsList helper (new InstallationsTable()) // |> List.take 100
+    excelReadRowsAsList helper (new InstallationsTable()) 
 
 let makeOutputPath (fileName:string) : string = 
     System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..", "data", fileName)
