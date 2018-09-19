@@ -25,7 +25,6 @@ open System.IO
 #load "..\FactX\FactX\Internal\PrologSyntax.fs"
 #load "..\FactX\FactX\FactOutput.fs"
 #load "..\FactX\FactX\Extra\ExcelProviderHelper.fs"
-open FactX.Internal         // TEMP
 open FactX
 open FactX.Extra.ExcelProviderHelper
 
@@ -52,30 +51,25 @@ let readAssetSpeadsheet (sourcePath:string) : AssetRow list =
     excelReadRowsAsList helper (new AssetTable(sourcePath))
 
 
-let equipmentBody (row:AssetRow) : Option<PrologSyntax.Value list> = 
-    match row.``Common Name`` with
-    | null -> None
-    | cname ->
-        Some [ PrologSyntax.PQuotedAtom      <| row.Reference
-             ; PrologSyntax.PQuotedAtom      <| installationNameFromPath row.``Common Name`` 
-             ; PrologSyntax.PQuotedAtom      <| row.``Common Name`` 
-             ; PrologSyntax.PQuotedAtom      <| row.AssetStatus ]
+let equipmentClause (equipmentSig:string)  (row:AssetRow) : Option<Clause> = 
+    Clause.optionCons(signature = equipmentSig
+                     , body = [ optPrologSymbol     row.Reference
+                              ; optPrologString     <| installationNameFromPath row.``Common Name`` 
+                              ; optPrologString     row.``Common Name`` 
+                              ; optPrologSymbol     row.AssetStatus ] )
 
 let genUltrasonicInsts (allRows:AssetRow list) : unit = 
     let outFile = outputFile "adb_ultrasonic_insts.pl"
     
-    let helper (row:AssetRow) : option<Clause> = 
-        match equipmentBody row with
-        | None -> None
-        | Some values -> 
-            Some <| { Signature = parseSignature "adb_ultrasonic_inst(uid, site_name, path, op_status)."
-                      Body = values }
-              
-    
+    let clause (row:AssetRow) : option<Clause> = 
+        let signature = "adb_ultrasonic_inst(uid, site_name, path, op_status)."
+        equipmentClause signature row
+       
     let ultrasonics = 
         List.filter (fun (row:AssetRow) -> isLevelControlAdb row.``Common Name``) allRows
 
-    let facts : FactBase = ultrasonics |> List.map helper |> FactBase.ofOptionList
+    let facts : FactBase = 
+        ultrasonics |> List.map clause |> FactBase.ofOptionList
 
     let pmodule : Module = 
         new Module("adb_ultrasonic_insts", "adb_ultrasonic_insts.pl", facts)
@@ -86,17 +80,15 @@ let genUltrasonicInsts (allRows:AssetRow list) : unit =
 let genFlowMeters (allRows:AssetRow list) : unit = 
     let outFile = outputFile "adb_flow_meters.pl"
 
-    let helper (row:AssetRow) : option<Clause> = 
-        match equipmentBody row with
-        | None -> None
-        | Some values -> 
-            Some <| { Signature = parseSignature "adb_flow_meter(uid, site_name, path, op_status)."
-                      Body = values }
+    let clause (row:AssetRow) : option<Clause> = 
+        let signature = "adb_flow_meter(uid, site_name, path, op_status)."
+        equipmentClause signature row
             
     let flowMeters = 
         List.filter (fun (row:AssetRow) -> isFlowMeterAdb row.``Common Name``) allRows
 
-    let facts : FactBase = flowMeters |> List.map helper |> FactBase.ofOptionList
+    let facts : FactBase = 
+        flowMeters |> List.map clause |> FactBase.ofOptionList
 
     let pmodule : Module = 
         new Module("adb_flow_meters", "adb_flow_meters.pl", facts)
@@ -106,17 +98,15 @@ let genFlowMeters (allRows:AssetRow list) : unit =
 let genPressureInsts (allRows:AssetRow list) : unit = 
     let outFile = outputFile "adb_pressure_insts.pl"
 
-    let helper (row:AssetRow) : option<Clause> = 
-        match equipmentBody row with
-        | None -> None
-        | Some values -> 
-            Some <| { Signature = parseSignature "adb_pressure_inst(uid, site_name, path, op_status)."
-                      Body = values }
-            
+    let clause (row:AssetRow) : option<Clause> = 
+        let signature = "adb_pressure_inst(uid, site_name, path, op_status)."
+        equipmentClause signature row
+
     let pressureInsts = 
         List.filter (fun (row:AssetRow) -> isPressureInstAdb row.``Common Name``) allRows
 
-    let facts : FactBase = pressureInsts |> List.map helper |> FactBase.ofOptionList
+    let facts : FactBase = 
+        pressureInsts |> List.map clause |> FactBase.ofOptionList
     
     let pmodule : Module = 
         new Module ("adb_pressure_insts", "adb_pressure_insts.pl", facts)
@@ -127,17 +117,15 @@ let genPressureInsts (allRows:AssetRow list) : unit =
 let genDissolvedOxygenInsts (allRows:AssetRow list) : unit = 
     let outFile = outputFile "adb_dissolved_oxygen_insts.pl"
     
-    let helper (row:AssetRow) : option<Clause> = 
-        match equipmentBody row with
-        | None -> None
-        | Some values -> 
-            Some <| { Signature = parseSignature "adb_dissolved_oxygen_inst(uid, site_name, path, op_status)."
-                      Body = values }
-            
+    let clause (row:AssetRow) : option<Clause> = 
+        let signature = "adb_dissolved_oxygen_inst(uid, site_name, path, op_status)."
+        equipmentClause signature row
+
     let doxyInsts = 
         List.filter (fun (row:AssetRow) -> isDissolvedOxygenInstAdb row.``Common Name``) allRows
 
-    let facts : FactBase = doxyInsts |> List.map helper |> FactBase.ofOptionList
+    let facts : FactBase = 
+        doxyInsts |> List.map clause |> FactBase.ofOptionList
 
     let pmodule : Module = 
         new Module("adb_dissolved_oxygen_insts", "adb_dissolved_oxygen_insts.pl", facts)
@@ -161,11 +149,12 @@ let getInstallations (rows:AssetRow list) : string list =
 let genInstallationFacts (allRows:AssetRow list) : unit = 
     let outFile = outputFile "adb_installations.pl"
 
-    let helper (name:string) : Clause = 
-        { Signature = parseSignature "adb_installation(installation_name)."
-          Body = [ PrologSyntax.PQuotedAtom name ] }
+    let instClause (name:string) : option<Clause> = 
+        Clause.optionCons( signature = "adb_installation(installation_name)."
+                         , body = [ optPrologSymbol name ] )
      
-    let facts : FactBase =  getInstallations allRows |> List.map helper |> FactBase.ofList
+    let facts : FactBase =  
+        getInstallations allRows |> List.map instClause |> FactBase.ofOptionList
 
     let pmodule : Module = 
         new Module("adb_installations", "adb_installations.pl", facts)
@@ -183,58 +172,5 @@ let main () =
     genDissolvedOxygenInsts allRows
     genInstallationFacts allRows
 
-
-// ** TEMP ** 
-
-
-
-    
-type SimpleTable = 
-    CsvProvider< Schema = "Site Name (string),Instrument Type(string),AI2 Asset Ref(string),Common Name(string)",
-                 HasHeaders = false >
-
-type SimpleRow = SimpleTable.Row
-
-let makeSimpleRow (instType:string) (row:AssetRow) : SimpleRow = 
-    SimpleTable.Row( siteName = installationNameFromPath row.``Common Name``
-                   , instrumentType = instType
-                   , ai2AssetRef = row.Reference
-                   , commonName = row.``Common Name`` )
-
-let genCsv (inputFile:string) : unit = 
-    let outputFile : string = 
-        let name1 = System.IO.Path.GetFileName(inputFile)
-        let name2 = System.IO.Path.Combine(@"G:\work\Projects\uquart\output", name1) 
-        System.IO.Path.ChangeExtension(name2, "csv")
-
-    let xlsxRows = readAssetSpeadsheet inputFile
-
-    let ultrasonics = 
-        List.filter (fun (row:AssetRow) -> isLevelControlAdb row.``Common Name``) xlsxRows
-            |> List.map (makeSimpleRow "ULTRASONIC")
-    
-    let flowInsts = 
-        List.filter (fun (row:AssetRow) -> isFlowMeterAdb row.``Common Name``) xlsxRows
-            |> List.map (makeSimpleRow "FLOW METER")
-
-    let pressureInsts = 
-        List.filter (fun (row:AssetRow) -> isPressureInstAdb row.``Common Name``) xlsxRows
-            |> List.map (makeSimpleRow "PRESSURE INST")
-
-    let doInsts = 
-        List.filter (fun (row:AssetRow) -> isDissolvedOxygenInstAdb row.``Common Name``) xlsxRows
-            |> List.map (makeSimpleRow "DISSOLVED OXYGEN")
-
-    let table = new SimpleTable(ultrasonics @ flowInsts @ pressureInsts @ doInsts) 
-    use sw = new System.IO.StreamWriter(outputFile)
-    sw.WriteLine "Site Name,Instrument Type,AI2 Asset Ref,Common Name"
-    table.Save(writer = sw, separator = ',', quote = '"' )
-
-    
-
-let temp01 () = 
-    let allAssetFiles = getFilesMatching @"G:\work\Projects\uquart\site-data\AssetDB" "AI*.xlsx"
-
-    List.iter genCsv allAssetFiles
 
 

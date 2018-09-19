@@ -21,9 +21,8 @@ open FSharp.Interop.Excel
 #load "..\FactX\FactX\Internal\PrologSyntax.fs"
 #load "..\FactX\FactX\FactOutput.fs"
 #load "..\FactX\FactX\Extra\ExcelProviderHelper.fs"
-open FactX.Internal
-open FactX.Extra.ExcelProviderHelper
 open FactX
+open FactX.Extra.ExcelProviderHelper
 
 // ********** DATA SETUP **********
 
@@ -51,21 +50,15 @@ let makeOutputPath (fileName:string) : string =
 // ** Generate Prolog facts.
 let genAddresses () = 
     let outFile = makeOutputPath "addresses.pl"
-    let signature = parseSignature "address(refnum, full_address)."
 
     let makeClause (row:InstallationsRow) : Option<Clause>= 
-        match row.``Full Address`` with
-        | null -> None
-        | addr -> 
-            Some { Signature = signature; 
-                   Body = [ PrologSyntax.PQuotedAtom    row.InstReference
-                          ; PrologSyntax.PString        addr ] } 
+        Clause.optionCons ( signature = "address(refnum, full_address)."
+                          , body = [ optPrologSymbol    row.InstReference
+                                   ; optPrologString    row.``Full Address`` ] )
+
 
     let addresses : FactBase = 
-        readInstallations () 
-            |> List.map makeClause 
-            |> FactBase.ofOptionList
-
+        readInstallations () |> List.map makeClause  |> FactBase.ofOptionList
 
     let pmodule : Module = 
         new Module("addresses", "addresses.pl", addresses)
@@ -75,17 +68,14 @@ let genAddresses () =
 
 let genAssetNames () = 
     let outFile = makeOutputPath "asset_names.pl"
-    let signature = parseSignature "asset_name(refnum, name)."
-    
-    let makeClause (row:InstallationsRow) : Clause = 
-        { Signature = signature; 
-          Body = [ PrologSyntax.PQuotedAtom    row.InstReference
-                 ; PrologSyntax.PString        row.InstCommonName ] }
+
+    let makeClause (row:InstallationsRow) : option<Clause> = 
+        Clause.optionCons ( signature = "asset_name(refnum, name)."
+                          , body = [ optPrologSymbol    row.InstReference
+                                   ; optPrologString    row.InstCommonName ] )
 
     let assetNames : FactBase = 
-        readInstallations ()             
-            |> List.map makeClause 
-            |> FactBase.ofList
+        readInstallations () |> List.map makeClause |> FactBase.ofOptionList
 
     let pmodule : Module= 
         new Module("asset_names", "asset_names.pl", assetNames)

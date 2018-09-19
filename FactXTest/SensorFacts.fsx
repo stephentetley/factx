@@ -20,11 +20,8 @@ open FSharp.Interop.Excel
 #load "..\FactX\FactX\Internal\PrologSyntax.fs"
 #load "..\FactX\FactX\FactOutput.fs"
 #load "..\FactX\FactX\Extra\ExcelProviderHelper.fs"
-#load "..\FactX\FactX\Extra\ValueReader.fs"
-open FactX.Internal
 open FactX
 open FactX.Extra.ExcelProviderHelper
-open FactX.Extra.ValueReader
 
 
 
@@ -54,14 +51,11 @@ let genSensorFacts () : unit =
     
 
     let makeDistClause (row:UsMiscRow) : option<Clause> = 
-        let signature = parseSignature "us_sensor_distances(pli_code, empty_distance, working_span)."
-        runValueReader 
-            <| valueReader { 
-                    let! uid        = readSymbol row.Reference
-                    let! emptyDist  = readDecimal row.``Transducer face to bottom of well (m)``
-                    let! span       = readDecimal row.``Working Span (m)``
-                    return { Signature = signature; Body = [uid; emptyDist; span] }
-                }
+        Clause.optionCons ( signature = "us_sensor_distances(pli_code, empty_distance, working_span)."
+                          , body = [ optPrologSymbol      row.Reference
+                                   ; readPrologDecimal    row.``Transducer face to bottom of well (m)``
+                                   ; readPrologDecimal    row.``Working Span (m)`` ])
+
              
     let distFacts : FactBase = 
         readUsMiscSpreadsheet () 
@@ -70,14 +64,10 @@ let genSensorFacts () : unit =
 
 
     let makeModelClause (row:UsMiscRow) : option<Clause>  = 
-        let signature = parseSignature "us_model(pli_code, manufacturer, model)."
-        runValueReader 
-            <| valueReader { 
-                    let! uid        = readSymbol row.Reference
-                    let! emptyDist  = readString row.Manufacturer
-                    let! span       = readString row.Model
-                    return { Signature = signature; Body = [uid; emptyDist; span] }
-                }
+        Clause.optionCons ( signature = "us_model(pli_code, manufacturer, model)."
+                          , body = [ optPrologSymbol    row.Reference
+                                   ; optPrologString row.Manufacturer
+                                   ; optPrologString row.Model ]) 
 
 
     let modelFacts : FactBase = 
@@ -127,29 +117,29 @@ let readRelay46Spreadsheet () : Relay46Row list =
 
 
 
-/// Use ValueReader
 let decodeRelay (uid:string) (number:int) (funName:string) 
             (ons:string) (offs:string) : Option<Clause> = 
-    let parseActive = 
-        let signature = parseSignature "us_active_relay(pli_code, relay_number, relay_function, on_setpoint, off_setpoint)."
-        valueReader {
-            let! uid1       = readSymbol uid
-            let! funName1   = readString funName
-            let! on1        = readDecimal ons
-            let! off1       = readDecimal offs
-            return { Signature = signature 
-                   ; Body = [ uid1; PrologSyntax.PInt number; funName1; on1; off1 ] }
-        }
-    let parseFixed = 
-        let signature = parseSignature "us_fixed_relay(pli_code, relay_number, relay_function)."
-        valueReader {
-            let! uid1       = readSymbol uid 
-            let! funName1   = readString funName  
-            return { Signature = signature
-                   ; Body = [ uid1; PrologSyntax.PInt number; funName1 ] }
-        }
-    let parser = parseActive <||> parseFixed 
-    runValueReader parser
+    let activeRelay = 
+        Clause.optionCons ( 
+            signature = "us_active_relay(pli_code, relay_number, relay_function, on_setpoint, off_setpoint)."
+            , body =    [ optPrologSymbol uid
+                        ; Some (prologInt number)
+                        ; optPrologString funName
+                        ; readPrologDecimal ons
+                        ; readPrologDecimal offs] )
+
+    let fixedRelay = 
+        Clause.optionCons ( 
+            signature = "us_fixed_relay(pli_code, relay_number, relay_function)."
+            , body =    [ optPrologSymbol uid
+                        ; Some (prologInt number)
+                        ; optPrologString funName ] )
+
+    match activeRelay with
+    | Some _ -> activeRelay
+    | None -> fixedRelay
+    
+
 
 
 

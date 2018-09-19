@@ -25,10 +25,9 @@ open System.IO
 #load "..\FactX\FactX\FactOutput.fs"
 #load "..\FactX\FactX\Extra\ExcelProviderHelper.fs"
 #load "..\FactX\FactX\Extra\ValueReader.fs"
-open FactX.Internal     // TEMP
 open FactX
 open FactX.Extra.ExcelProviderHelper
-open FactX.Extra.ValueReader
+
 
 #load @"PropUtils.fs"
 open PropUtils
@@ -62,18 +61,14 @@ let readMimicRows () : MimicRow list =
 let genMimicNameFacts (rows:MimicRow list) : unit = 
     let outFile = outputFile "rts_mimic_names.pl"
 
-    let mimicNameHelper (row:MimicRow) : option<Clause> =
-        let signature = parseSignature "rts_mimic_name(mimic_id, mimic_name)."
-        runValueReader <| valueReader { 
-                let! uid    = readSymbol row.``Mimic ID``
-                let! name   = readString row.Name
-                return { Signature = signature 
-                        ; Body = [uid; name] }
-            }
+    let mimicNameClause (row:MimicRow) : option<Clause> =
+        Clause.optionCons( signature = "rts_mimic_name(mimic_id, mimic_name)."
+                         , body = [ optPrologSymbol     row.``Mimic ID``
+                                  ; optPrologString     row.Name ]) 
 
 
     let facts : FactBase = 
-        readMimicRows () |> List.map mimicNameHelper |> FactBase.ofOptionList
+        readMimicRows () |> List.map mimicNameClause |> FactBase.ofOptionList
     
     let pmodule : Module = 
         new Module ("rts_mimic_names", "rts_mimic_names.pl", facts)
@@ -102,19 +97,14 @@ let readPoints (sourcePath:string) : PointsRow list =
 let genMimicPoints (rows:PointsRow list) : unit = 
     let outFile = outputFile "rts_mimic_points.pl"
 
-    let mimicPointHelper (row:PointsRow) : option<Clause> = 
-        let signature = parseSignature "rts_mimic_point(picture, os_name, point_name)."
-        runValueReader 
-            <| valueReader { 
-                    let! picture    = readSymbol row.``Ctrl pic  Alarm pic``
-                    let! osName     = readSymbol (getOsName row.``OS\Point name``)
-                    let! pointName  = readSymbol (getPointName row.``OS\Point name``)
-                    return { Signature = signature
-                           ; Body = [ picture; osName; pointName ] }
-                }
+    let mimicPointClause (row:PointsRow) : option<Clause> = 
+        Clause.optionCons( signature = "rts_mimic_point(picture, os_name, point_name)."
+                         , body = [ optPrologSymbol row.``Ctrl pic  Alarm pic``
+                                  ; optPrologSymbol (getOsName row.``OS\Point name``)
+                                  ; optPrologSymbol (getPointName row.``OS\Point name``)] )
 
     let facts : FactBase = 
-        rows |> List.map mimicPointHelper |> FactBase.ofOptionList
+        rows |> List.map mimicPointClause |> FactBase.ofOptionList
 
     let pmodule : Module = 
         let db = [facts]
@@ -155,20 +145,16 @@ let getAssetToSignals (rows:PointsRow list) : AssetToSignal list =
 let genAssetToSignals (source:AssetToSignal list) : unit = 
     let outFile = outputFile "rts_asset_to_signal.pl"
 
-    let assetSignalHelper (row:AssetToSignal) : option<Clause> = 
-        let signature = parseSignature "asset_to_signal(os_name, asset_name, signal_name, suffix)." 
-        runValueReader 
-            <| valueReader { 
-                    let! osName     = readSymbol row.OsName
-                    let! assetName  = readString row.AssetName
-                    let! pointName  = readSymbol row.PointName
-                    let! signalSuffix   = readSymbol row.SignalSuffix
-                    return { Signature = signature
-                             Body = [ osName; assetName; pointName; signalSuffix ] }
-                }
+    let assetSignalClause (row:AssetToSignal) : option<Clause> = 
+        Clause.optionCons( signature = "asset_to_signal(os_name, asset_name, signal_name, suffix)." 
+                         , body =  [ optPrologSymbol row.OsName
+                                   ; optPrologString row.AssetName
+                                   ; optPrologSymbol row.PointName
+                                   ; optPrologSymbol row.SignalSuffix ] )
+                
 
     let facts : FactBase = 
-        source |> List.map assetSignalHelper |> FactBase.ofOptionList
+        source |> List.map assetSignalClause |> FactBase.ofOptionList
     
     let pmodule : Module = 
         new Module ("rts_asset_to_signal", "rts_asset_to_signal.pl", facts) 
@@ -207,15 +193,14 @@ let genPumpFacts (pumpPoints:StemPoints) : unit =
     
     let pumps = Map.toList pumpPoints
     
-    let pumpPointsHelper (qualName:string, pointCodes:string list) : Clause = 
-        { Signature = parseSignature "rts_pump(osname, pump_name, point_codes)."
-          Body = [ PrologSyntax.PQuotedAtom    <| getOsName qualName
-                 ; PrologSyntax.PQuotedAtom    <| getPointName qualName
-                 ; PrologSyntax.PList          <| List.map PrologSyntax.PQuotedAtom pointCodes ]
-        }
+    let pumpPointsClause (qualName:string, pointCodes:string list) : option<Clause> = 
+        Clause.optionCons( signature = "rts_pump(osname, pump_name, point_codes)."
+                        , body = [ optPrologSymbol  <| getOsName qualName
+                                 ; optPrologSymbol  <| getPointName qualName
+                                 ; optPrologList    <| List.map optPrologSymbol pointCodes ] )
         
     let facts : FactBase = 
-        pumps |> List.map pumpPointsHelper |> FactBase.ofList
+        pumps |> List.map pumpPointsClause |> FactBase.ofOptionList
     
     let pmodule : Module = 
         new Module ("rts_pump_facts", "rts_pump_facts.pl", facts) 
@@ -239,16 +224,14 @@ let genScreenFacts (screenPoints:StemPoints) : unit =
 
     let screens = Map.toList screenPoints
 
-    let screenPointsHelper (qualName: string, pointCodes:string list) : Clause = 
-        { Signature = parseSignature "rts_screen(os_name, screen_name, point_codes)."
-          Body = [ PrologSyntax.PQuotedAtom    <| getOsName qualName
-                 ; PrologSyntax.PQuotedAtom    <| getPointName qualName
-                 ; PrologSyntax.PList          <| List.map PrologSyntax.PQuotedAtom pointCodes ]
-        }
-
+    let screenPointsClause (qualName: string, pointCodes:string list) : option<Clause> = 
+        Clause.optionCons( signature = "rts_screen(os_name, screen_name, point_codes)."
+                         , body = [ optPrologSymbol <| getOsName qualName
+                                  ; optPrologSymbol <| getPointName qualName
+                                  ; optPrologList   <| List.map optPrologSymbol pointCodes ])
 
     let facts : FactBase = 
-        screens |> List.map screenPointsHelper |> FactBase.ofList
+        screens |> List.map screenPointsClause |> FactBase.ofOptionList
     
     let pmodule : Module = 
         new Module ("rts_screen_facts", "rts_screen_facts.pl", facts)
@@ -274,13 +257,12 @@ let getOutstations (rows:PointsRow list) : string list =
 let genOutstationFacts (allRows:PointsRow list) : unit = 
     let outFile = outputFile "rts_outstations.pl"
 
-    let outstationHelper (name:string) : Clause = 
-        { Signature = parseSignature "rts_outstation(os_name)."
-          Body = [ PrologSyntax.PQuotedAtom name ]
-        }
+    let outstationClause (name:string) : option<Clause> = 
+        Clause.optionCons( signature = "rts_outstation(os_name)."
+                         , body = [ prologSymbol name ] )
         
     let facts : FactBase = 
-        getOutstations allRows |> List.map outstationHelper |> FactBase.ofList
+        getOutstations allRows |> List.map outstationClause |> FactBase.ofOptionList
 
     let pmodule : Module = 
         new Module ("rts_outstations", "rts_outstations.pl", facts) 

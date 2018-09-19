@@ -10,7 +10,6 @@
 #load "..\FactX\FactX\FactOutput.fs"
 #load "..\FactX\FactX\Extra\DirectoryListing.fs"
 open FactX
-open FactX.Internal
 open FactX.Extra.DirectoryListing
 
 
@@ -39,8 +38,8 @@ let test02 () =
 
 // SWI-Prolog has a pcre module which suggests representing paths
 // as lists of strings might be useful.
-let pathList (path:FilePath) : PrologSyntax.Value = 
-    path.Split('\\') |> Array.toList |> List.map PrologSyntax.PString |> PrologSyntax.PList
+let pathList (path:FilePath) : Value = 
+    path.Split('\\') |> Array.toList |> List.map prologString |> prologList
 
 /// If we encode LastWriteTime use something that can be parsed with
 /// parse_time (SWI Prolog).

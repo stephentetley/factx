@@ -56,7 +56,6 @@
     <Compile Include="FactX\Internal\PrologSyntax.fs" />
     <Compile Include="FactX\FactOutput.fs" />
     <Compile Include="FactX\Extra\ExcelProviderHelper.fs" />
-    <Compile Include="FactX\Extra\ValueReader.fs" />
     <Compile Include="FactX\Extra\DirectoryListing.fs" />
     <Content Include="packages.config" />
   </ItemGroup>

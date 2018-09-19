@@ -18,7 +18,6 @@ open FSharp.Interop.Excel
 #load "..\FactX\FactX\Internal\PrologSyntax.fs"
 #load "..\FactX\FactX\FactOutput.fs"
 #load "..\FactX\FactX\Extra\ExcelProviderHelper.fs"
-#load "..\FactX\FactX\Extra\ValueReader.fs"
 open FactX
 open FactX.Extra.ExcelProviderHelper
 
