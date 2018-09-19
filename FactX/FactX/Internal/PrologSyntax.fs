@@ -49,8 +49,12 @@ module FactSignature =
         | Success(ans,_,_) -> ans
         | Failure(_,_,_) -> failwithf "Parsing failed on signature: '%s'" source
 
+    let tryParseSignature (source:string) : option<Signature> = 
+        match runParserOnString pSignature () "NONE" source with
+        | Success(ans,_,_) -> Some ans
+        | Failure(_,_,_) -> None
+        
 
-             
 [<RequireQualifiedAccess>]
 module PrologSyntax = 
 

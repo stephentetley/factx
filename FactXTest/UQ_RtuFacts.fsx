@@ -63,10 +63,11 @@ let genMimicNameFacts (rows:MimicRow list) : unit =
     let outFile = outputFile "rts_mimic_names.pl"
 
     let mimicNameHelper (row:MimicRow) : option<Clause> =
+        let signature = parseSignature "rts_mimic_name(mimic_id, mimic_name)."
         runValueReader <| valueReader { 
                 let! uid    = readSymbol row.``Mimic ID``
                 let! name   = readString row.Name
-                return { Signature = parseSignature "rts_mimic_name(mimic_id, mimic_name)."
+                return { Signature = signature 
                         ; Body = [uid; name] }
             }
 
@@ -101,15 +102,19 @@ let readPoints (sourcePath:string) : PointsRow list =
 let genMimicPoints (rows:PointsRow list) : unit = 
     let outFile = outputFile "rts_mimic_points.pl"
 
-    let mimicPointHelper (row:PointsRow) : Clause = 
-        { Signature = parseSignature "rts_mimic_point(picture, os_name, point_name)."
-          Body = [ PrologSyntax.PQuotedAtom (row.``Ctrl pic  Alarm pic``)
-                 ; PrologSyntax.PQuotedAtom (getOsName row.``OS\Point name``)
-                 ; PrologSyntax.PQuotedAtom (getPointName row.``OS\Point name``) ]
-        }
+    let mimicPointHelper (row:PointsRow) : option<Clause> = 
+        let signature = parseSignature "rts_mimic_point(picture, os_name, point_name)."
+        runValueReader 
+            <| valueReader { 
+                    let! picture    = readSymbol row.``Ctrl pic  Alarm pic``
+                    let! osName     = readSymbol (getOsName row.``OS\Point name``)
+                    let! pointName  = readSymbol (getPointName row.``OS\Point name``)
+                    return { Signature = signature
+                           ; Body = [ picture; osName; pointName ] }
+                }
 
     let facts : FactBase = 
-        rows |> List.map mimicPointHelper |> FactBase.ofList
+        rows |> List.map mimicPointHelper |> FactBase.ofOptionList
 
     let pmodule : Module = 
         let db = [facts]
@@ -150,16 +155,20 @@ let getAssetToSignals (rows:PointsRow list) : AssetToSignal list =
 let genAssetToSignals (source:AssetToSignal list) : unit = 
     let outFile = outputFile "rts_asset_to_signal.pl"
 
-    let assetSignalHelper (row:AssetToSignal) : Clause = 
-        { Signature = parseSignature "asset_to_signal(os_name, asset_name, signal_name, suffix)."
-          Body = [ PrologSyntax.PQuotedAtom    <| row.OsName
-                 ; PrologSyntax.PQuotedAtom    <| row.AssetName
-                 ; PrologSyntax.PQuotedAtom    <| row.PointName
-                 ; PrologSyntax.PQuotedAtom    <| row.SignalSuffix ]
-        }
+    let assetSignalHelper (row:AssetToSignal) : option<Clause> = 
+        let signature = parseSignature "asset_to_signal(os_name, asset_name, signal_name, suffix)." 
+        runValueReader 
+            <| valueReader { 
+                    let! osName     = readSymbol row.OsName
+                    let! assetName  = readString row.AssetName
+                    let! pointName  = readSymbol row.PointName
+                    let! signalSuffix   = readSymbol row.SignalSuffix
+                    return { Signature = signature
+                             Body = [ osName; assetName; pointName; signalSuffix ] }
+                }
 
     let facts : FactBase = 
-        source |> List.map assetSignalHelper |> FactBase.ofList
+        source |> List.map assetSignalHelper |> FactBase.ofOptionList
     
     let pmodule : Module = 
         new Module ("rts_asset_to_signal", "rts_asset_to_signal.pl", facts) 
@@ -177,11 +186,11 @@ type StemPoints = Map<string,string list>
 let getStemPoints (rowMatch:PointsRow -> bool) (rows:PointsRow list) : StemPoints = 
     let oper (ac:StemPoints) (row:PointsRow) : StemPoints = 
         if rowMatch row && hasSuffixAFPR row.``OS\Point name`` then
-            let name = uptoSuffix '_' row.``OS\Point name``
-            let suffix = suffixOf '_' row.``OS\Point name``
-            match Map.tryFind name ac with
-            | Some xs -> Map.add name (suffix::xs) ac
-            | None -> Map.add name [suffix] ac
+            let rootName    = uptoSuffix '_' row.``OS\Point name``
+            let suffix      = suffixOf '_' row.``OS\Point name``
+            match Map.tryFind rootName ac with
+            | Some xs -> Map.add rootName (suffix::xs) ac
+            | None -> Map.add rootName [suffix] ac
         else ac
     List.fold oper Map.empty rows
 

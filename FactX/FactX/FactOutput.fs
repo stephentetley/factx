@@ -11,6 +11,14 @@ open FactX.Internal.FormatCombinators
 [<AutoOpen>]
 module FactOutput = 
 
+    let allSomes (source:(option<'a>) list) : option<'a list> = 
+        let rec work ac xs = 
+            match xs with 
+            | [] -> Some <| List.rev ac
+            | (None :: _)-> None
+            | (Some(x) :: rest) -> work (x::ac) rest
+        work [] source
+
     type ClauseBody = PrologSyntax.Value list
 
     type Clause = 
@@ -20,7 +28,23 @@ module FactOutput =
             { FactName = v.Signature.Name
             ; Values = v.Body }
 
-    
+        static member cons (signature:string, body:PrologSyntax.Value list) : Clause = 
+            match FactSignature.tryParseSignature signature with
+            | None -> failwithf "Clause.cons - Invalid signature: '%s'" signature
+            | Some sig1 -> { Signature = sig1; Body = body }
+
+        /// If parsing the signature fails this generates None.
+        static member optionCons (signature:string, body:PrologSyntax.Value list) : option<Clause> = 
+            match FactSignature.tryParseSignature signature with
+            | None -> None
+            | Some sig1 -> Some { Signature = sig1; Body = body }
+        
+        static member optionCons (signature:string, body:(option<PrologSyntax.Value>) list) : option<Clause> = 
+            match FactSignature.tryParseSignature signature, allSomes body with
+            | Some sig1, Some values -> Some { Signature = sig1; Body = values }
+            | _, _ -> None
+            
+
     let private makeFactSet (signature:FactSignature.Signature) 
                             (clauses: ClauseBody list) : PrologSyntax.FactSet =
         let makeClause1 (body:ClauseBody)  = 
@@ -129,3 +153,50 @@ module FactOutput =
             let prologModule = v.ToProlog()
             use sw = new System.IO.StreamWriter(filePath)
             sw.Write (render <| prologModule.Format ())
+
+[<AutoOpen>]
+module Values = 
+
+    type Value = PrologSyntax.Value
+
+    /// Create a Prolog string value.
+    /// No error checking if the string is null or empty
+    let prologSymbol (input:string) : Value = PrologSyntax.PQuotedAtom input
+
+    /// Safe version of pSymbol.
+    /// If the string is null or empty None is returned.
+    let optPrologSymbol (input:string) : option<Value> = 
+        match input with
+        | null -> None
+        | "" -> None
+        | ss -> Some (prologSymbol ss)
+
+    let prologString (input:string) : Value = PrologSyntax.PString input
+
+    let optPrologString (input:string) : option<Value> = 
+        match input with
+        | null -> None
+        | ss -> Some (prologString ss)
+
+    let prologDecimal (d:decimal) : Value = PrologSyntax.PDecimal d
+    
+    let readPrologDecimal (input:string) : option<Value> = 
+        try 
+            let ans = decimal input in Some (prologDecimal ans)
+        with
+        | _ -> None
+
+    let prologInt (i:int) : Value = PrologSyntax.PInt i
+    
+    let readPrologInt (input:string) : option<Value> = 
+        try 
+            let ans = int input in Some (prologInt ans)
+        with
+        | _ -> None
+
+    let prologList (elements:Value list) = PrologSyntax.PList elements
+
+    let optPrologList (elements:(option<Value>) list) = 
+        match allSomes elements with
+        | None -> None
+        | Some xs -> Some (prologList xs)

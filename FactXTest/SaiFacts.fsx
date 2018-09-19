@@ -22,7 +22,6 @@ open FSharp.Data
 #load "..\FactX\FactX\Internal\PrologSyntax.fs"
 #load "..\FactX\FactX\FactOutput.fs"
 #load "..\FactX\FactX\Extra\ExcelProviderHelper.fs"
-open FactX.Internal
 open FactX
 open FactX.Extra.ExcelProviderHelper
 
@@ -50,33 +49,35 @@ let outputFileName (filename:string) : string =
     System.IO.Path.Combine(@"G:\work\common_data\prolog", filename) 
 
 
-let siteNameHelper (row:SaiRow) : Clause = 
-    { Signature = parseSignature "site_name(uid, common_name)."
-      Body = [ PrologSyntax.PQuotedAtom   row.InstReference
-             ; PrologSyntax.PString       row.InstCommonName ]
-    }
+let siteNameClause (row:SaiRow) : option<Clause> = 
+    Clause.optionCons( signature = "site_name(uid, common_name)."
+                     , body = [ optPrologSymbol     row.InstReference
+                              ; optPrologString     row.InstCommonName ] )
 
 
-let assetTypeHelper (row:SaiRow) : Clause = 
-    { Signature = parseSignature "asset_type(uid, type)."
-      Body = [ PrologSyntax.PQuotedAtom   row.InstReference
-             ; PrologSyntax.PQuotedAtom   row.AssetType ]
-    }
+let assetTypeClause (row:SaiRow) : option<Clause> = 
+    Clause.optionCons( signature = "asset_type(uid, type)."
+                     , body = [ optPrologSymbol     row.InstReference
+                              ; optPrologSymbol  row.AssetType ] )
 
-let assetStatusHelper (row:SaiRow) : Clause = 
-    { Signature = parseSignature "asset_status(uid, status)."
-      Body = [ PrologSyntax.PQuotedAtom row.InstReference
-             ; PrologSyntax.PQuotedAtom row.AssetStatus ]
-    }
+let assetStatusClause (row:SaiRow) : option<Clause> = 
+    Clause.optionCons( signature = "asset_status(uid, status)."
+                     , body = [ optPrologSymbol row.InstReference
+                              ; optPrologSymbol row.AssetStatus ] )
 
 
 
 let genSiteFacts (rows:SaiRow list) : unit = 
     let outFile = outputFileName "sai_facts.pl"
 
-    let siteNames : FactBase     = rows |> List.map siteNameHelper |> FactBase.ofList
-    let assetTypes : FactBase    = rows |> List.map assetTypeHelper |> FactBase.ofList
-    let assetStatus : FactBase   = rows |> List.map assetStatusHelper |> FactBase.ofList
+    let siteNames : FactBase     = 
+        rows |> List.map siteNameClause |> FactBase.ofOptionList
+
+    let assetTypes : FactBase    = 
+        rows |> List.map assetTypeClause |> FactBase.ofOptionList
+
+    let assetStatus : FactBase   = 
+        rows |> List.map assetStatusClause |> FactBase.ofOptionList
 
     let pmodule : Module = 
         new Module("sai_facts", "sai_facts.pl", [ siteNames; assetTypes; assetStatus ])
@@ -101,29 +102,34 @@ let readOutstationRows () : OutstationRow list =
     (new OustationTable()).Rows |> Seq.toList
 
 
-let osNameHelper (row:OutstationRow) : Clause = 
-    { Signature = parseSignature "os_name(od_name, outstation_name)."
-      Body = [ PrologSyntax.PQuotedAtom    row.``OD name``
-             ; PrologSyntax.PQuotedAtom    row.``OS name`` ] }
+let osNameClause (row:OutstationRow) : option<Clause> = 
+    Clause.optionCons( signature = "os_name(od_name, outstation_name)."
+                     , body = [ optPrologSymbol    row.``OD name``
+                              ; optPrologSymbol    row.``OS name`` ] )
 
-let osTypeHelper (row:OutstationRow) : Clause = 
-    { Signature = parseSignature "os_type(od_name, os_type)."
-      Body = [ PrologSyntax.PQuotedAtom    row.``OD name``
-             ; PrologSyntax.PQuotedAtom    row.``OS type`` ] }
+let osTypeClause (row:OutstationRow) : option<Clause> = 
+    Clause.optionCons( signature = "os_type(od_name, os_type)."
+                     , body = [ optPrologSymbol    row.``OD name``
+                              ; optPrologSymbol    row.``OS type`` ] )
 
 
-let odCommentHelper (row:OutstationRow) : Clause = 
-    { Signature = parseSignature "od_comment(od_name, comment)."
-      Body = [ PrologSyntax.PQuotedAtom   row.``OD name``
-             ; PrologSyntax.PString       row.``OD comment`` ] }
+let odCommentClause (row:OutstationRow) : option<Clause> = 
+    Clause.optionCons( signature = "od_comment(od_name, comment)."
+                     , body = [ optPrologSymbol     row.``OD name``
+                              ; optPrologSymbol     row.``OD comment`` ] )
 
 
 let genOsFacts (rows:OutstationRow list) : unit = 
     let outFile = outputFileName "os_facts.pl"
     
-    let osNames : FactBase  = rows |> List.map osNameHelper |> FactBase.ofList
-    let osTypes : FactBase  = rows |> List.map osTypeHelper |> FactBase.ofList
-    let comments : FactBase = rows |> List.map odCommentHelper |> FactBase.ofList
+    let osNames : FactBase  = 
+        rows |> List.map osNameClause |> FactBase.ofOptionList
+
+    let osTypes : FactBase  = 
+        rows |> List.map osTypeClause |> FactBase.ofOptionList
+
+    let comments : FactBase = 
+        rows |> List.map odCommentClause |> FactBase.ofOptionList
 
     let pmodule : Module = 
         new Module ("os_facts", "os_facts.pl", [osNames; osTypes; comments])

@@ -5,6 +5,10 @@ namespace FactX.Extra.ValueReader
 
 open FactX.Internal
 
+/// Deprecated!
+/// The model of failure make (fail on first problem, silent thereafter) 
+/// makes it unintuitive for parsing multiple records, some of which might fail.
+
 [<AutoOpen>]
 module ValueReader = 
     
