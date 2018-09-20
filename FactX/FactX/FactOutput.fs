@@ -171,6 +171,10 @@ module Values =
         | "" -> None
         | ss -> Some (prologSymbol ss)
 
+    let prologChar (input:char) : Value = PrologSyntax.PChar input
+
+    // char cannot be null so no need for optPrologChar
+
     let prologString (input:string) : Value = PrologSyntax.PString input
 
     let optPrologString (input:string) : option<Value> = 

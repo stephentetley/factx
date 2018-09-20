@@ -211,6 +211,9 @@ module FormatCombinators =
     // This must escape.
     let quotedAtom (value:string) : Doc = singleQuoted (escapeSpecial value)
 
+    let prologChar (value:char) : Doc = 
+        Doc <| sprintf "0'%c" value
+
     let prologString (value:string) : Doc = 
         doubleQuoted (escapeSpecial value)
 

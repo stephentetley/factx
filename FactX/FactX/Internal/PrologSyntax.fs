@@ -1,6 +1,10 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
+// Note we should probably consider SWI-Prolog's tables
+// if we need to look towards efficiency.
+
+
 namespace FactX.Internal
 
 open System
@@ -66,6 +70,7 @@ module PrologSyntax =
 
     /// Note - Sequences/tuples not represented (should they be?)
     type Value = 
+        | PChar of char
         | PString of string
         | PInt of int
         | PDecimal of decimal
@@ -73,6 +78,7 @@ module PrologSyntax =
         | PList of Value list
         member v.Format () = 
             match v with
+            | PChar c -> prologChar c
             | PString s -> prologString s
             | PInt i -> formatInt i
             | PDecimal d -> formatDecimal d
