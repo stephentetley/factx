@@ -104,8 +104,19 @@ module FactOutput =
         static member ofList(clauses:Clause list) : FactBase =
             List.foldBack (fun (clz:Clause) ac -> ac.Add(clz)) clauses FactBase.empty
 
+        static member ofArray(clauses:Clause []) : FactBase =
+            Array.foldBack (fun (clz:Clause) ac -> ac.Add(clz)) clauses FactBase.empty
+
         static member ofOptionList(optClauses:option<Clause> list) : FactBase =
             List.foldBack (fun (opt:option<Clause>) ac -> 
+                                match opt with
+                                | None -> ac
+                                | Some clz -> ac.Add(clz) ) 
+                          optClauses 
+                          FactBase.empty
+
+        static member ofOptionArray(optClauses:option<Clause> []) : FactBase =
+            Array.foldBack (fun (opt:option<Clause>) ac -> 
                                 match opt with
                                 | None -> ac
                                 | Some clz -> ac.Add(clz) ) 
@@ -165,11 +176,16 @@ module Values =
 
     /// Safe version of pSymbol.
     /// If the string is null or empty None is returned.
+    /// Note Symbols are trimmed to remove trailing whitespace.
     let optPrologSymbol (input:string) : option<Value> = 
         match input with
         | null -> None
         | "" -> None
-        | ss -> Some (prologSymbol ss)
+        | ss -> 
+            let s1 = ss.Trim() 
+            if s1.Length > 0 then
+                Some (prologSymbol s1)
+            else None
 
     let prologChar (input:char) : Value = PrologSyntax.PChar input
 
