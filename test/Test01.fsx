@@ -1,11 +1,14 @@
-﻿#I @"..\packages\FParsec.1.0.4-RC3\lib\portable-net45+win8+wp8+wpa81"
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+#I @"..\packages\FParsec.1.0.4-RC3\lib\portable-net45+win8+wp8+wpa81"
 #r "FParsec"
 #r "FParsecCS"
 open FParsec
 
-#load "..\FactX\FactX\Internal\FormatCombinators.fs"
-#load "..\FactX\FactX\Internal\PrologSyntax.fs"
-#load "..\FactX\FactX\FactOutput.fs"
+#load "..\src\FactX\Internal\FormatCombinators.fs"
+#load "..\src\FactX\Internal\PrologSyntax.fs"
+#load "..\src\FactX\FactOutput.fs"
 open FactX.Internal.FormatCombinators
 open FactX.Internal
 

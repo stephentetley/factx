@@ -1,4 +1,8 @@
-﻿#I @"..\packages\FParsec.1.0.4-RC3\lib\portable-net45+win8+wp8+wpa81"
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+
+#I @"..\packages\FParsec.1.0.4-RC3\lib\portable-net45+win8+wp8+wpa81"
 #r "FParsec"
 #r "FParsecCS"
 
@@ -12,11 +16,11 @@
 #r "ExcelProvider.DesignTime.dll"
 open FSharp.Interop.Excel
 
-#load "..\FactX\FactX\Internal\FormatCombinators.fs"
-#load "..\FactX\FactX\Internal\PrologSyntax.fs"
-#load "..\FactX\FactX\FactOutput.fs"
-#load "..\FactX\FactX\Extra\ExcelProviderHelper.fs"
-#load "..\FactX\FactX\Extra\String.fs"
+#load "..\src\FactX\Internal\FormatCombinators.fs"
+#load "..\src\FactX\Internal\PrologSyntax.fs"
+#load "..\src\FactX\FactOutput.fs"
+#load "..\src\FactX\Extra\ExcelProviderHelper.fs"
+#load "..\src\FactX\Extra\String.fs"
 open FactX.Internal.FormatCombinators
 open FactX
 open FactX.Extra.ExcelProviderHelper

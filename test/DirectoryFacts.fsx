@@ -5,10 +5,10 @@
 #r "FParsec"
 #r "FParsecCS"
 
-#load "..\FactX\FactX\Internal\FormatCombinators.fs"
-#load "..\FactX\FactX\Internal\PrologSyntax.fs"
-#load "..\FactX\FactX\FactOutput.fs"
-#load "..\FactX\FactX\Extra\DirectoryListing.fs"
+#load "..\src\FactX\Internal\FormatCombinators.fs"
+#load "..\src\FactX\Internal\PrologSyntax.fs"
+#load "..\src\FactX\FactOutput.fs"
+#load "..\src\FactX\Extra\DirectoryListing.fs"
 open FactX
 open FactX.Extra.DirectoryListing
 

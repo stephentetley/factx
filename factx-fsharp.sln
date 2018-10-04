@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27428.2027
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "factx", "FactX\factx.fsproj", "{53CAB3F0-AA94-4A53-A146-77055D8C859B}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "factx", "src\factx.fsproj", "{53CAB3F0-AA94-4A53-A146-77055D8C859B}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "factx-test", "FactXTest\factx-test.fsproj", "{C8C311FA-C931-445E-9990-5D8504FD0BF7}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "factx-test", "test\factx-test.fsproj", "{C8C311FA-C931-445E-9990-5D8504FD0BF7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

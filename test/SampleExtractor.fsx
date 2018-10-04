@@ -7,6 +7,9 @@ open FSharp.Data
 #r "FParsec"
 #r "FParsecCS"
 
+// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
 #I @"..\packages\ExcelProvider.1.0.1\lib\net45"
 #r "ExcelProvider.Runtime.dll"
 
@@ -17,10 +20,10 @@ open FSharp.Data
 open FSharp.Interop.Excel
 
 
-#load "..\FactX\FactX\Internal\FormatCombinators.fs"
-#load "..\FactX\FactX\Internal\PrologSyntax.fs"
-#load "..\FactX\FactX\FactOutput.fs"
-#load "..\FactX\FactX\Extra\ExcelProviderHelper.fs"
+#load "..\src\FactX\Internal\FormatCombinators.fs"
+#load "..\src\FactX\Internal\PrologSyntax.fs"
+#load "..\src\FactX\FactOutput.fs"
+#load "..\src\FactX\Extra\ExcelProviderHelper.fs"
 open FactX
 open FactX.Extra.ExcelProviderHelper
 
