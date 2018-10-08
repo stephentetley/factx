@@ -6,9 +6,6 @@ namespace FactX.Extra.String
 
 [<AutoOpen>]
 module String = 
-    open System.Runtime.Remoting.Metadata.W3cXsd2001
-    open System.Runtime.Remoting.Metadata.W3cXsd2001
-    open System.Runtime.Remoting.Metadata.W3cXsd2001
     
     let leftOf (needle:string) (source:string) = 
         let ix = source.IndexOf needle 
@@ -35,3 +32,7 @@ module String =
                     match rightOf needle source with
                     | "" -> None
                     | str -> Some str) needles
+
+    let toUpper (source:string) : string = source.ToUpper()
+    let toLower (source:string) : string = source.ToLower()
+

@@ -18,6 +18,9 @@ open FactX.Internal.FormatCombinators
 [<AutoOpen>]
 module FactSignature = 
 
+    // If we want to allow function symbols / nesting we could encode them as
+    // name, arity, parens(ellipsis), e.g. "phone_number/1(..)".
+    // Thus we can get arity.
 
     type Signature = 
         | Signature of string * string list
@@ -115,7 +118,7 @@ module PrologSyntax =
    
 
 
-    /// Potentially this should be an object, not a record.
+    /// This an object, not a record so it can have different constructors
     type Module = 
         val ModuleName : string
         val GlobalComment : string

@@ -21,7 +21,6 @@ open FSharp.Interop.Excel
 #load "..\src\FactX\FactOutput.fs"
 #load "..\src\FactX\Extra\ExcelProviderHelper.fs"
 #load "..\src\FactX\Extra\String.fs"
-open FactX.Internal.FormatCombinators
 open FactX
 open FactX.Extra.ExcelProviderHelper
 open FactX.Extra.String
@@ -30,14 +29,13 @@ let outputFileName (filename:string) : string =
     System.IO.Path.Combine(@"G:\work\Projects\events2\point-blue\prolog\facts", filename) 
 
 type CsoTable = 
-    ExcelFile< FileName = @"G:\work\Projects\events2\point-blue\csos.xlsx",
+    ExcelFile< FileName = @"G:\work\Projects\events2\point-blue\hawkeyes.xlsx",
                SheetName = "Main_Page!",
                ForceString = true >
 
 type CsoRow = CsoTable.Row
 
-/// ExcelProvider can read "data" files not just the file the type was 
-/// instantiated with.
+
 let readCSOSpreadsheet () : CsoRow list = 
     let helper = 
         { new IExcelProviderHelper<CsoTable, CsoRow>
