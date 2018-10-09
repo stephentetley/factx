@@ -49,11 +49,17 @@ let readOsSpreadsheet () : OsRow list =
 
 let siteName (commonName:string) = 
     let path : PathString = pathString "/" commonName
-    if path.HasStep("SEWER MAINTENANCE") then 
+    if path.Contains("SEWER MAINTENANCE") then 
         path.Subpath(2,2).Output()
     else 
         path.Subpath(0,2).Output()
 
+let locale (commonName:string) = 
+    let path : PathString = pathString "/" commonName
+    match path.TryBetween("RTS MONITORING", "EQUIPMENT: TELEMETRY OUTSTATION") with
+    | Some p1 -> p1.Output()
+    | None -> "Unknown"
+    
 
 let outstationFacts () = 
     let outFile = outputFileName "outstations.pl"
@@ -61,8 +67,9 @@ let outstationFacts () =
     let rows = readOsSpreadsheet ()
     
     let outstationClause (row:OsRow) : option<Clause> = 
-        Clause.optionCons( signature = "outstation(site_name, os_model)."
+        Clause.optionCons( signature = "outstation(site_name, local_name, os_model)."
                          , body = [ optPrologSymbol     (siteName row.``Common Name``)
+                                  ; optPrologSymbol     (locale row.``Common Name``)
                                   ; optPrologSymbol     row.Model  ])
 
     let outstations : FactBase  = 
@@ -76,5 +83,8 @@ let outstationFacts () =
 
 let temp01 () = 
     let path = new PathString("/", "BADMINTON VIEW 24/LMP/CONTROL SERVICES/RTS MONITORING/TELEMETRY OUTSTATION/EQUIPMENT: TELEMETRY OUTSTATION")
-    path.Subpath(0,2)
-
+    printfn "%A" <| path.Subpath(0,2)
+    printfn "%A" <| path.LeftOf(3)
+    printfn "%A" <| path.RightOf(3)
+    printfn "%A" <| path.Take(3)
+    printfn "%A" <| path.Between("RTS MONITORING", "EQUIPMENT: TELEMETRY OUTSTATION")
