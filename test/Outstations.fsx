@@ -44,7 +44,6 @@ let readOsSpreadsheet () : OsRow list =
         { new IExcelProviderHelper<OsTable, OsRow>
           with member this.ReadTableRows table = table.Data 
                member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
-         
     new OsTable() |> excelReadRowsAsList helper
 
 
@@ -64,12 +63,12 @@ let locale (commonName:string) =
     
 
 let outstationFacts () = 
-    let outFile = outputFileName "outstations.pl"
+    let outFile = outputFileName "adb_outstations.pl"
 
     let rows = readOsSpreadsheet ()
     
     let outstationClause (row:OsRow) : option<Clause> = 
-        Clause.optionCons( signature = "outstation(site_name, local_name, os_model)."
+        Clause.optionCons( signature = "adb_outstation(site_name, local_name, os_model)."
                          , body = [ optPrologSymbol     (siteName row.``Common Name``)
                                   ; optPrologSymbol     (locale row.``Common Name``)
                                   ; optPrologSymbol     row.Model  ])
@@ -78,9 +77,11 @@ let outstationFacts () =
         rows |> List.map outstationClause |> FactBase.ofOptionList
 
     let pmodule : Module = 
-        new Module ("outstations", "outstations.pl", outstations)
+        new Module ("adb_outstations", "adb_outstations.pl", outstations)
 
     pmodule.Save(outFile)
+
+
 
 // ****************************************************************************
 // RTS
@@ -119,3 +120,42 @@ let temp01 () =
     printfn "%A" <| path.Take(3)
     printfn "%A" <| path.Between("RTS MONITORING", "EQUIPMENT: TELEMETRY OUTSTATION")
 
+
+// ****************************************************************************
+// ADB sites
+
+
+type AdbTable = 
+    ExcelFile< FileName = @"G:\work\Projects\events2\outstations\adb_os_names.xlsx",
+               SheetName = "Sheet1!",
+               ForceString = true >
+
+type AdbRow = AdbTable.Row
+
+
+let readAdbSpreadsheet () : AdbRow list = 
+    let helper = 
+        { new IExcelProviderHelper<AdbTable, AdbRow>
+          with member this.ReadTableRows table = table.Data 
+               member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
+    new AdbTable() |> excelReadRowsAsList helper
+
+
+let siteFacts () = 
+    let outFile = outputFileName "adb_sites.pl"
+
+    let rows = readAdbSpreadsheet ()
+    
+    let siteClause (row:AdbRow) : option<Clause> = 
+        Clause.optionCons( signature = "adb_site(uid, site_name, os_name)."
+                         , body = [ optPrologSymbol     row.Reference
+                                  ; optPrologSymbol     row.``Common Name``
+                                  ; optPrologSymbol     row.``RTS Outstation Name`` ])
+
+    let outstations : FactBase  = 
+        rows |> List.map siteClause |> FactBase.ofOptionList
+
+    let pmodule : Module = 
+        new Module ("adb_sites", "adb_sites.pl", outstations)
+
+    pmodule.Save(outFile)
