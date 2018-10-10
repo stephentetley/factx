@@ -1,14 +1,11 @@
-﻿open System.Text
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
 
-#I @"..\packages\FSharp.Data.3.0.0-beta3\lib\net45"
-#r @"FSharp.Data.dll"
-open FSharp.Data
+
 #I @"..\packages\FParsec.1.0.4-RC3\lib\portable-net45+win8+wp8+wpa81"
 #r "FParsec"
 #r "FParsecCS"
 
-// Copyright (c) Stephen Tetley 2018
-// License: BSD 3 Clause
 
 #I @"..\packages\ExcelProvider.1.0.1\lib\net45"
 #r "ExcelProvider.Runtime.dll"
