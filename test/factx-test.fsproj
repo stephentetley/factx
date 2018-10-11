@@ -53,6 +53,7 @@
     <None Include="InstFacts.fsx" />
     <None Include="Hawkeyes.fsx" />
     <None Include="Outstations.fsx" />
+    <None Include="LMP.fsx" />
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
