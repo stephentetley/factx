@@ -25,6 +25,8 @@ open FactX
 open FactX.Extra.ExcelProviderHelper
 open FactX.Extra.PathString
 
+#load "Proprietary.fs"
+open Proprietary
 
 let outputFile (filename:string) : string = 
     System.IO.Path.Combine(@"G:\work\Projects\events2\prolog\calibration\facts", filename) 
@@ -166,13 +168,8 @@ let extractDistFacts (rows:UsMiscRow list) : FactBase =
                                    ])
     rows|> List.map makeDistClause |> FactBase.ofOptionList
 
-let extractControllerFacts (rows:UsMiscRow list) : FactBase = 
-    let makeModelClause (row:UsMiscRow) : option<Clause>  = 
-        Clause.optionCons ( signature = "controller_model(pli_code, manufacturer, model)."
-                          , body = [ optPrologSymbol    row.Reference
-                                   ; optPrologString row.Manufacturer
-                                   ; optPrologString row.Model ]) 
-    rows |> List.map makeModelClause |> FactBase.ofOptionList
+
+
 
 let genSensorFacts () : unit = 
     let outFile = outputFile "sensors.pl"
@@ -187,17 +184,47 @@ let genSensorFacts () : unit =
 
     pmodule.Save(outFile)
 
+// ****************************************************************************
+// LEVEL MONITORS
+
+
+let locale (commonName:string) : string = 
+    let path : PathString = pathString "/" commonName
+    if path.Length >= 4 then 
+        path.Skip(2).SkipRight(1).Clone(":").Output()
+    else 
+        null
+
+let extractMonitorLocation (rows:UsMiscRow list) : FactBase = 
+    let makeLocationClause (row:UsMiscRow) : option<Clause>  = 
+        Clause.optionCons ( signature = "monitor_location(site, subpath, intrument_code)."
+                          , body = [ optPrologSymbol    (siteName   row.``Common Name``)
+                                   ; optPrologSymbol    (locale     row.``Common Name``) 
+                                   ; optPrologSymbol    row.Reference
+                                   ]) 
+    rows |> List.map makeLocationClause |> FactBase.ofOptionList
+
+
+    
+let extractMonitorModel (rows:UsMiscRow list) : FactBase = 
+    let makeModelClause (row:UsMiscRow) : option<Clause>  = 
+        Clause.optionCons ( signature = "monitor_model(pli_code, manufacturer, model)."
+                          , body = [ optPrologSymbol    row.Reference
+                                   ; optPrologString    row.Manufacturer
+                                   ; optPrologString    row.Model ]) 
+    rows |> List.map makeModelClause |> FactBase.ofOptionList
 
 let genControllerFacts () = 
-    let outFile = outputFile "controllers.pl"
+    let outFile = outputFile "level_monitors.pl"
     let rows = readUsMiscSpreadsheet () 
 
-    let controllerFacts = extractControllerFacts rows
+    let locations : FactBase = extractMonitorLocation rows
+    let models : FactBase = extractMonitorModel rows
 
     let pmodule : Module = 
-        new Module( name = "controllers"
-                  , comment = "controllers.pl"
-                  , dbs = [ controllerFacts ] )
+        new Module( name = "level_monitors"
+                  , comment = "level_monitors.pl"
+                  , dbs = [ locations; models ] )
 
     pmodule.Save(outFile)
 
@@ -205,3 +232,5 @@ let main () : unit =
     genRelayFacts ()
     genSensorFacts () 
     genControllerFacts ()
+
+

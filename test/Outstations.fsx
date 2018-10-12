@@ -27,6 +27,9 @@ open FactX
 open FactX.Extra.ExcelProviderHelper
 open FactX.Extra.PathString
 
+#load "Proprietary.fs"
+open Proprietary
+
 let outputFileName (filename:string) : string = 
     System.IO.Path.Combine(@"G:\work\Projects\events2\prolog\outstations\facts", filename) 
 
@@ -48,12 +51,7 @@ let readOsSpreadsheet () : OsRow list =
 
 
 
-let siteName (commonName:string) = 
-    let path : PathString = pathString "/" commonName
-    if path.Contains("SEWER MAINTENANCE") then 
-        path.Subpath(2,2).Output()
-    else 
-        path.Subpath(0,2).Output()
+
 
 let locale (commonName:string) = 
     let path : PathString = pathString "/" commonName

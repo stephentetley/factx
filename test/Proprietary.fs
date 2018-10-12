@@ -8,7 +8,7 @@ module Proprietary
 open System.IO 
 open System.Text.RegularExpressions
 
-
+open FactX.Extra.PathString
 
 // *************************************
 // General utils
@@ -19,6 +19,20 @@ let getFilesMatching (sourceDirectory:string) (pattern:string) : string list =
         |> Array.map (fun (info:FileInfo)  -> info.FullName)
         |> Array.toList
 
+
+// *************************************
+// Work specific
+
+let siteName (commonName:string) = 
+    let path : PathString = pathString "/" commonName
+    if path.Contains("SEWER MAINTENANCE") then 
+        // This is a ``TYPE 2 LOCATION``
+        path.Subpath(2,2).Output()
+    else 
+        path.Subpath(0,2).Output()
+
+// *************************************
+// Old
 
 let private strLeftOf (pivot:char) (source:string) : string = 
     let splits : string [] = source.Split(pivot)

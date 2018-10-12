@@ -49,7 +49,7 @@
     <None Include="UQ_RtuFacts.fsx" />
     <None Include="UQ_AssetFacts.fsx" />
     <None Include="DirectoryFacts.fsx" />
-    <None Include="SensorFacts.fsx" />
+    <None Include="LevelMonitor.fsx" />
     <None Include="InstFacts.fsx" />
     <None Include="Hawkeyes.fsx" />
     <None Include="Outstations.fsx" />
@@ -77,6 +77,13 @@
       <HintPath>..\packages\System.ValueTuple.4.4.0\lib\net461\System.ValueTuple.dll</HintPath>
       <Private>True</Private>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\src\factx.fsproj">
+      <Name>factx</Name>
+      <Project>{53cab3f0-aa94-4a53-a146-77055d8c859b}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

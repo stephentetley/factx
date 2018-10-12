@@ -30,6 +30,13 @@ module PathString =
         override v.ToString() : string = 
             sprintf "StringPath {%s}" <| v.Output()
 
+        member v.Clone (separator:string) : PathString = 
+            new PathString (separator = separator, pathSteps = v.Steps)
+
+        member v.Length : int = 
+            v.Steps.Length
+
+
         member v.Subpath(pathStart: int, length: int) : PathString = 
             let subArr = 
                 if pathStart + length > v.Steps.Length then 
@@ -52,6 +59,11 @@ module PathString =
 
         member v.Skip (count:int) : PathString = 
             let subArr = Array.skip count v.Steps
+            new PathString (separator = v.Separator, pathSteps = subArr)
+        
+        member v.SkipRight (count:int) : PathString = 
+            let rightEdge = v.Steps.Length - count
+            let subArr = Array.sub v.Steps 0 rightEdge
             new PathString (separator = v.Separator, pathSteps = subArr)
 
         member v.LeftOf(position:int) : PathString = 
