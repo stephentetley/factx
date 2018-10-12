@@ -69,7 +69,9 @@ module FormatCombinators =
         Doc(d.ToString())
     
     let formatDecimal (d:Decimal) : Doc = 
-        Doc(d.ToString())
+        // Ensure Prolog printing renders to a decimal string.
+        let d1 = 0.0M + d in Doc(d1.ToString())
+        
 
 
 

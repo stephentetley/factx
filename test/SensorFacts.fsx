@@ -26,11 +26,11 @@ open FactX.Extra.ExcelProviderHelper
 
 
 let outputFile (filename:string) : string = 
-    System.IO.Path.Combine(@"D:\coding\prolog\assets\facts", filename) 
+    System.IO.Path.Combine(@"G:\work\Projects\events2\prolog\calibration\facts", filename) 
 
 
 type UsMiscTable = 
-    ExcelFile< @"G:\work\AI2-exports\Ultrasonics_misc_attributes.xlsx",
+    ExcelFile< @"G:\work\ADB-exports\Ultrasonics_misc_attributes.xlsx",
                SheetName = "Sheet1!",
                ForceString = true >
 
@@ -83,7 +83,7 @@ let genSensorFacts () : unit =
 
 
 type Relay13Table = 
-    ExcelFile< @"G:\work\AI2-exports\Ultrasonics_relays_1_3.xlsx",
+    ExcelFile< @"G:\work\ADB-exports\Ultrasonics_relays_1_3.xlsx",
                SheetName = "Sheet1!",
                ForceString = true >
 
@@ -100,7 +100,7 @@ let readRelay13Spreadsheet () : Relay13Row list =
 
 
 type Relay46Table = 
-    ExcelFile< @"G:\work\AI2-exports\Ultrasonics_relays_4_6.xlsx",
+    ExcelFile< @"G:\work\ADB-exports\Ultrasonics_relays_4_6.xlsx",
                SheetName = "Sheet1!",
                ForceString = true >
 
@@ -124,7 +124,7 @@ let decodeRelay (uid:string) (number:int) (funName:string)
             signature = "us_active_relay(pli_code, relay_number, relay_function, on_setpoint, off_setpoint)."
             , body =    [ optPrologSymbol uid
                         ; Some (prologInt number)
-                        ; optPrologString funName
+                        ; optPrologSymbol funName
                         ; readPrologDecimal ons
                         ; readPrologDecimal offs] )
 
@@ -133,7 +133,7 @@ let decodeRelay (uid:string) (number:int) (funName:string)
             signature = "us_fixed_relay(pli_code, relay_number, relay_function)."
             , body =    [ optPrologSymbol uid
                         ; Some (prologInt number)
-                        ; optPrologString funName ] )
+                        ; optPrologSymbol funName ] )
 
     match activeRelay with
     | Some _ -> activeRelay

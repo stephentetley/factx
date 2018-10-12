@@ -28,7 +28,7 @@ open FactX.Extra.ExcelProviderHelper
 open FactX.Extra.PathString
 
 let outputFileName (filename:string) : string = 
-    System.IO.Path.Combine(@"G:\work\Projects\events2\outstations\prolog\facts", filename) 
+    System.IO.Path.Combine(@"G:\work\Projects\events2\prolog\outstations\facts", filename) 
 
 
 type OsTable = 

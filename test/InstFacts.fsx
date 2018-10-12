@@ -22,7 +22,7 @@ open FactX
 open FactX.Extra.ExcelProviderHelper
 
 type InstTable = 
-    ExcelFile< FileName = @"G:\work\AI2-exports\STANDARD_INST.xlsx",
+    ExcelFile< FileName = @"G:\work\ADB-exports\STANDARD_INST.xlsx",
                SheetName = "Sheet1!",
                ForceString = true >
 
@@ -38,8 +38,8 @@ let readInstSpreadsheet (filename:string) (sheetname:string) : InstRow list =
          
     excelReadRowsAsList helper (new InstTable(filename,sheetname))
 
-let table1 () = readInstSpreadsheet @"G:\work\AI2-exports\BE_NO 2 STF.xlsx" "Sheet1"
-let table2 () = readInstSpreadsheet @"G:\work\AI2-exports\BE_NO 2 STW.xlsx" "Sheet1"
+let table1 () = readInstSpreadsheet @"G:\work\ADB-exports\BE_NO 2 STF.xlsx" "Sheet1"
+let table2 () = readInstSpreadsheet @"G:\work\ADB-exports\BE_NO 2 STW.xlsx" "Sheet1"
 
 type AssetType = 
     | BusinessUnit | System | Function | Installation | ProcessGroup
