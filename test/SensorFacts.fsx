@@ -20,67 +20,18 @@ open FSharp.Interop.Excel
 #load "..\src\FactX\Internal\PrologSyntax.fs"
 #load "..\src\FactX\FactOutput.fs"
 #load "..\src\FactX\Extra\ExcelProviderHelper.fs"
+#load "..\src\FactX\Extra\PathString.fs"
 open FactX
 open FactX.Extra.ExcelProviderHelper
-
+open FactX.Extra.PathString
 
 
 let outputFile (filename:string) : string = 
     System.IO.Path.Combine(@"G:\work\Projects\events2\prolog\calibration\facts", filename) 
 
 
-type UsMiscTable = 
-    ExcelFile< @"G:\work\ADB-exports\Ultrasonics_misc_attributes.xlsx",
-               SheetName = "Sheet1!",
-               ForceString = true >
-
-
-type UsMiscRow = UsMiscTable.Row
-
-let readUsMiscSpreadsheet () : UsMiscRow list = 
-    let helper = 
-        { new IExcelProviderHelper<UsMiscTable,UsMiscRow>
-          with member this.ReadTableRows table = table.Data 
-               member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
-         
-    excelReadRowsAsList helper (new UsMiscTable())
-
-
-let genSensorFacts () : unit = 
-    let outFile = outputFile "us_sensor_facts.pl"
-    
-
-    let makeDistClause (row:UsMiscRow) : option<Clause> = 
-        Clause.optionCons ( signature = "us_sensor_distances(pli_code, empty_distance, working_span)."
-                          , body = [ optPrologSymbol      row.Reference
-                                   ; readPrologDecimal    row.``Transducer face to bottom of well (m)``
-                                   ; readPrologDecimal    row.``Working Span (m)`` ])
-
-             
-    let distFacts : FactBase = 
-        readUsMiscSpreadsheet () 
-            |> List.map makeDistClause 
-            |> FactBase.ofOptionList
-
-
-    let makeModelClause (row:UsMiscRow) : option<Clause>  = 
-        Clause.optionCons ( signature = "us_model(pli_code, manufacturer, model)."
-                          , body = [ optPrologSymbol    row.Reference
-                                   ; optPrologString row.Manufacturer
-                                   ; optPrologString row.Model ]) 
-
-
-    let modelFacts : FactBase = 
-        readUsMiscSpreadsheet () 
-            |> List.map makeModelClause 
-            |> FactBase.ofOptionList
-
-    let pmodule : Module = 
-        new Module( name = "us_sensor_facts"
-                  , dbs = [ modelFacts; distFacts] )
-
-    pmodule.Save(outFile)
-
+// ****************************************************************************
+// RELAYS
 
 type Relay13Table = 
     ExcelFile< @"G:\work\ADB-exports\Ultrasonics_relays_1_3.xlsx",
@@ -121,7 +72,7 @@ let decodeRelay (uid:string) (number:int) (funName:string)
             (ons:string) (offs:string) : Option<Clause> = 
     let activeRelay = 
         Clause.optionCons ( 
-            signature = "us_active_relay(pli_code, relay_number, relay_function, on_setpoint, off_setpoint)."
+            signature = "active_relay(pli_code, relay_number, relay_function, on_setpoint, off_setpoint)."
             , body =    [ optPrologSymbol uid
                         ; Some (prologInt number)
                         ; optPrologSymbol funName
@@ -130,7 +81,7 @@ let decodeRelay (uid:string) (number:int) (funName:string)
 
     let fixedRelay = 
         Clause.optionCons ( 
-            signature = "us_fixed_relay(pli_code, relay_number, relay_function)."
+            signature = "fixed_relay(pli_code, relay_number, relay_function)."
             , body =    [ optPrologSymbol uid
                         ; Some (prologInt number)
                         ; optPrologSymbol funName ] )
@@ -169,7 +120,7 @@ let getRelays46 (row:Relay46Row) : option<Clause> list  =
 
 
 let genRelayFacts () : unit = 
-    let outFile = outputFile "us_relay_facts.pl"
+    let outFile = outputFile "relays.pl"
     
     let relays13 : FactBase = 
         readRelay13Spreadsheet () 
@@ -184,8 +135,83 @@ let genRelayFacts () : unit =
             |> FactBase.ofOptionList
 
     let pmodule : Module = 
-        new Module( name = "us_relay_facts"
+        new Module( name = "relays"
+                  , comment = "relays.pl"
                   , dbs = [relays13; relays46] )
+
+    pmodule.Save(outFile)
+
+
+// ****************************************************************************
+// SENSORS
+
+type UsMiscTable = 
+    ExcelFile< @"G:\work\ADB-exports\Ultrasonics_misc_attributes.xlsx",
+               SheetName = "Sheet1!",
+               ForceString = true >
+
+
+type UsMiscRow = UsMiscTable.Row
+
+let readUsMiscSpreadsheet () : UsMiscRow list = 
+    let helper = 
+        { new IExcelProviderHelper<UsMiscTable,UsMiscRow>
+          with member this.ReadTableRows table = table.Data 
+               member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
+         
+    excelReadRowsAsList helper (new UsMiscTable())
+
+
+let genSensorFacts () : unit = 
+    let outFile = outputFile "sensors.pl"
+    
+
+    let makeDistClause (row:UsMiscRow) : option<Clause> = 
+        Clause.optionCons ( signature = "us_sensor_distances(pli_code, empty_distance, working_span)."
+                          , body = [ optPrologSymbol      row.Reference
+                                   ; readPrologDecimal    row.``Transducer face to bottom of well (m)``
+                                   ; readPrologDecimal    row.``Working Span (m)`` ])
+
+             
+    let distFacts : FactBase = 
+        readUsMiscSpreadsheet () 
+            |> List.map makeDistClause 
+            |> FactBase.ofOptionList
+
+
+    let makeModelClause (row:UsMiscRow) : option<Clause>  = 
+        Clause.optionCons ( signature = "us_model(pli_code, manufacturer, model)."
+                          , body = [ optPrologSymbol    row.Reference
+                                   ; optPrologString row.Manufacturer
+                                   ; optPrologString row.Model ]) 
+
+
+    let modelFacts : FactBase = 
+        readUsMiscSpreadsheet () 
+            |> List.map makeModelClause 
+            |> FactBase.ofOptionList
+
+    let pmodule : Module = 
+        new Module( name = "sensors"
+                  , comment = "sensors.pl"
+                  , dbs = [ modelFacts; distFacts] )
+
+    pmodule.Save(outFile)
+
+
+let locationFacts () = 
+    let outFile = outputFile "locations.pl"
+   
+    let lmpClause (row:UsMiscRow) : option<Clause> = 
+        Clause.optionCons( signature = "level_monitor_point(uid, lmp_name, stc25_ref)."
+                         , body = [ optPrologSymbol     row.Reference
+                                  ; optPrologSymbol     row.``Common Name`` ] )
+
+    let facts : FactBase  = 
+        readUsMiscSpreadsheet () |> List.map lmpClause |> FactBase.ofOptionList
+
+    let pmodule : Module = 
+        new Module ("locations", "locations.pl", facts)
 
     pmodule.Save(outFile)
 
