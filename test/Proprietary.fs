@@ -3,7 +3,7 @@
 
 // Helper functions for dealing with a proprietry data source.
 
-module PropUtils
+module Proprietary
 
 open System.IO 
 open System.Text.RegularExpressions

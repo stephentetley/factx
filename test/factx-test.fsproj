@@ -42,10 +42,10 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Proprietary.fs" />
     <None Include="Test01.fsx" />
     <None Include="SampleExtractor.fsx" />
     <None Include="SaiFacts.fsx" />
-    <Compile Include="PropUtils.fs" />
     <None Include="UQ_RtuFacts.fsx" />
     <None Include="UQ_AssetFacts.fsx" />
     <None Include="DirectoryFacts.fsx" />

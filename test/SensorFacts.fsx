@@ -45,8 +45,7 @@ let readRelay13Spreadsheet () : Relay13Row list =
     let helper = 
         { new IExcelProviderHelper<Relay13Table,Relay13Row>
           with member this.ReadTableRows table = table.Data 
-               member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
-         
+               member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }         
     excelReadRowsAsList helper (new Relay13Table())
 
 
@@ -63,7 +62,6 @@ let readRelay46Spreadsheet () : Relay46Row list =
         { new IExcelProviderHelper<Relay46Table,Relay46Row>
           with member this.ReadTableRows table = table.Data 
                member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
-         
     excelReadRowsAsList helper (new Relay46Table())
 
 
@@ -93,9 +91,7 @@ let decodeRelay (uid:string) (number:int) (funName:string)
 
 
 
-
-// TODO this would likely be simpler if we could add to FactSets
-let getRelays13 (row:Relay13Row) : option<Clause> list  = 
+let processRelay13Row (row:Relay13Row) : option<Clause> list  = 
     let r1 = decodeRelay (row.Reference) 1 (row.``Relay 1 Function``) 
                             (row.``Relay 1 on Level (m)``) 
                             (row.``Relay 1 off Level (m)``)
@@ -107,7 +103,7 @@ let getRelays13 (row:Relay13Row) : option<Clause> list  =
     [ r1; r2; r3 ]
 
 
-let getRelays46 (row:Relay46Row) : option<Clause> list  = 
+let processRelay46Row (row:Relay46Row) : option<Clause> list  = 
     let r1 = decodeRelay (row.Reference) 4 (row.``Relay 4 Function``) 
                             (row.``Relay 4 on Level (m)``) 
                             (row.``Relay 4 off Level (m)``)
@@ -124,13 +120,13 @@ let genRelayFacts () : unit =
     
     let relays13 : FactBase = 
         readRelay13Spreadsheet () 
-            |> List.map getRelays13
+            |> List.map processRelay13Row
             |> List.concat 
             |> FactBase.ofOptionList
 
     let relays46 : FactBase = 
         readRelay46Spreadsheet () 
-            |> List.map getRelays46
+            |> List.map processRelay46Row
             |> List.concat 
             |> FactBase.ofOptionList
 
@@ -150,72 +146,62 @@ type UsMiscTable =
                SheetName = "Sheet1!",
                ForceString = true >
 
-
 type UsMiscRow = UsMiscTable.Row
 
 let readUsMiscSpreadsheet () : UsMiscRow list = 
     let helper = 
         { new IExcelProviderHelper<UsMiscTable,UsMiscRow>
           with member this.ReadTableRows table = table.Data 
-               member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
-         
+               member this.IsBlankRow row = 
+                        match row.GetValue(0) with null -> true | _ -> false }
     excelReadRowsAsList helper (new UsMiscTable())
-
-
-let genSensorFacts () : unit = 
-    let outFile = outputFile "sensors.pl"
-    
-
+ 
+ 
+let extractDistFacts (rows:UsMiscRow list) : FactBase = 
     let makeDistClause (row:UsMiscRow) : option<Clause> = 
-        Clause.optionCons ( signature = "us_sensor_distances(pli_code, empty_distance, working_span)."
+        Clause.optionCons ( signature = "sensor_measurements(pli_code, empty_distance, working_span)."
                           , body = [ optPrologSymbol      row.Reference
                                    ; readPrologDecimal    row.``Transducer face to bottom of well (m)``
-                                   ; readPrologDecimal    row.``Working Span (m)`` ])
+                                   ; readPrologDecimal    row.``Working Span (m)`` 
+                                   ])
+    rows|> List.map makeDistClause |> FactBase.ofOptionList
 
-             
-    let distFacts : FactBase = 
-        readUsMiscSpreadsheet () 
-            |> List.map makeDistClause 
-            |> FactBase.ofOptionList
-
-
+let extractControllerFacts (rows:UsMiscRow list) : FactBase = 
     let makeModelClause (row:UsMiscRow) : option<Clause>  = 
-        Clause.optionCons ( signature = "us_model(pli_code, manufacturer, model)."
+        Clause.optionCons ( signature = "controller_model(pli_code, manufacturer, model)."
                           , body = [ optPrologSymbol    row.Reference
                                    ; optPrologString row.Manufacturer
                                    ; optPrologString row.Model ]) 
+    rows |> List.map makeModelClause |> FactBase.ofOptionList
 
+let genSensorFacts () : unit = 
+    let outFile = outputFile "sensors.pl"
+    let rows = readUsMiscSpreadsheet () 
 
-    let modelFacts : FactBase = 
-        readUsMiscSpreadsheet () 
-            |> List.map makeModelClause 
-            |> FactBase.ofOptionList
+    let distFacts = extractDistFacts rows
 
     let pmodule : Module = 
         new Module( name = "sensors"
                   , comment = "sensors.pl"
-                  , dbs = [ modelFacts; distFacts] )
+                  , db = distFacts )
 
     pmodule.Save(outFile)
 
 
-let locationFacts () = 
-    let outFile = outputFile "locations.pl"
-   
-    let lmpClause (row:UsMiscRow) : option<Clause> = 
-        Clause.optionCons( signature = "level_monitor_point(uid, lmp_name, stc25_ref)."
-                         , body = [ optPrologSymbol     row.Reference
-                                  ; optPrologSymbol     row.``Common Name`` ] )
+let genControllerFacts () = 
+    let outFile = outputFile "controllers.pl"
+    let rows = readUsMiscSpreadsheet () 
 
-    let facts : FactBase  = 
-        readUsMiscSpreadsheet () |> List.map lmpClause |> FactBase.ofOptionList
+    let controllerFacts = extractControllerFacts rows
 
     let pmodule : Module = 
-        new Module ("locations", "locations.pl", facts)
+        new Module( name = "controllers"
+                  , comment = "controllers.pl"
+                  , dbs = [ controllerFacts ] )
 
     pmodule.Save(outFile)
 
 let main () : unit = 
     genRelayFacts ()
     genSensorFacts () 
-
+    genControllerFacts ()

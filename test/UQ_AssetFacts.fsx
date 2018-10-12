@@ -29,8 +29,8 @@ open System.IO
 open FactX
 open FactX.Extra.ExcelProviderHelper
 
-#load @"PropUtils.fs"
-open PropUtils
+#load @"Proprietary.fs"
+open Proprietary
 
 
 let outputFile (filename:string) : string = 
