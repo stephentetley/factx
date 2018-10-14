@@ -79,6 +79,7 @@ module PrologSyntax =
         | PDecimal of decimal
         | PQuotedAtom of string
         | PList of Value list
+        | PFunctor of Identifier * Value list
         member v.Format () = 
             match v with
             | PChar c -> prologChar c
@@ -87,6 +88,8 @@ module PrologSyntax =
             | PDecimal d -> formatDecimal d
             | PQuotedAtom s -> quotedAtom s
             | PList vs -> prologList (List.map (fun (x:Value) -> x.Format()) vs)
+            | PFunctor(name, vs) -> prologFact (simpleAtom name) (List.map (fun (x:Value) -> x.Format()) vs)
+
 
     /// To consider...
     /// If Clause rather than FactSet had a signature we could add

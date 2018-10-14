@@ -220,3 +220,11 @@ module Values =
         match allSomes elements with
         | None -> None
         | Some xs -> Some (prologList xs)
+
+    let prologFunctor (name:string) (elements:Value list) = 
+        PrologSyntax.PFunctor(name, elements)
+
+    let optPrologFunctor (name:string)  (elements:(option<Value>) list) = 
+        match allSomes elements with
+        | None -> None
+        | Some xs -> Some (prologFunctor name xs)
