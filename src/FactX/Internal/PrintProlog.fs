@@ -23,3 +23,7 @@ module PrintProlog =
         wordL <| sprintf "\"%s\"" (escapeSpecial value)
 
     let prologChar (value:char) : Doc =  wordL <| sprintf "0'%c" value
+
+
+    let prologList (elements:Doc list) : Doc = 
+        wordL "[" ^^ sepListL (wordL ",") elements ^^ wordL "]"

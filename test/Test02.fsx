@@ -15,3 +15,5 @@ let runTest (doc:Doc) : unit = printfn "%s" <| print 80 doc
 let test01 () = 
     let d1:Doc = simpleAtom "tree" in runTest d1
 
+let test02 () = 
+    runTest <| prologList [simpleAtom "tree"; quotedAtom "trunk"]
