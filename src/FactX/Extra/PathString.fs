@@ -103,6 +103,11 @@ module PathString =
                 v.Between(stepLeft, stepRight) |> Some
             with
             | _ -> None
+
+        member v.Last : PathString = 
+            let last = v.Length
+            v.RightOf(last - 1)
+
     let pathString (separator:string) (path:string) : PathString = 
         new PathString(separator = separator, path = path)
 

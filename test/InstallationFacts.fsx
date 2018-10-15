@@ -24,6 +24,12 @@ open FactX
 open FactX.Extra.ExcelProviderHelper
 open FactX.Extra.PathString
 open FactX.Extra.LabelledTree
+open Microsoft.SqlServer.Server
+
+let outputFile (filename:string) : string = 
+    System.IO.Path.Combine(@"D:\coding\prolog\spt_misc\prolog\screens\facts", filename)
+
+
 
 type AssetTable = 
     ExcelFile< FileName = @"G:\work\ADB-exports\STANDARD_INST.xlsx",
@@ -48,6 +54,17 @@ let stwData () = readAssetSpreadsheet @"G:\work\ADB-exports\BE_NO 2 STW.xlsx" "S
 type AssetType = 
     | BusinessUnit | System | Function | Installation | ProcessGroup
     | Process | PlantAssembly | PlantItem 
+    override v.ToString() = 
+        match v with
+        | BusinessUnit -> "BUSINESS UNIT"
+        | System -> "SYSTEM"
+        | Function -> "FUNCTION"
+        | Installation -> "INSTALLATION"
+        | ProcessGroup -> "PROCESS GROUP"
+        | Process -> "PROCESS"
+        | PlantAssembly -> "PLANT ASSEMBLY"
+        | PlantItem -> "PLANT ITEM"
+
 
 type AssetStatus = 
     | Operational
@@ -58,7 +75,7 @@ type AssetStatus =
 
 
 
-let assetStatus (statusText:string) : AssetStatus = 
+let decodeAssetStatus (statusText:string) : AssetStatus = 
     match statusText with
     | "OPERATIONAL" -> Operational
     | null -> StatusOther "<null>"
@@ -102,6 +119,7 @@ let test02 () =
 
 type NodeLabel = 
     { Uid: string 
+      Name: string
       Operational: AssetStatus
       AssetType: option<AssetType>
       GridRef: string
@@ -112,11 +130,15 @@ let makeNode (row:AssetRow) : LabelledTree<NodeLabel> =
     let path : PathString  =  pathString "/" row.``Common Name``
     let label = 
         { Uid = row.Reference
-          Operational = assetStatus row.AssetStatus
+          Name = 
+            if path.Length > 2 then 
+                path.Last.Output() 
+            else path.Subpath(0,2).Output()
+                
+          Operational = decodeAssetStatus row.AssetStatus
           AssetType = decodeHKey row.``Hierarchy Key``
           GridRef = row.``Loc.Ref.``
           }
-
     if path.ContainsRegex("^EQUIPMENT: ") then
         Leaf (row.``Common Name``, label)
     else
@@ -128,11 +150,54 @@ let parentName (commonName:string): string =
     let path : PathString = pathString "/" commonName
     path.SkipRight(1).Output()
 
+let treeHelper : ILabelledTreeBuilder<AssetRow, NodeLabel> = 
+    { new ILabelledTreeBuilder<AssetRow, NodeLabel>
+      with member this.GetParentName (row:AssetRow) = parentName row.``Common Name``
+           member this.MakeNode (row:AssetRow) = makeNode row }
 
-let test03 () = 
-    let helper = 
-        { new ILabelledTreeBuilder<AssetRow, NodeLabel>
-          with member this.GetParentName (row:AssetRow) = parentName row.``Common Name``
-               member this.MakeNode (row:AssetRow) = makeNode row }
-         
-    buildTopDown helper (stwData ())
+let test03 () =
+    buildTopDown treeHelper (stwData ())
+
+type Installation = LabelledTree<NodeLabel>
+
+let assetTypeName (assetType:option<AssetType>) : string = 
+    match assetType with
+    | None -> "UNKNOWN"
+    | Some atype -> atype.ToString()
+
+let assetStatus (status:AssetStatus) : string = 
+    match status with
+    | Operational -> "OPERATIONAL"
+    | StatusOther s -> s
+
+// let nodeToProlog (node:LabelledTree<NodeLabel>) : Value = 
+    
+
+let installationToProlog (inst:Installation) : FactBase = 
+    let rootClause: option<Clause> = 
+        match inst with
+        | Tree(_, label, _kids) -> 
+            Some <| Clause.cons( signature = "installation(uid, name, status)."
+                               , body = [ prologSymbol label.Uid
+                                        ; prologSymbol label.Name
+                                        ; prologSymbol (assetStatus label.Operational)
+                                        ] )
+        | Leaf _ -> None
+    FactBase.ofOptionList [rootClause]
+
+
+let test04 () =
+    let outFile = outputFile "installation.pl"
+    let inst = buildTopDown treeHelper (stwData ())
+    let facts = 
+        match inst with
+        | None -> FactBase.ofList []
+        | Some x -> installationToProlog x
+
+    let pmodule : Module = 
+        new Module( name = "installation"
+                  , comment = "installation.pl"
+                  , db = facts )
+
+    pmodule.Save(outFile)
+    
