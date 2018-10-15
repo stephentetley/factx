@@ -12,7 +12,11 @@ open System.IO
 
 open FParsec
 
-open FactX.Internal.FormatCombinators
+open YC.PrettyPrinter.Pretty
+open YC.PrettyPrinter.Doc
+open YC.PrettyPrinter.StructuredFormat
+
+open FactX.Internal.PrintProlog
 
 
 [<AutoOpen>]
@@ -84,8 +88,8 @@ module PrologSyntax =
             match v with
             | PChar c -> prologChar c
             | PString s -> prologString s
-            | PInt i -> formatInt i
-            | PDecimal d -> formatDecimal d
+            | PInt i -> prologInt i
+            | PDecimal d -> prologDecimal d
             | PQuotedAtom s -> quotedAtom s
             | PList vs -> prologList (List.map (fun (x:Value) -> x.Format()) vs)
             | PFunctor(name, vs) -> prologFact (simpleAtom name) (List.map (fun (x:Value) -> x.Format()) vs)
@@ -114,7 +118,7 @@ module PrologSyntax =
             let d1 = prologComment v.Signature
             let d2 = prologComment v.Comment
             let ds = List.map (fun (clause:Clause) -> clause.Format()) v.Clauses
-            vcat <| (d1 :: d2 :: ds)
+            aboveListL <| (d1 :: d2 :: ds)
 
         member v.ExportSignature = (v.FactName, v.Arity)
     
@@ -155,13 +159,13 @@ module PrologSyntax =
             let d1 = prologComment v.GlobalComment
             let d2 = moduleDirective v.ModuleName v.Exports
             let ds = List.map (fun (col:FactSet) -> col.Format()) v.Database
-            vsep [ d1; d2; vsep ds ]
+            aboveListL [ d1; d2; aboveListL ds ]
 
         member v.SaveToString () : string = 
-            render <| v.Format()
+            print 80 <| v.Format()
         
         member v.Save(filePath:string) = 
             use sw = new System.IO.StreamWriter(filePath)
-            sw.Write (render <| v.Format())
+            sw.Write (print 80 <| v.Format())
 
 

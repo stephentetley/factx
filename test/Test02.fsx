@@ -17,3 +17,9 @@ let test01 () =
 
 let test02 () = 
     runTest <| prologList [simpleAtom "tree"; quotedAtom "trunk"]
+
+let test03 () = 
+    runTest <| prologComment "Rimp\nRamp\nRomp"
+
+let test04 () = 
+    runTest <| prologFact (simpleAtom "plant") [simpleAtom "cactus"; quotedAtom "succulent"]
