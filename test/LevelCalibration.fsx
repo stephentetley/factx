@@ -29,7 +29,7 @@ open FactX.Extra.PathString
 open Proprietary
 
 let outputFile (filename:string) : string = 
-    System.IO.Path.Combine(@"G:\work\Projects\events2\prolog\calibration\facts", filename) 
+    System.IO.Path.Combine(@"D:\coding\prolog\spt_misc\prolog\calibration\facts", filename) 
 
 
 // ****************************************************************************

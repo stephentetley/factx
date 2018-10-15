@@ -228,3 +228,9 @@ module Values =
         match allSomes elements with
         | None -> None
         | Some xs -> Some (prologFunctor name xs)
+
+    /// TODO - what does Prolog use for null / unknown?
+    let valueOrUnknown (value:option<Value>) : Value = 
+        match value with
+        | Some v -> v
+        | None -> prologSymbol "UNKNOWN"

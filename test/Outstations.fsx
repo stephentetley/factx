@@ -31,7 +31,7 @@ open FactX.Extra.PathString
 open Proprietary
 
 let outputFileName (filename:string) : string = 
-    System.IO.Path.Combine(@"G:\work\Projects\events2\prolog\outstations\facts", filename) 
+    System.IO.Path.Combine(@"D:\coding\prolog\spt_misc\prolog\outstations\facts", filename) 
 
 
 type OsTable = 

@@ -59,6 +59,7 @@
     <Compile Include="FactX\Extra\ExcelProviderHelper.fs" />
     <Compile Include="FactX\Extra\String.fs" />
     <Compile Include="FactX\Extra\PathString.fs" />
+    <Compile Include="FactX\Extra\LabelledTree.fs" />
     <Compile Include="FactX\Extra\DirectoryListing.fs" />
     <Content Include="packages.config" />
   </ItemGroup>

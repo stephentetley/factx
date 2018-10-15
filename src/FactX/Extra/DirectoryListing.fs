@@ -159,6 +159,7 @@ module DirectoryListing =
     // *************************************
     // Build from flat.
 
+    // TODO - should use LabelledTree builder
 
     type private Level1Kids = Map<Name, FileObj list>
 
@@ -182,7 +183,6 @@ module DirectoryListing =
                 match Map.tryFind fullName store with
                 | Some(xs) -> xs
                 | None -> []
-
             let kids2 = List.map (makeRecur store fullName) kids1
             FsFolder (name,props,kids2) 
 

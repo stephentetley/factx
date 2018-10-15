@@ -31,6 +31,14 @@ let siteName (commonName:string) =
     else 
         path.Subpath(0,2).Output()
 
+
+let equipmentPath (commonName:string) : string = 
+    let path : PathString = pathString "/" commonName
+    if path.Length >= 4 then 
+        path.Skip(2).SkipRight(1).Output()
+    else 
+        null
+
 // *************************************
 // Old
 
