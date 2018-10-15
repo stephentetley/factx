@@ -5,6 +5,7 @@
 #r "YC.PrettyPrinter"
 open YC.PrettyPrinter.Pretty
 open YC.PrettyPrinter.Doc
+open YC.PrettyPrinter.StructuredFormat
 
 #load "..\src\FactX\Internal\PrintProlog.fs"
 open FactX.Internal.PrintProlog
@@ -23,3 +24,19 @@ let test03 () =
 
 let test04 () = 
     runTest <| prologFact (simpleAtom "plant") [simpleAtom "cactus"; quotedAtom "succulent"]
+
+let test05 () = 
+    let xs = 
+        [ sepL "name" ^^ sepL "()."
+        ; wordL "name" ^^ wordL "()." 
+        ; sepL "name" ++ sepL "()."
+        ; wordL "name" ++ wordL "()." 
+        ; sepL "name" -- sepL "()."
+        ; wordL "name" -- wordL "()." 
+        ; sepL "name" @@ sepL "()."
+        ; wordL "name" @@ wordL "()." 
+        ]
+    List.iter runTest xs
+
+let test06 () = 
+    runTest <| wordL "name" ^^ wordL "()."

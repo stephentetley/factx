@@ -92,7 +92,7 @@ module PrologSyntax =
             | PDecimal d -> prologDecimal d
             | PQuotedAtom s -> quotedAtom s
             | PList vs -> prologList (List.map (fun (x:Value) -> x.Format()) vs)
-            | PFunctor(name, vs) -> prologFact (simpleAtom name) (List.map (fun (x:Value) -> x.Format()) vs)
+            | PFunctor(name, vs) -> prologFunctor name (List.map (fun (x:Value) -> x.Format()) vs)
 
 
     /// To consider...
@@ -104,8 +104,7 @@ module PrologSyntax =
         { FactName: Identifier
           Values : Value list }
         member v.Format () = 
-            prologFact (simpleAtom v.FactName) 
-                        (List.map (fun (x:Value) -> x.Format()) v.Values)
+            prologFact v.FactName (List.map (fun (x:Value) -> x.Format()) v.Values)
 
 
     type FactSet = 

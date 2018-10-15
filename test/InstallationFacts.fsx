@@ -31,7 +31,7 @@ open FactX.Extra.LabelledTree
 
 
 let outputFile (filename:string) : string = 
-    System.IO.Path.Combine(@"D:\coding\prolog\spt_misc\prolog\screens\facts", filename)
+    System.IO.Path.Combine(@"E:\coding\prolog\spt-misc\prolog\screens\facts", filename)
 
 
 
