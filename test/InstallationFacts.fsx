@@ -170,17 +170,36 @@ let assetStatus (status:AssetStatus) : string =
     | Operational -> "OPERATIONAL"
     | StatusOther s -> s
 
-// let nodeToProlog (node:LabelledTree<NodeLabel>) : Value = 
-    
-
+let rec nodeToProlog (node:LabelledTree<NodeLabel>) : Value = 
+    match node with
+    | Leaf (name,label) -> 
+        prologFunctor "equipment" []
+    | Tree (name,label,kids) -> 
+        match label.AssetType with
+        | Some ProcessGroup ->             
+            prologFunctor "process_group" [prologList (List.map nodeToProlog kids)]
+        | Some Process ->             
+            prologFunctor "process" [prologList (List.map nodeToProlog kids)]
+        | Some PlantAssembly ->             
+            prologFunctor "plant_assembly" [prologList (List.map nodeToProlog kids)]
+        | Some PlantItem ->             
+            prologFunctor "plant_item" [prologList (List.map nodeToProlog kids)]
+        | Some asset -> 
+            let symb = prologSymbol <| asset.ToString()
+            prologFunctor "generic_asset" [symb; prologList (List.map nodeToProlog kids)]
+        | None -> 
+            prologFunctor "unknown_asset" (List.map nodeToProlog kids)
+            
 let installationToProlog (inst:Installation) : FactBase = 
     let rootClause: option<Clause> = 
         match inst with
-        | Tree(_, label, _kids) -> 
+        | Tree(_, label, kids) -> 
+            let kids1 = List.map nodeToProlog kids
             Some <| Clause.cons( signature = "installation(uid, name, status)."
                                , body = [ prologSymbol label.Uid
                                         ; prologSymbol label.Name
                                         ; prologSymbol (assetStatus label.Operational)
+                                        ; prologFunctor "kids" [prologList kids1]
                                         ] )
         | Leaf _ -> None
     FactBase.ofOptionList [rootClause]
