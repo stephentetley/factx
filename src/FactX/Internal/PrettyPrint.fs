@@ -105,7 +105,6 @@ module PrettyPrint =
     let private best (ribbon:int) (pageWidth:int) 
                             (indentation:int) (colWidth:int) (docs:DocList) : SDoc =
         let rec work (n:int) (k:int) (x:DocList) (cont:SDoc -> SDoc) = 
-            printfn "best n:%i, k=%i" indentation colWidth
             match x with
             | Nil -> cont SEmpty
             | Cons(i,d,ds) -> 

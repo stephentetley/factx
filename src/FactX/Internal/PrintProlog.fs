@@ -9,16 +9,10 @@ open FactX.Internal.PrettyPrint
 [<AutoOpen>]
 module PrintProlog = 
     
-    let altCommaListL (docs: Doc list ) : Doc = 
-        match docs with
-          | []    -> empty
-          | [x]   -> x
-          | x::ys -> List.fold (fun pre y -> pre ^/^ comma ^+^ y) (space ^+^ x) ys
 
-    // let tupled (docs:Doc list) : Doc = bracketL (aboveCommaListL docs)
+    let commaSep (docs:Doc list) = foldDocs (fun ac e -> ac ^^ comma ^/^ e) docs
     
-    let prologList (docs:Doc list) : Doc = 
-        brackets (altCommaListL docs)
+    let prologList (docs:Doc list) : Doc = brackets (commaSep docs)
 
     let private escapeSpecial (source:string) : string = 
         source.Replace("\\" , "\\\\")
@@ -50,19 +44,18 @@ module PrintProlog =
         // Ensure Prolog printing renders to a decimal string.
         text <| let d1 = 0.0M + d in d1.ToString()
 
-    //let prologList (elements:Doc list) : Doc = 
-    //    wordL "[" ^^ sepListL (wordL ",") elements ^^ wordL "]"
+
 
     let prologComment (comment:string) : Doc = 
         let lines = comment.Split [|'\n'|] |> Array.toList
-        altCommaListL <| List.map (fun s -> text (sprintf "%c %s" '%' s)) lines
+        vcat <| List.map (fun s -> text (sprintf "%c %s" '%' s)) lines
 
     /// TODO must be no space between head and open-paren            
     let prologFact (head:string) (body:Doc list) : Doc =
-        (text <| sprintf "%s(" head) ^^ altCommaListL body ^^ text ")."
+        (text <| sprintf "%s(" head) ^^ commaSep body ^^ text ")."
 
     let prologFunctor (head:string) (body:Doc list) : Doc =
-        (text <| sprintf "%s(" head) ^^ altCommaListL body ^^ text ")"
+        (text <| sprintf "%s(" head) ^^ commaSep body ^^ text ")"
 
     /// E.g:
     ///     :- module(installation,
@@ -73,6 +66,6 @@ module PrintProlog =
             let factNames = List.map (fun (s,i) -> text (sprintf "%s/%i" s i)) exports
             prologList factNames
                 
-        text ":- module(" ^^ altCommaListL [text moduleName; exportList] ^^ text ")."
+        text ":- module(" ^^ commaSep [text moduleName; exportList] ^^ text ")."
 
 

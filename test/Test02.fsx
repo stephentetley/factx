@@ -17,23 +17,26 @@ let test01 () =
 let test02 () = 
     let d1:Doc = text "hello" ^+^ text "world" in runTest d1
 
-    //let binop (left:Doc) (op:Doc) (right:Doc) : Doc = 
-    //    group (nest 2 (group (left ^| op) ^| right))
+let binop (left:Doc) (op:Doc) (right:Doc) : Doc = 
+    group (nest 2 (group (left ^+^ op ^+^ right)))
 
 
-//let cond = binop (text "a") (text "==") (text "b")
-//let expr1 = binop (text "a") (text "<<") (text "2")
-//let expr2 = binop (text "a") (text "+") (text "b")
+let cond = binop (text "a") (text "==") (text "b")
+let expr1 = binop (text "a") (text "<<") (text "2")
+let expr2 = binop (text "a") (text "+") (text "b")
 
-//let ifthen c e1 e2 = 
-//    group ( group (nest 2 (text "if" ^| c))
-//         ^| group (nest 2 (text "then" ^| e1))
-//         ^| group (nest 2 (text "else" ^| e2)))
+let ifthen c e1 e2 = 
+    group ( group (nest 2 (text "if" ^+^ c))
+         ^@^ group (nest 2 (text "then" ^+^ e1))
+         ^@^ group (nest 2 (text "else" ^+^ e2)))
 
-//let test02 () = 
-//    let doc = ifthen cond expr1 expr2 
-//    runTestW 80 doc
-//    runTestW 20 doc
+let test03 () = 
+    let doc = ifthen cond expr1 expr2 
+    runTestW 80 doc
+
+let test04 () = 
+    let doc = ifthen cond expr1 expr2 
+    runTestW 20 doc
 
 
 
