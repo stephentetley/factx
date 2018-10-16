@@ -13,7 +13,7 @@ module PrintProlog =
         match docs with
           | []    -> empty
           | [x]   -> x
-          | x::ys -> List.fold (fun pre y -> pre @| comma ^| y) (space ^| x) ys
+          //| x::ys -> List.fold (fun pre y -> pre @| comma ^| y) (space ^| x) ys
 
     // let tupled (docs:Doc list) : Doc = bracketL (aboveCommaListL docs)
     
@@ -71,7 +71,7 @@ module PrintProlog =
     let moduleDirective (moduleName:string) (exports: (string * int) list) : Doc = 
         let exportList : Doc = 
             let factNames = List.map (fun (s,i) -> text (sprintf "%s/%i" s i)) exports
-            prologList (List.map group factNames)
+            prologList factNames
                 
         text ":- module(" ^^ altCommaListL [text moduleName; exportList] ^^ text ")."
 

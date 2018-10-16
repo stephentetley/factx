@@ -1,61 +1,72 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
-// Acknowledgment: These are Christian Lindig's pretty printers 
-// from the paper "Strictly Pretty" with extra cominators from 
-// Daan Leijen's PPrint.
+// Acknowledgment: This an implementation of Daan Leijen's PPrint.
+// This pretty priniting library has perhaps the nicest interface
+// and is very well documented.
 
 
 namespace FactX.Internal.PrettyPrint
 
 open System.Text
+open System
 
 [<AutoOpen>]
 module PrettyPrint = 
     
     type Doc = 
-        | Nil
-        | Cons of Doc * Doc
-        | Char of char
-        | Text of string
-        | Nest of int * Doc
-        | Break of string
-        | Group of Doc
+        private 
+            | Empty
+            | Char of char
+            | Text of int * string
+            | Line of bool      // true when undune by group
+            | Cat of Doc * Doc
+            | Nest of int * Doc
+            | Union of Doc * Doc    // invariant lines of d1 longer than lines of d2
+            | Column of (int -> Doc)
+            | Nesting of (int -> Doc)
 
-    let (^^) (x:Doc) (y:Doc) = Cons (x,y)
+    let (^^) (x:Doc) (y:Doc) = Cat (x,y)
     
-    let empty : Doc = Nil
+    let empty : Doc = Empty
+
+
 
     let char (c:char) : Doc = Char c
 
-    let text (s:string) : Doc = Text s
+    let text (s:string) : Doc = Text(s.Length, s)
 
     let nest (i:int) (d:Doc) = Nest (i, d)
 
-    let spaceBreak : Doc = Break " "
 
-    let lineBreak : Doc = Break "\n"
+    //let spaceBreak : Doc = Break " "
 
-    let breakWith (s:string) = Break s
+    //let lineBreak : Doc = Break "\n"
 
-    let group (d:Doc) : Doc = Group d
+    //let breakWith (s:string) = Break s
+
+    //let group (d:Doc) : Doc = Group d
 
     type SDoc = 
-        | SNil 
-        | SText of string * SDoc
-        | SLine of int * SDoc       // newline + spaces
+        | SEmpty
+        | SChar of char * SDoc
+        | SText of int * string * SDoc
+        | SLine of int * SDoc      
 
     let sdocToString (source:SDoc) : string = 
         let sb = new StringBuilder ()
         let rec work (sdoc:SDoc) cont = 
             match sdoc with 
-            | SNil -> cont ()
-            | SText(s,d) -> 
+            | SEmpty -> cont ()
+            | SChar(c,d) -> 
+                sb.Append(c) |> ignore
+                work d cont
+            | SText(_,s,d) -> 
                 sb.Append(s) |> ignore
                 work d cont
             | SLine(i,d) -> 
-                let prefix = String.replicate i " " 
-                sb.Append(prefix + "\n") |> ignore
+                let indent = String.replicate i " " 
+                sb.Append("\n" + indent) |> ignore
                 work d cont                
         work source (fun _ -> ())
         sb.ToString()
@@ -65,39 +76,67 @@ module PrettyPrint =
 
     type private Format1 = int * Mode * Doc
 
-    let rec private fits (w:int) (xs:Format1 list) : bool = 
-        match xs with
-        | _ when w < 0 -> false
-        | []                     -> true
-        | (_,_,Nil)             :: zs -> fits w zs
-        | (i,m,Cons(x,y))       :: zs -> fits w ((i,m,x) :: (i,m,y) :: zs)
-        | (i,m,Nest(j,x))       :: zs -> fits w ((i+j,m,x) :: zs)
-        | (_,_,Text(s))         :: zs -> fits (w - s.Length) zs
-        | (_,_,Char(c))         :: zs -> fits (w - 1) zs
-        | (_,Flat1,Break(s))    :: zs -> fits (w - s.Length) zs
-        | (_,Break1,Break(_))   :: _ -> true    // Impossible
-        | (i,_,Group(x))        :: zs -> fits w ((i,Flat1,x) :: zs)
+    let rec private fits (w:int) (x:SDoc) : bool = 
+        match x with
+        | _ when w < 0          -> false
+        | SEmpty                -> true
+        | SChar(_,x)            -> fits (w - 1) x
+        | SText(l,_,x)          -> fits (w - l) x
+        | SLine _               -> true
 
-    let rec private format (w:int) (k:int) (xs:Format1 list) : SDoc = 
-        printfn "format w=%i k=%i" w k
-        match xs with
-        | [] -> SNil
-        | (_,_,Nil)             :: zs -> format w k zs
-        | (i,m,Cons(x,y))       :: zs -> format w k ((i,m,x) :: (i,m,y) :: zs)
-        | (i,m,Nest(j,x))       :: zs -> format w k ((i+j,m,x) :: zs)
-        | (_,_,Text(s))         :: zs -> let d1 = format w (k + s.Length) zs in SText(s,d1)
-        | (_,_,Char(c))         :: zs -> let d1 = format w (k + 1) zs in SText(c.ToString(),d1)
-        | (_,Flat1,Break(s))    :: zs -> let d1 = format w (k + s.Length) zs in SText(s,d1)
-        | (i,Break1,Break(_))   :: zs -> 
-            printfn "i=%i" i; let d1 = format w i zs in SLine(i,d1)
-        | (i,_,Group(x))        :: zs -> 
-            if fits (w - k) ((i,Flat1,x) :: zs) then 
-                format w k ((i,Flat1,x) :: zs)
-            else
-                format w k ((i,Break1,x) :: zs)
+    /// Called Docs in Daan's library PPrint
+    type private DocList = 
+        | Nil 
+        | Cons of int * Doc * DocList
 
-    let render (lineWidth:int) (doc:Doc) : string = 
-        format lineWidth 1 [(1,Flat1,doc)] |> sdocToString
+
+    let nicest (ribbon:int) (pageWidth:int) (n:int) (k:int) (x:SDoc) (y:SDoc) : SDoc = 
+        let width = min (pageWidth - k) (ribbon - k + n)
+        if fits width x then x else y
+
+
+
+    /// TODO make tail recursive...
+    let rec private best (ribbon:int) (pageWidth:int) 
+                            (indentation:int) (colWidth:int) (docs:DocList) : SDoc = 
+        let rec work (n:int) (k:int) (x:DocList) = 
+            match x with
+            | Nil -> SEmpty
+            | Cons(i,d,ds) -> 
+                match d with
+                | Empty         -> work n k ds
+                | Char(c)       -> let rest = work n (k+1) ds in SChar(c,rest)
+                | Text(l,s)     -> let rest = work n (k+l) ds in SText(l,s,rest)
+                | Line(_)       -> let rest = work i i ds in SLine(i,rest)
+                | Cat(x,y)      -> work n k (Cons(i,x, (Cons(i,y,ds))))
+                | Nest(j,x)     -> 
+                    let i1 = i+j 
+                    let rest = Cons(i1,x,ds)
+                    work n k rest
+                | Union(x,y)    -> 
+                    let rest1 = Cons(i,x,ds)
+                    let rest2 = Cons(i,y,ds)
+                    nicest ribbon pageWidth n k (work n k rest1) (work n k rest2)
+
+                | Column(f)     -> let rest = Cons(i,(f k),ds) in work n k rest
+                | Nesting(f)    -> let rest = Cons(i,(f i),ds) in work n k rest
+        work indentation colWidth docs
+
+
+    let rec renderPretty1 (rfrac:float) (w:int) (x:Doc) : SDoc = 
+        printfn "format w=%i" w 
+        let r  = max 0 (min w (int <| Math.Round (float w * rfrac)))
+        let ds = Cons(0,x,Nil)
+        best r w 0 0 ds
+
+
+
+
+    let rec renderPretty (rfrac:float) (w:int) (x:Doc) : string = 
+        renderPretty1 rfrac w x |> sdocToString
+
+    //let render (lineWidth:int) (doc:Doc) : string = 
+    //    format lineWidth 1 [(1,Flat1,doc)] |> sdocToString
 
 
     /// Single left parenthesis: '('
@@ -155,30 +194,30 @@ module PrettyPrint =
     /// Don't try to define (<>) - it is a reserved operator name in F#
 
     /// Concatenates d1 and d2 horizontally, with optionally breaking space.
-    let (^|) (d1:Doc)  (d2:Doc) : Doc = 
-        match d1,d2 with
-        | Nil, _ -> d1
-        | _, Nil -> d2
-        |_, _    -> d1 ^^ spaceBreak ^^ d2
+    //let (^|) (d1:Doc)  (d2:Doc) : Doc = 
+    //    match d1,d2 with
+    //    | Nil, _ -> d1
+    //    | _, Nil -> d2
+    //    |_, _    -> d1 ^^ spaceBreak ^^ d2
 
-    /// Concatenates d1 and d2 vertically, with optionally breaking space.
-    let (@|) (d1:Doc)  (d2:Doc) : Doc = 
-        match d1,d2 with
-        | Nil, _ -> d1
-        | _, Nil -> d2
-        |_, _    -> d1 ^^ lineBreak ^^ d2
+    ///// Concatenates d1 and d2 vertically, with optionally breaking space.
+    //let (@|) (d1:Doc)  (d2:Doc) : Doc = 
+    //    match d1,d2 with
+    //    | Nil, _ -> d1
+    //    | _, Nil -> d2
+    //    |_, _    -> d1 ^^ lineBreak ^^ d2
 
-    /// Binop 
-    let binop (left:Doc) (op:Doc) (right:Doc) : Doc = 
-        group (nest 2 (group (left ^| op) ^| right))
+    ///// Binop 
+    //let binop (left:Doc) (op:Doc) (right:Doc) : Doc = 
+    //    group (nest 2 (group (left ^| op) ^| right))
 
 
 
-    /// Concatenates d1 and d2 horizontally with a line between them.
-    let (@@) (d1:Doc)  (d2:Doc) : Doc = d1 ^^ lineBreak ^^ d2
+    ///// Concatenates d1 and d2 horizontally with a line between them.
+    //let (@@) (d1:Doc)  (d2:Doc) : Doc = d1 ^^ lineBreak ^^ d2
 
-    /// Concatenates d1 and d2 horizontally with a space between them.
-    let (^+^) (d1:Doc)  (d2:Doc) : Doc = d1 ^^ spaceBreak ^^ d2
+    ///// Concatenates d1 and d2 horizontally with a space between them.
+    //let (^+^) (d1:Doc)  (d2:Doc) : Doc = d1 ^^ spaceBreak ^^ d2
 
     let punctuate (sep:Doc) (docs:Doc list) : Doc = 
         let rec work acc ds = 
