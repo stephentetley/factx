@@ -114,7 +114,7 @@ module PrologSyntax =
             let d1 = prologComment v.Signature
             let d2 = prologComment v.Comment
             let ds = List.map (fun (clause:Clause) -> clause.Format()) v.Clauses
-            commaList <| (d1 :: d2 :: ds)
+            commaList <| List.map group (d1 :: d2 :: ds)
 
         member v.ExportSignature = (v.FactName, v.Arity)
     
