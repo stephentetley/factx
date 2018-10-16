@@ -114,7 +114,7 @@ module PrologSyntax =
             let d1 = prologComment v.Signature
             let d2 = prologComment v.Comment
             let ds = List.map (fun (clause:Clause) -> clause.Format()) v.Clauses
-            commaList <| List.map group (d1 :: d2 :: ds)
+            vcat <| (d1 :: d2 :: ds)
 
         member v.ExportSignature = (v.FactName, v.Arity)
     
@@ -155,7 +155,7 @@ module PrologSyntax =
             let d1 = prologComment v.GlobalComment
             let d2 = moduleDirective v.ModuleName v.Exports
             let ds = List.map (fun (col:FactSet) -> col.Format()) v.Database
-            commaList [ d1; d2; commaList ds ]
+            vcat [ d1; d2; vcat ds ]
 
         member v.SaveToString () : string = 
             renderPretty 0.8 80 <| v.Format()

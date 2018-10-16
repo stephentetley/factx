@@ -27,14 +27,13 @@ module PrettyPrint =
             | Nesting of (int -> Doc)
 
 
-
-
     type SDoc = 
         private 
             | SEmpty
             | SChar of char * SDoc
             | SText of int * string * SDoc
             | SLine of int * SDoc      
+
 
     let sdocToString (source:SDoc) : string = 
         let sb = new StringBuilder ()
@@ -77,6 +76,8 @@ module PrettyPrint =
 
     type private Format1 = int * Mode * Doc
 
+
+    /// CPS / Tail recursive
     let private fits (width:int) (sdoc:SDoc) : bool = 
         let rec work (w:int) (x:SDoc) (cont: bool -> bool) =
             match x with
@@ -100,31 +101,42 @@ module PrettyPrint =
 
 
 
-    /// TODO make tail recursive...
-    let rec private best (ribbon:int) (pageWidth:int) 
-                            (indentation:int) (colWidth:int) (docs:DocList) : SDoc = 
-        let rec work (n:int) (k:int) (x:DocList) = 
+    /// Tail recursive / CPS but probably has error...
+    let private best (ribbon:int) (pageWidth:int) 
+                            (indentation:int) (colWidth:int) (docs:DocList) : SDoc =
+        let rec work (n:int) (k:int) (x:DocList) (cont:SDoc -> SDoc) = 
+            printfn "best n:%i, k=%i" indentation colWidth
             match x with
-            | Nil -> SEmpty
+            | Nil -> cont SEmpty
             | Cons(i,d,ds) -> 
                 match d with
-                | Empty         -> work n k ds
-                | Char(c)       -> let rest = work n (k+1) ds in SChar(c,rest)
-                | Text(l,s)     -> let rest = work n (k+l) ds in SText(l,s,rest)
-                | Line(_)       -> let rest = work i i ds in SLine(i,rest)
-                | Cat(x,y)      -> work n k (Cons(i,x, (Cons(i,y,ds))))
-                | Nest(j,x)     -> 
-                    let i1 = i+j 
-                    let rest = Cons(i1,x,ds)
-                    work n k rest
-                | Union(x,y)    -> 
-                    let rest1 = Cons(i,x,ds)
-                    let rest2 = Cons(i,y,ds)
-                    nicest ribbon pageWidth n k (work n k rest1) (work n k rest2)
+                | Empty         -> work n k ds (fun ans -> cont ans)
+                | Char(c)       -> 
+                    work n (k+1) ds (fun ans1 -> cont (SChar(c,ans1)))
+                
+                | Text(l,s)     -> 
+                    work n (k+l) ds (fun ans1 -> cont (SText(l,s,ans1)))
 
-                | Column(f)     -> let rest = Cons(i,(f k),ds) in work n k rest
-                | Nesting(f)    -> let rest = Cons(i,(f i),ds) in work n k rest
-        work indentation colWidth docs
+                | Line(_)       -> 
+                    cont (work i i ds (fun ans1 -> SLine(i,ans1)))
+                    
+                | Cat(x,y)      -> 
+                   work n k (Cons(i,x,(Cons(i,y,ds)))) (fun ans -> cont ans)
+
+                | Nest(j,x)     -> 
+                    work n k (Cons(i+j,x,ds)) (fun ans -> cont ans)
+                
+                | Union(x,y)    -> 
+                    work n k (Cons(i,x,ds)) (fun ans1 ->
+                    work n k (Cons(i,y,ds)) (fun ans2 ->
+                    cont (nicest ribbon pageWidth n k ans1 ans2)))
+
+                | Column(f)     -> 
+                    work n k (Cons(i, f k, ds)) (fun ans -> cont ans)
+
+                | Nesting(f)    -> 
+                     work n k (Cons(i, f i, ds)) (fun ans -> cont ans)
+        work indentation colWidth docs (fun x -> x)
 
 
     let renderPretty1 (rfrac:float) (w:int) (x:Doc) : SDoc = 
@@ -181,6 +193,8 @@ module PrettyPrint =
     let group (x:Doc) : Doc = Union (flatten x,x)
 
     let softline : Doc = group line
+
+    let softbreak : Doc = group linebreak
 
     // ************************************************************************
     // Character printers
@@ -251,17 +265,38 @@ module PrettyPrint =
 
     let (^/^) (x:Doc) (y:Doc) : Doc = x ^^ softline ^^ y
 
-    ///// Binop 
-    //let binop (left:Doc) (op:Doc) (right:Doc) : Doc = 
-    //    group (nest 2 (group (left ^| op) ^| right))
+    let (^//^) (x:Doc) (y:Doc) : Doc = x ^^ softbreak ^^ y
+
+    /// Haskell / PPrint's: <$>
+    let (^@^) (x:Doc) (y:Doc) : Doc = x ^^ line ^^ y
+
+    /// Haskell / PPrint's: <$$>
+    let (^@@^) (x:Doc) (y:Doc) : Doc = x ^^ linebreak ^^ y
 
 
+    // ************************************************************************
+    // List concatenation 
 
-    ///// Concatenates d1 and d2 horizontally with a line between them.
-    //let (@@) (d1:Doc)  (d2:Doc) : Doc = d1 ^^ lineBreak ^^ d2
+    let foldDocs f (docs:Doc list) : Doc = 
+        match docs with
+        | [] -> empty
+        | (x::xs) -> List.fold f x xs
 
-    ///// Concatenates d1 and d2 horizontally with a space between them.
-    //let (^+^) (d1:Doc)  (d2:Doc) : Doc = d1 ^^ spaceBreak ^^ d2
+
+    let fillSep (docs:Doc list) : Doc = foldDocs (^/^) docs
+
+
+    let hsep (docs:Doc list) : Doc = foldDocs (^+^) docs
+
+    let vsep (docs:Doc list) : Doc = foldDocs (^@^) docs
+
+    let hcat (docs:Doc list) : Doc = foldDocs (^^) docs
+
+    let vcat (docs:Doc list) : Doc = foldDocs (^@@^) docs
+
+    let cat (docs:Doc list) : Doc = group <| vcat docs
+
+   
 
     let punctuate (sep:Doc) (docs:Doc list) : Doc = 
         let rec work acc ds = 
