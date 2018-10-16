@@ -77,13 +77,16 @@ module PrettyPrint =
 
     type private Format1 = int * Mode * Doc
 
-    let rec private fits (w:int) (x:SDoc) : bool = 
-        match x with
-        | _ when w < 0          -> false
-        | SEmpty                -> true
-        | SChar(_,x)            -> fits (w - 1) x
-        | SText(l,_,x)          -> fits (w - l) x
-        | SLine _               -> true
+    let private fits (width:int) (sdoc:SDoc) : bool = 
+        let rec work (w:int) (x:SDoc) (cont: bool -> bool) =
+            match x with
+            | _ when w < 0          -> cont false
+            | SEmpty                -> cont true
+            | SChar(_,x)            -> work (w - 1) x (fun ans -> cont ans)
+            | SText(l,_,x)          -> work (w - l) x (fun ans -> cont ans)
+            | SLine _               -> cont true
+        work width sdoc (fun x -> x) 
+
 
     /// Called Docs in Daan's library PPrint
     type private DocList = 
