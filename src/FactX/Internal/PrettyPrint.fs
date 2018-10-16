@@ -26,32 +26,15 @@ module PrettyPrint =
             | Column of (int -> Doc)
             | Nesting of (int -> Doc)
 
-    let (^^) (x:Doc) (y:Doc) = Cat (x,y)
-    
-    let empty : Doc = Empty
 
 
-
-    let char (c:char) : Doc = Char c
-
-    let text (s:string) : Doc = Text(s.Length, s)
-
-    let nest (i:int) (d:Doc) = Nest (i, d)
-
-
-    //let spaceBreak : Doc = Break " "
-
-    //let lineBreak : Doc = Break "\n"
-
-    //let breakWith (s:string) = Break s
-
-    //let group (d:Doc) : Doc = Group d
 
     type SDoc = 
-        | SEmpty
-        | SChar of char * SDoc
-        | SText of int * string * SDoc
-        | SLine of int * SDoc      
+        private 
+            | SEmpty
+            | SChar of char * SDoc
+            | SText of int * string * SDoc
+            | SLine of int * SDoc      
 
     let sdocToString (source:SDoc) : string = 
         let sb = new StringBuilder ()
@@ -70,6 +53,24 @@ module PrettyPrint =
                 work d cont                
         work source (fun _ -> ())
         sb.ToString()
+
+    let writeSDoc (path:string) (source:SDoc) : unit = 
+        use sw = IO.File.CreateText(path)
+        let rec work (sdoc:SDoc) cont = 
+            match sdoc with 
+            | SEmpty -> cont ()
+            | SChar(c,d) -> 
+                sw.Write(c) |> ignore
+                work d cont
+            | SText(_,s,d) -> 
+                sw.Write(s) |> ignore
+                work d cont
+            | SLine(i,d) -> 
+                let indent = String.replicate i " " 
+                sw.Write("\n" + indent) |> ignore
+                work d cont                
+        work source (fun _ -> ())
+        
 
 
     type Mode = | Flat1 | Break1
@@ -123,21 +124,63 @@ module PrettyPrint =
         work indentation colWidth docs
 
 
-    let rec renderPretty1 (rfrac:float) (w:int) (x:Doc) : SDoc = 
-        printfn "format w=%i" w 
+    let renderPretty1 (rfrac:float) (w:int) (x:Doc) : SDoc = 
         let r  = max 0 (min w (int <| Math.Round (float w * rfrac)))
         let ds = Cons(0,x,Nil)
         best r w 0 0 ds
 
 
-
-
-    let rec renderPretty (rfrac:float) (w:int) (x:Doc) : string = 
+    let renderPretty (rfrac:float) (w:int) (x:Doc) : string = 
         renderPretty1 rfrac w x |> sdocToString
 
-    //let render (lineWidth:int) (doc:Doc) : string = 
-    //    format lineWidth 1 [(1,Flat1,doc)] |> sdocToString
+    let writeDoc (rfrac:float) (w:int) (path:string) (x:Doc) : unit = 
+        renderPretty1 rfrac w x |> writeSDoc path
 
+
+
+    // ************************************************************************
+    // Primitives
+    
+    let empty : Doc = Empty
+
+    let char (c:char) : Doc = Char c
+
+    let text (s:string) : Doc = 
+        match s with
+        | null  -> Empty
+        | ""    -> Empty
+        | _     -> Text(s.Length, s)
+
+    let line : Doc = Line false
+
+    let linebreak : Doc = Line true
+
+    let beside x y      = Cat(x,y)
+
+    let nest (i:int) (x:Doc) : Doc = Nest(i,x)
+
+    let column (fn:int -> Doc) : Doc = Column fn
+    let nesting (fn:int -> Doc) : Doc = Nesting fn
+
+    /// TODO - make tail recursive...
+    let flatten (doc:Doc) : Doc = 
+        let rec work d1 = 
+            match d1 with
+            | Cat(x,y)      -> Cat(work x, work y)
+            | Nest(i,x)     -> Nest(i, work x)
+            | Line(brk)     -> if brk then Empty else Text(1," ")
+            | Union(x,y)    -> work x
+            | Column(f)     -> Column (work << f)
+            | Nesting(f)    -> Nesting (work << f)
+            | x             -> x                     // Empty,Char,Text
+        work doc
+
+    let group (x:Doc) : Doc = Union (flatten x,x)
+
+    let softline : Doc = group line
+
+    // ************************************************************************
+    // Character printers
 
     /// Single left parenthesis: '('
     let lparen : Doc = char '('
@@ -191,21 +234,19 @@ module PrettyPrint =
     /// The document @equals@ contains an equal sign, \"=\".
     let equals : Doc = char '='
 
-    /// Don't try to define (<>) - it is a reserved operator name in F#
+    // ************************************************************************
+    // Concatenation operators
 
-    /// Concatenates d1 and d2 horizontally, with optionally breaking space.
-    //let (^|) (d1:Doc)  (d2:Doc) : Doc = 
-    //    match d1,d2 with
-    //    | Nil, _ -> d1
-    //    | _, Nil -> d2
-    //    |_, _    -> d1 ^^ spaceBreak ^^ d2
 
-    ///// Concatenates d1 and d2 vertically, with optionally breaking space.
-    //let (@|) (d1:Doc)  (d2:Doc) : Doc = 
-    //    match d1,d2 with
-    //    | Nil, _ -> d1
-    //    | _, Nil -> d2
-    //    |_, _    -> d1 ^^ lineBreak ^^ d2
+
+    // Don't try to define (<>) - it is a reserved operator name in F#
+    // call it (^^)
+
+    let (^^) (x:Doc) (y:Doc) : Doc = beside x y
+
+    let (^+^) (x:Doc) (y:Doc) : Doc = x ^^ space ^^ y
+
+    let (^/^) (x:Doc) (y:Doc) : Doc = x ^^ softline ^^ y
 
     ///// Binop 
     //let binop (left:Doc) (op:Doc) (right:Doc) : Doc = 

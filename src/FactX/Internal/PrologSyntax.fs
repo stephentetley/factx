@@ -158,10 +158,9 @@ module PrologSyntax =
             commaList [ d1; d2; commaList ds ]
 
         member v.SaveToString () : string = 
-            render 80 <| v.Format()
+            renderPretty 0.8 80 <| v.Format()
         
         member v.Save(filePath:string) = 
-            use sw = new System.IO.StreamWriter(filePath)
-            sw.Write (render 80 <| v.Format())
+            writeDoc 0.8 80 filePath (v.Format())
 
 

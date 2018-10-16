@@ -162,8 +162,7 @@ module FactOutput =
 
         member v.Save(filePath:string) = 
             let prologModule = v.ToProlog()
-            use sw = new System.IO.StreamWriter(filePath)
-            sw.Write (render 80 <| prologModule.Format ())
+            writeDoc 0.8 80 filePath <| prologModule.Format()
 
 [<AutoOpen>]
 module Values = 

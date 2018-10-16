@@ -9,11 +9,11 @@ open FactX.Internal.PrettyPrint
 [<AutoOpen>]
 module PrintProlog = 
     
-    let  altCommaListL (docs: Doc list ) : Doc = 
+    let altCommaListL (docs: Doc list ) : Doc = 
         match docs with
           | []    -> empty
           | [x]   -> x
-          //| x::ys -> List.fold (fun pre y -> pre @| comma ^| y) (space ^| x) ys
+          | x::ys -> List.fold (fun pre y -> pre ^/^ comma ^+^ y) (space ^+^ x) ys
 
     // let tupled (docs:Doc list) : Doc = bracketL (aboveCommaListL docs)
     
