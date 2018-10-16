@@ -5,10 +5,6 @@
 #r "FParsec"
 #r "FParsecCS"
 
-#I @"..\packages\YC.PrettyPrinter.0.0.5\lib\net40"
-#r "YC.PrettyPrinter"
-
-
 #I @"..\packages\ExcelProvider.1.0.1\lib\net45"
 #r "ExcelProvider.Runtime.dll"
 
@@ -18,6 +14,7 @@
 #r "ExcelProvider.DesignTime.dll"
 open FSharp.Interop.Excel
 
+#load "..\src\FactX\Internal\PrettyPrint.fs"
 #load "..\src\FactX\Internal\PrintProlog.fs"
 #load "..\src\FactX\Internal\PrologSyntax.fs"
 #load "..\src\FactX\FactOutput.fs"
@@ -31,7 +28,7 @@ open FactX.Extra.LabelledTree
 
 
 let outputFile (filename:string) : string = 
-    System.IO.Path.Combine(@"E:\coding\prolog\spt-misc\prolog\screens\facts", filename)
+    System.IO.Path.Combine(@"D:\coding\prolog\spt-misc\prolog\screens\facts", filename)
 
 
 

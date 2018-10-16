@@ -4,6 +4,7 @@
 
 
 #load "..\src\FactX\Internal\PrettyPrint.fs"
+#load "..\src\FactX\Internal\PrintProlog.fs"
 open FactX.Internal
 
 

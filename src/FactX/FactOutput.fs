@@ -3,10 +3,10 @@
 
 namespace FactX
 
-open YC.PrettyPrinter.Pretty
+
 
 open FactX.Internal
-
+open FactX.Internal.PrettyPrint
 
 [<AutoOpen>]
 module FactOutput = 
@@ -163,7 +163,7 @@ module FactOutput =
         member v.Save(filePath:string) = 
             let prologModule = v.ToProlog()
             use sw = new System.IO.StreamWriter(filePath)
-            sw.Write (print 80 <| prologModule.Format ())
+            sw.Write (render 80 <| prologModule.Format ())
 
 [<AutoOpen>]
 module Values = 

@@ -12,10 +12,7 @@ open System.IO
 
 open FParsec
 
-open YC.PrettyPrinter.Pretty
-open YC.PrettyPrinter.Doc
-open YC.PrettyPrinter.StructuredFormat
-
+open FactX.Internal.PrettyPrint
 open FactX.Internal.PrintProlog
 
 
@@ -117,7 +114,7 @@ module PrologSyntax =
             let d1 = prologComment v.Signature
             let d2 = prologComment v.Comment
             let ds = List.map (fun (clause:Clause) -> clause.Format()) v.Clauses
-            aboveListL <| (d1 :: d2 :: ds)
+            commaList <| (d1 :: d2 :: ds)
 
         member v.ExportSignature = (v.FactName, v.Arity)
     
@@ -158,13 +155,13 @@ module PrologSyntax =
             let d1 = prologComment v.GlobalComment
             let d2 = moduleDirective v.ModuleName v.Exports
             let ds = List.map (fun (col:FactSet) -> col.Format()) v.Database
-            aboveListL [ d1; d2; aboveListL ds ]
+            commaList [ d1; d2; commaList ds ]
 
         member v.SaveToString () : string = 
-            print 80 <| v.Format()
+            render 80 <| v.Format()
         
         member v.Save(filePath:string) = 
             use sw = new System.IO.StreamWriter(filePath)
-            sw.Write (print 80 <| v.Format())
+            sw.Write (render 80 <| v.Format())
 
 
