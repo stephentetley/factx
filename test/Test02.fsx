@@ -38,8 +38,16 @@ let test04 () =
     let doc = ifthen cond expr1 expr2 
     runTestW 20 doc
 
+let test05 () = 
+    let doc = vcat << List.map (fun x -> text x ^/^ text x) <| List.replicate 1000 "orange, blue, white, black"
+    runTestW 35 doc
 
-
+// Note pathological slow down happens quite soon. 
+// Observable at 50, potentially before...
+let test06 (ntimes:int) = 
+    let s = "orange, blue, white, black"
+    let doc = text s ^/^ text s
+    runTestW 35 (vcat <| List.replicate ntimes doc)
 
 //let test02 () = 
 //    runTest <| prologList [simpleAtom "tree"; quotedAtom "trunk"]
@@ -50,21 +58,3 @@ let test04 () =
 //let test04 () = 
 //    runTest <| prologFact (simpleAtom "plant") [simpleAtom "cactus"; quotedAtom "succulent"]
 
-
-
-
-//let test05 () = 
-//    let xs = 
-//        [ sepL "name" ^^ sepL "()."
-//        ; wordL "name" ^^ wordL "()." 
-//        ; sepL "name" ++ sepL "()."
-//        ; wordL "name" ++ wordL "()." 
-//        ; sepL "name" -- sepL "()."
-//        ; wordL "name" -- wordL "()." 
-//        ; sepL "name" @@ sepL "()."
-//        ; wordL "name" @@ wordL "()." 
-//        ]
-//    List.iter runTest xs
-
-//let test06 () = 
-//    runTest <| wordL "name" ^^ wordL "()."

@@ -88,6 +88,11 @@ module PrettyPrint =
             | SLine _               -> cont true
         work width sdoc (fun x -> x) 
 
+    let ptest1 () = fits 10 (SText(11, "01234567890", SEmpty))
+    let ptest2 () = fits 10 (SText(4, "0123", SEmpty))
+    let ptest3 () = fits 10 (SText(4, "0123", SLine(2, (SText(8, "01234567", SEmpty)))))
+    let ptest5 () = fits 10 (SLine(2, (SText(12, "012345678901", SEmpty))))
+
 
     /// Called Docs in Daan's library PPrint
     type private DocList = 
@@ -109,32 +114,36 @@ module PrettyPrint =
             | Nil -> cont SEmpty
             | Cons(i,d,ds) -> 
                 match d with
-                | Empty         -> work n k ds (fun ans -> cont ans)
+                | Empty         -> 
+                    work n k ds (fun ans -> cont ans)
+
                 | Char(c)       -> 
-                    work n (k+1) ds (fun ans1 -> cont (SChar(c,ans1)))
+                    // work n (k+1) ds (fun ans1 -> cont (SChar(c,ans1)))
+                    cont (work n (k+1) ds (fun ans1 -> (SChar(c,ans1))))
                 
                 | Text(l,s)     -> 
-                    work n (k+l) ds (fun ans1 -> cont (SText(l,s,ans1)))
+                    cont (work n (k+l) ds (fun ans1 -> (SText(l,s,ans1))))
 
                 | Line(_)       -> 
-                    cont (work i i ds (fun ans1 -> SLine(i,ans1)))
+                    cont (work i i ds (fun ans1 -> (SLine(i,ans1))))
                     
                 | Cat(x,y)      -> 
-                   work n k (Cons(i,x,(Cons(i,y,ds)))) (fun ans -> cont ans)
+                    work n k (Cons(i,x,(Cons(i,y,ds)))) (fun ans -> cont ans)
 
                 | Nest(j,x)     -> 
                     work n k (Cons(i+j,x,ds)) (fun ans -> cont ans)
                 
                 | Union(x,y)    -> 
-                    work n k (Cons(i,x,ds)) (fun ans1 ->
-                    work n k (Cons(i,y,ds)) (fun ans2 ->
-                    cont (nicest ribbon pageWidth n k ans1 ans2)))
+                    cont (work n k (Cons(i,x,ds)) (fun ans1 ->
+                          work n k (Cons(i,y,ds)) (fun ans2 ->
+                          (nicest ribbon pageWidth n k ans1 ans2))))
 
                 | Column(f)     -> 
                     work n k (Cons(i, f k, ds)) (fun ans -> cont ans)
 
                 | Nesting(f)    -> 
                      work n k (Cons(i, f i, ds)) (fun ans -> cont ans)
+
         work indentation colWidth docs (fun x -> x)
 
 
