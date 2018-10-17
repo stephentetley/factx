@@ -16,7 +16,7 @@ module String =
 
     let rightOf (needle:string) (source:string) = 
         let ix = source.IndexOf needle 
-        if ix > 0 then 
+        if ix >= 0 then 
             source.Substring(ix+needle.Length)
         else 
             ""

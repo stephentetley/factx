@@ -20,10 +20,12 @@ open FSharp.Interop.Excel
 #load "..\src\FactX\FactOutput.fs"
 #load "..\src\FactX\Extra\ExcelProviderHelper.fs"
 #load "..\src\FactX\Extra\PathString.fs"
+#load "..\src\FactX\Extra\String.fs"
 #load "..\src\FactX\Extra\LabelledTree.fs"
 open FactX
 open FactX.Extra.ExcelProviderHelper
 open FactX.Extra.PathString
+open FactX.Extra.String
 open FactX.Extra.LabelledTree
 
 
@@ -87,6 +89,7 @@ let decodeAssetStatus (statusText:string) : AssetStatus =
 let decodeHKey (hkey:string) : option<AssetType> = 
     match hkey with
     | null -> None
+    | _     when hkey.Contains("TODO") -> None
     | _ -> 
         match hkey.Length with
         | 2 -> Some BusinessUnit
@@ -174,7 +177,8 @@ let assetStatus (status:AssetStatus) : string =
 let rec nodeToProlog (node:LabelledTree<NodeLabel>) : Value = 
     match node with
     | Leaf (_,label) -> 
-        prologFunctor "equipment" [prologSymbol label.Uid; prologSymbol label.Name]
+        let nameP = prologSymbol << rightOf "EQUIPMENT: " <| label.Name
+        prologFunctor "equipment" [prologSymbol label.Uid; nameP]
     | Tree (_,label,kids) ->
         let nameP = prologSymbol label.Name
         let kidsP = prologList (List.map nodeToProlog kids)
@@ -186,10 +190,10 @@ let rec nodeToProlog (node:LabelledTree<NodeLabel>) : Value =
         | Some PlantAssembly ->             
             prologFunctor "plant_assembly" [nameP; kidsP]
         | Some PlantItem ->             
-            prologFunctor "plant_item" [prologList (List.map nodeToProlog kids)]
+            prologFunctor "plant_item" [nameP; kidsP]
         | Some asset -> 
-            let symb = prologSymbol <| asset.ToString()
-            prologFunctor "generic_asset" [nameP; symb; prologList (List.map nodeToProlog kids)]
+            let symb = prologFunctor "type" [ prologSymbol <| asset.ToString()]
+            prologFunctor "generic_asset" [nameP; symb; kidsP]
         | None -> 
             prologFunctor "unknown_asset" [nameP; kidsP]
             
@@ -221,5 +225,5 @@ let main () =
                   , comment = "installations.pl"
                   , db = facts )
 
-    pmodule.Save(outFile)
+    pmodule.Save(width = 100, filePath=outFile)
     

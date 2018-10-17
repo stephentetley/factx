@@ -164,6 +164,10 @@ module FactOutput =
             let prologModule = v.ToProlog()
             prologModule.Save(240, filePath)
 
+        member v.Save(width:int, filePath:string) = 
+            let prologModule = v.ToProlog()
+            prologModule.Save(width, filePath)
+
 [<AutoOpen>]
 module Values = 
 

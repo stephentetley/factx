@@ -55,7 +55,7 @@ module PrintProlog =
         vcat <| List.map (fun s -> text (sprintf "%c %s" '%' s)) lines
 
     let prologFunctor (head:string) (body:Doc list) : Doc =
-        nest 4 (text (escapeSpecial head) ^^ lparen ^/^ group (commaSep body)) ^/^ rparen
+        nest 4 (text (escapeSpecial head) ^^ lparen ^/^ group (commaSep body)) ^^ rparen
 
     /// Must be no space between head and open-paren            
     let prologFact (head:string) (body:Doc list) : Doc =
