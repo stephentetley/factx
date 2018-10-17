@@ -30,7 +30,7 @@ open FactX.Extra.PathString
 open Proprietary
 
 let outputFile (filename:string) : string = 
-    System.IO.Path.Combine(@"D:\coding\prolog\spt_misc\prolog\calibration\facts", filename) 
+    System.IO.Path.Combine(@"D:\coding\prolog\spt-misc\prolog\calibration\facts", filename) 
 
 
 // ****************************************************************************
@@ -138,7 +138,7 @@ let genRelayFacts () : unit =
                   , comment = "relays.pl"
                   , dbs = [relays13; relays46] )
 
-    pmodule.Save(outFile)
+    pmodule.Save(lineWidth = 120, filePath = outFile)
 
 
 // ****************************************************************************
@@ -183,7 +183,7 @@ let genSensorFacts () : unit =
                   , comment = "sensors.pl"
                   , db = distFacts )
 
-    pmodule.Save(outFile)
+    pmodule.Save(lineWidth = 120, filePath = outFile)
 
 // ****************************************************************************
 // LEVEL MONITORS
@@ -227,7 +227,7 @@ let genControllerFacts () =
                   , comment = "level_monitors.pl"
                   , dbs = [ locations; models ] )
 
-    pmodule.Save(outFile)
+    pmodule.Save(lineWidth = 120, filePath = outFile)
 
 let main () : unit = 
     genRelayFacts ()

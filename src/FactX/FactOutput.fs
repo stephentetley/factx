@@ -164,9 +164,9 @@ module FactOutput =
             let prologModule = v.ToProlog()
             prologModule.Save(240, filePath)
 
-        member v.Save(width:int, filePath:string) = 
+        member v.Save(lineWidth:int, filePath:string) = 
             let prologModule = v.ToProlog()
-            prologModule.Save(width, filePath)
+            prologModule.Save(lineWidth, filePath)
 
 [<AutoOpen>]
 module Values = 

@@ -214,8 +214,10 @@ let installationToProlog (inst:Installation) : FactBase =
 
 let main () =
     let outFile = outputFile "installations.pl"
-    let inst = buildTopDown treeHelper (stwData ())
-    let facts = 
+    let inst1 = buildTopDown treeHelper (stwData ())
+    let inst2 = buildTopDown treeHelper (stfData ())
+
+    let makeFacts (inst:option<Installation>) : FactBase = 
         match inst with
         | None -> FactBase.ofList []
         | Some x -> installationToProlog x
@@ -223,7 +225,7 @@ let main () =
     let pmodule : Module = 
         new Module( name = "installations"
                   , comment = "installations.pl"
-                  , db = facts )
+                  , dbs = [makeFacts inst1; makeFacts inst2] )
 
-    pmodule.Save(width = 100, filePath=outFile)
+    pmodule.Save(lineWidth = 100, filePath=outFile)
     
