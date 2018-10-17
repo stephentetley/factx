@@ -83,15 +83,15 @@ module PrettyPrint =
             match x with
             | _ when w < 0          -> cont false
             | SEmpty                -> cont true
-            | SChar(_,x)            -> work (w - 1) x (fun ans -> cont ans)
-            | SText(l,_,x)          -> work (w - l) x (fun ans -> cont ans)
+            | SChar(_,x)            -> work (w - 1) x cont
+            | SText(l,_,x)          -> work (w - l) x cont
             | SLine _               -> cont true
         work width sdoc (fun x -> x) 
 
     let ptest1 () = fits 10 (SText(11, "01234567890", SEmpty))
     let ptest2 () = fits 10 (SText(4, "0123", SEmpty))
     let ptest3 () = fits 10 (SText(4, "0123", SLine(2, (SText(8, "01234567", SEmpty)))))
-    let ptest5 () = fits 10 (SLine(2, (SText(12, "012345678901", SEmpty))))
+    let ptest4 () = fits 10 (SLine(2, (SText(12, "012345678901", SEmpty))))
 
 
     /// Called Docs in Daan's library PPrint
@@ -115,23 +115,22 @@ module PrettyPrint =
             | Cons(i,d,ds) -> 
                 match d with
                 | Empty         -> 
-                    work n k ds (fun ans -> cont ans)
+                    work n k ds cont
 
                 | Char(c)       -> 
-                    // work n (k+1) ds (fun ans1 -> cont (SChar(c,ans1)))
-                    work n (k+1) ds (fun ans1 -> cont (SChar(c,ans1)))
+                    work n (k+1) ds (fun v1 -> cont (SChar(c,v1)))
                 
                 | Text(l,s)     -> 
-                    work n (k+l) ds (fun ans1 -> cont (SText(l,s,ans1)))
+                    work n (k+l) ds (fun v1 -> cont (SText(l,s,v1)))
 
                 | Line(_)       -> 
-                    work i i ds (fun ans1 -> cont (SLine(i,ans1)))
+                    work i i ds (fun v1 -> cont (SLine(i,v1)))
                     
                 | Cat(x,y)      -> 
-                    work n k (Cons(i,x,(Cons(i,y,ds)))) (fun ans -> cont ans)
+                    work n k (Cons(i,x,(Cons(i,y,ds)))) cont
 
                 | Nest(j,x)     -> 
-                    work n k (Cons(i+j,x,ds)) (fun ans -> cont ans)
+                    work n k (Cons(i+j,x,ds)) cont
                 
                 | Union(x,y)    -> 
                     work n k (Cons(i,x,ds)) (fun ans1 ->
@@ -139,10 +138,10 @@ module PrettyPrint =
                     cont (nicest ribbon pageWidth n k ans1 ans2)))
 
                 | Column(f)     -> 
-                    work n k (Cons(i, f k, ds)) (fun ans -> cont ans)
+                    work n k (Cons(i, f k, ds)) cont
 
                 | Nesting(f)    -> 
-                    work n k (Cons(i, f i, ds)) (fun ans -> cont ans)
+                    work n k (Cons(i, f i, ds)) cont
 
         work indentation colWidth docs (fun x -> x)
 

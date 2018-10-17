@@ -55,7 +55,7 @@ module Lindig =
                 work d cont
             | SLine(i,d) -> 
                 let prefix = String.replicate i " " 
-                sb.Append(prefix + "\n") |> ignore
+                sb.Append("\n" + prefix) |> ignore
                 work d cont                
         work source (fun _ -> ())
         sb.ToString()
@@ -79,7 +79,6 @@ module Lindig =
         | (i,_,Group(x))        :: zs -> fits w ((i,Flat1,x) :: zs)
 
     let rec private format (w:int) (k:int) (xs:Format1 list) : SDoc = 
-        printfn "format w=%i k=%i" w k
         match xs with
         | [] -> SNil
         | (_,_,Nil)             :: zs -> format w k zs
@@ -89,7 +88,7 @@ module Lindig =
         | (_,_,Char(c))         :: zs -> let d1 = format w (k + 1) zs in SText(c.ToString(),d1)
         | (_,Flat1,Break(s))    :: zs -> let d1 = format w (k + s.Length) zs in SText(s,d1)
         | (i,Break1,Break(_))   :: zs -> 
-            printfn "i=%i" i; let d1 = format w i zs in SLine(i,d1)
+            let d1 = format w i zs in SLine(i,d1)
         | (i,_,Group(x))        :: zs -> 
             if fits (w - k) ((i,Flat1,x) :: zs) then 
                 format w k ((i,Flat1,x) :: zs)
@@ -97,7 +96,7 @@ module Lindig =
                 format w k ((i,Break1,x) :: zs)
 
     let render (lineWidth:int) (doc:Doc) : string = 
-        format lineWidth 1 [(1,Flat1,doc)] |> sdocToString
+        format lineWidth 0 [(0,Flat1,doc)] |> sdocToString
 
 
     /// Single left parenthesis: '('
@@ -154,31 +153,22 @@ module Lindig =
 
     /// Don't try to define (<>) - it is a reserved operator name in F#
 
-    /// Concatenates d1 and d2 horizontally, with optionally breaking space.
-    let (^|) (d1:Doc)  (d2:Doc) : Doc = 
+    /// Concatenates d1 and d2 horizontally, with spaceBreak.
+    let (^+^) (d1:Doc)  (d2:Doc) : Doc = 
         match d1,d2 with
         | Nil, _ -> d1
         | _, Nil -> d2
         |_, _    -> d1 ^^ spaceBreak ^^ d2
 
     /// Concatenates d1 and d2 vertically, with optionally breaking space.
-    let (@|) (d1:Doc)  (d2:Doc) : Doc = 
+    let (^@^) (d1:Doc)  (d2:Doc) : Doc = 
         match d1,d2 with
         | Nil, _ -> d1
         | _, Nil -> d2
         |_, _    -> d1 ^^ lineBreak ^^ d2
 
-    /// Binop 
-    let binop (left:Doc) (op:Doc) (right:Doc) : Doc = 
-        group (nest 2 (group (left ^| op) ^| right))
 
 
-
-    /// Concatenates d1 and d2 horizontally with a line between them.
-    let (@@) (d1:Doc)  (d2:Doc) : Doc = d1 ^^ lineBreak ^^ d2
-
-    /// Concatenates d1 and d2 horizontally with a space between them.
-    let (^+^) (d1:Doc)  (d2:Doc) : Doc = d1 ^^ spaceBreak ^^ d2
 
     let punctuate (sep:Doc) (docs:Doc list) : Doc = 
         let rec work acc ds = 
