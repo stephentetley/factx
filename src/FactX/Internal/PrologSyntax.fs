@@ -157,10 +157,10 @@ module PrologSyntax =
             let ds = List.map (fun (col:FactSet) -> col.Format()) v.Database
             vcat [ d1; d2; vcat ds ]
 
-        member v.SaveToString () : string = 
-            renderPretty 0.8 80 <| v.Format()
+        member v.ToProlog () : string = 
+            render 80 <| v.Format()
         
         member v.Save(filePath:string) = 
-            writeDoc 0.8 80 filePath (v.Format())
+            writeDoc 80 filePath (v.Format())
 
 

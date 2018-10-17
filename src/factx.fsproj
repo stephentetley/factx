@@ -53,7 +53,6 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="FactX\Internal\PrettyPrint.fs" />
-    <Compile Include="FactX\Internal\Lindig.fs" />
     <Compile Include="FactX\Internal\PrintProlog.fs" />
     <Compile Include="FactX\Internal\PrologSyntax.fs" />
     <Compile Include="FactX\FactOutput.fs" />
