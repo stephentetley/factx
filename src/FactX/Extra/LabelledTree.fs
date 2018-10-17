@@ -56,7 +56,8 @@ module LabelledTree =
                 match Map.tryFind name store with
                 | Some(xs) -> xs
                 | None -> []
-            let kids2 : LabelledTree<'label> list = 
+            let kids2 : LabelledTree<'label> list =
+                // The list is reversed because we always have been adding to the front.
                 List.rev <| List.map (fillOutKids store) kids1
             Tree (name, label, kids2) 
 

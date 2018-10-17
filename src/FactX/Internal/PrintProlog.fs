@@ -13,8 +13,10 @@ module PrintProlog =
 
 
     let commaSep (docs:Doc list) = foldDocs (fun ac e -> ac ^^ comma ^/^ e) docs
-    
+    let commaSepV (docs:Doc list) = foldDocs (fun ac e -> ac ^@^ comma ^/^ e) docs
+
     let prologList (docs:Doc list) : Doc = brackets (commaSep docs)
+    let prologListV (docs:Doc list) : Doc = brackets (commaSepV docs)
 
     let private escapeSpecial (source:string) : string = 
         source.Replace("\\" , "\\\\")
@@ -53,7 +55,7 @@ module PrintProlog =
         vcat <| List.map (fun s -> text (sprintf "%c %s" '%' s)) lines
 
     let prologFunctor (head:string) (body:Doc list) : Doc =
-        text (escapeSpecial head) ^^ lparen ^/^ group (nest 4 (commaSep body)) ^/^ rparen
+        nest 4 (text (escapeSpecial head) ^^ lparen ^/^ group (commaSep body)) ^/^ rparen
 
     /// Must be no space between head and open-paren            
     let prologFact (head:string) (body:Doc list) : Doc =
@@ -69,8 +71,7 @@ module PrintProlog =
     let moduleDirective (moduleName:string) (exports: (string * int) list) : Doc = 
         let exportList : Doc = 
             let factNames = List.map (fun (s,i) -> text (sprintf "%s/%i" s i)) exports
-            prologList factNames
-                
-        text ":- module(" ^^ commaSep [text moduleName; exportList] ^^ text ")."
+            prologList factNames                
+        nest 8 (text ":-" ^+^ text "module" ^^ parens (text moduleName ^^ comma ^/^ exportList) ^^ dot)
 
 

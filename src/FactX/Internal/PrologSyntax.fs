@@ -155,7 +155,7 @@ module PrologSyntax =
             let d1 = prologComment v.GlobalComment
             let d2 = moduleDirective v.ModuleName v.Exports
             let ds = List.map (fun (col:FactSet) -> col.Format()) v.Database
-            vcat [ d1; d2; vcat ds ]
+            vcat [ d1; empty; d2; empty; vcat ds ]
 
         member v.ToProlog () : string = 
             render 160 <| v.Format()

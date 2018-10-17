@@ -36,3 +36,11 @@ let test04 (ntimes:int) =
     let doc = text s ^/^ text s
     runTestW 35 (vcat <| List.replicate ntimes doc)
 
+let test05 () = 
+     runTestW 80 <| text "one" ^@@^ text "two"
+
+let test05a () = 
+     runTestW 80 <| text "one" ^@^ text "two"
+
+let test06 () = 
+     runTestW 80 <| text "one" ^@@^ empty ^@@^ text "two"
