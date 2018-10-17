@@ -14,13 +14,13 @@ open System.Text
 module Lindig = 
     
     type Doc = 
-        | Nil
-        | Cons of Doc * Doc
-        | Char of char
-        | Text of string
-        | Nest of int * Doc
-        | Break of string
-        | Group of Doc
+        | DocNil
+        | DocCons of Doc * Doc
+        | DocChar of char
+        | DocText of string
+        | DocNest of int * Doc
+        | DocBreak of string
+        | DocGroup of Doc
 
 
 
@@ -29,6 +29,7 @@ module Lindig =
         | SText of string * SDoc
         | SLine of int * SDoc       // newline + spaces
 
+    /// CPS / Tail recursive
     let sdocToString (source:SDoc) : string = 
         let sb = new StringBuilder ()
         let rec work (sdoc:SDoc) cont = 
@@ -45,66 +46,71 @@ module Lindig =
         sb.ToString()
 
 
-    type Mode = | Flat1 | Break1
+    type Mode = | Flat | Break
 
     type private Format1 = int * Mode * Doc
 
-    let rec private fits (w:int) (xs:Format1 list) : bool = 
-        match xs with
-        | _ when w < 0 -> false
-        | []                     -> true
-        | (_,_,Nil)             :: zs -> fits w zs
-        | (i,m,Cons(x,y))       :: zs -> fits w ((i,m,x) :: (i,m,y) :: zs)
-        | (i,m,Nest(j,x))       :: zs -> fits w ((i+j,m,x) :: zs)
-        | (_,_,Text(s))         :: zs -> fits (w - s.Length) zs
-        | (_,_,Char(c))         :: zs -> fits (w - 1) zs
-        | (_,Flat1,Break(s))    :: zs -> fits (w - s.Length) zs
-        | (_,Break1,Break(_))   :: _ -> true    // Impossible
-        | (i,_,Group(x))        :: zs -> fits w ((i,Flat1,x) :: zs)
+    let fits (width:int) (formats:Format1 list) : bool = 
+        let rec work (w:int) (xs:Format1 list) (cont : bool -> bool) = 
+            match xs with
+            | _ when w < 0                  -> cont false  
+            | []                            -> cont true
+            | (_,_,DocNil)          :: zs   -> work w zs cont
+            | (i,m,DocCons(x,y))    :: zs   -> work w ((i,m,x) :: (i,m,y) :: zs) cont
+            | (i,m,DocNest(j,x))    :: zs   -> work w ((i+j,m,x) :: zs) cont
+            | (_,_,DocText(s))      :: zs   -> work (w - s.Length) zs cont
+            | (_,_,DocChar(c))      :: zs   -> work (w - 1) zs cont
+            | (_,Flat,DocBreak(s))  :: zs   -> work (w - s.Length) zs cont
+            | (_,Break,DocBreak(_)) :: _    -> cont true    // Impossible
+            | (i,_,DocGroup(x))     :: zs   -> work w ((i,Flat,x) :: zs) cont
+        work width formats (fun x -> x)
+
 
     let rec private format (w:int) (k:int) (xs:Format1 list) : SDoc = 
         match xs with
         | [] -> SNil
-        | (_,_,Nil)             :: zs -> format w k zs
-        | (i,m,Cons(x,y))       :: zs -> format w k ((i,m,x) :: (i,m,y) :: zs)
-        | (i,m,Nest(j,x))       :: zs -> format w k ((i+j,m,x) :: zs)
-        | (_,_,Text(s))         :: zs -> let d1 = format w (k + s.Length) zs in SText(s,d1)
-        | (_,_,Char(c))         :: zs -> let d1 = format w (k + 1) zs in SText(c.ToString(),d1)
-        | (_,Flat1,Break(s))    :: zs -> let d1 = format w (k + s.Length) zs in SText(s,d1)
-        | (i,Break1,Break(_))   :: zs -> 
+        | (_,_,DocNil)          :: zs -> format w k zs
+        | (i,m,DocCons(x,y))    :: zs -> format w k ((i,m,x) :: (i,m,y) :: zs)
+        | (i,m,DocNest(j,x))    :: zs -> format w k ((i+j,m,x) :: zs)
+        | (_,_,DocText(s))      :: zs -> let d1 = format w (k + s.Length) zs in SText(s,d1)
+        | (_,_,DocChar(c))      :: zs -> let d1 = format w (k + 1) zs in SText(c.ToString(),d1)
+        | (_,Flat,DocBreak(s))  :: zs -> let d1 = format w (k + s.Length) zs in SText(s,d1)
+        | (i,Break,DocBreak(_)) :: zs -> 
             let d1 = format w i zs in SLine(i,d1)
-        | (i,_,Group(x))        :: zs -> 
-            if fits (w - k) ((i,Flat1,x) :: zs) then 
-                format w k ((i,Flat1,x) :: zs)
+        | (i,_,DocGroup(x))     :: zs -> 
+            if fits (w - k) ((i,Flat,x) :: zs) then 
+                printfn "FITS"
+                format w k ((i,Flat,x) :: zs)
             else
-                format w k ((i,Break1,x) :: zs)
+                printfn "NO FIT"
+                format w k ((i,Break,x) :: zs)
 
     let render (lineWidth:int) (doc:Doc) : string = 
-        format lineWidth 0 [(0,Flat1,doc)] |> sdocToString
+        format lineWidth 0 [(0,Flat,doc)] |> sdocToString
 
     // ************************************************************************
     // Primitives
 
     
-    let empty : Doc = Nil
+    let empty : Doc = DocNil
 
-    let char (c:char) : Doc = Char c
+    let char (c:char) : Doc = DocChar c
 
-    let text (s:string) : Doc = Text s
+    let text (s:string) : Doc = DocText s
 
     let line : Doc = text "\n"
 
-    let spacebreak : Doc = Break " "
+    let spacebreak : Doc = DocBreak " "
 
-    let linebreak : Doc = Break "\n"
+    let linebreak : Doc = DocBreak "\n"
 
-    let beside (x:Doc) (y:Doc) = Cons (x,y)
+    let beside (x:Doc) (y:Doc) = DocCons (x,y)
 
-    let breakWith (s:string) = Break s
+    let breakWith (s:string) = DocBreak s
 
-    let group (d:Doc) : Doc = Group d
+    let group (d:Doc) : Doc = DocGroup d
 
-    let nest (i:int) (d:Doc) = Nest (i, d)
+    let nest (i:int) (d:Doc) = DocNest (i, d)
 
 
     // ************************************************************************
@@ -175,15 +181,15 @@ module Lindig =
     /// Concatenates d1 and d2 horizontally, with spaceBreak.
     let (^/^) (d1:Doc)  (d2:Doc) : Doc = 
         match d1,d2 with
-        | Nil, _ -> d1
-        | _, Nil -> d2
-        |_, _    -> d1 ^^ spacebreak ^^ d2
+        | DocNil, _ -> d1
+        | _, DocNil -> d2
+        |_, _       -> d1 ^^ spacebreak ^^ d2
 
     /// Concatenates d1 and d2 vertically, with optionally breaking space.
     let (^//^) (d1:Doc)  (d2:Doc) : Doc = 
         match d1,d2 with
-        | Nil, _ -> d1
-        | _, Nil -> d2
+        | DocNil, _ -> d1
+        | _, DocNil -> d2
         |_, _    -> d1 ^^ linebreak ^^ d2
 
 
