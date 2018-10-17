@@ -31,3 +31,8 @@ let test03 (width:int) : unit =
     let doc = ifthen cond expr1 expr2 
     runTestW width doc
 
+let test04 (ntimes:int) = 
+    let s = "orange, blue, white, black"
+    let doc = text s ^/^ text s
+    runTestW 35 (vcat <| List.replicate ntimes doc)
+

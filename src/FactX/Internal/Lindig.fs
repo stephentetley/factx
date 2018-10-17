@@ -22,23 +22,7 @@ module Lindig =
         | Break of string
         | Group of Doc
 
-    let (^^) (x:Doc) (y:Doc) = Cons (x,y)
-    
-    let empty : Doc = Nil
 
-    let char (c:char) : Doc = Char c
-
-    let text (s:string) : Doc = Text s
-
-    let nest (i:int) (d:Doc) = Nest (i, d)
-
-    let spaceBreak : Doc = Break " "
-
-    let lineBreak : Doc = Break "\n"
-
-    let breakWith (s:string) = Break s
-
-    let group (d:Doc) : Doc = Group d
 
     type SDoc = 
         | SNil 
@@ -98,6 +82,33 @@ module Lindig =
     let render (lineWidth:int) (doc:Doc) : string = 
         format lineWidth 0 [(0,Flat1,doc)] |> sdocToString
 
+    // ************************************************************************
+    // Primitives
+
+    
+    let empty : Doc = Nil
+
+    let char (c:char) : Doc = Char c
+
+    let text (s:string) : Doc = Text s
+
+    let line : Doc = text "\n"
+
+    let spacebreak : Doc = Break " "
+
+    let linebreak : Doc = Break "\n"
+
+    let beside (x:Doc) (y:Doc) = Cons (x,y)
+
+    let breakWith (s:string) = Break s
+
+    let group (d:Doc) : Doc = Group d
+
+    let nest (i:int) (d:Doc) = Nest (i, d)
+
+
+    // ************************************************************************
+    // Character printers
 
     /// Single left parenthesis: '('
     let lparen : Doc = char '('
@@ -151,24 +162,57 @@ module Lindig =
     /// The document @equals@ contains an equal sign, \"=\".
     let equals : Doc = char '='
 
-    /// Don't try to define (<>) - it is a reserved operator name in F#
+
+    // ************************************************************************
+    // Concatenation operators
+
+    // Don't try to define (<>) - it is a reserved operator name in F#
+
+    let (^^) (x:Doc) (y:Doc) = beside x y
+
+    let (^+^) (x:Doc) (y:Doc) : Doc = x ^^ space ^^ y
 
     /// Concatenates d1 and d2 horizontally, with spaceBreak.
-    let (^+^) (d1:Doc)  (d2:Doc) : Doc = 
+    let (^/^) (d1:Doc)  (d2:Doc) : Doc = 
         match d1,d2 with
         | Nil, _ -> d1
         | _, Nil -> d2
-        |_, _    -> d1 ^^ spaceBreak ^^ d2
+        |_, _    -> d1 ^^ spacebreak ^^ d2
 
     /// Concatenates d1 and d2 vertically, with optionally breaking space.
-    let (^@^) (d1:Doc)  (d2:Doc) : Doc = 
+    let (^//^) (d1:Doc)  (d2:Doc) : Doc = 
         match d1,d2 with
         | Nil, _ -> d1
         | _, Nil -> d2
-        |_, _    -> d1 ^^ lineBreak ^^ d2
+        |_, _    -> d1 ^^ linebreak ^^ d2
 
 
+    /// Haskell / PPrint's: <$>
+    let (^@^) (x:Doc) (y:Doc) : Doc = x ^^ line ^^ y
 
+    /// Haskell / PPrint's: <$$>
+    let (^@@^) (x:Doc) (y:Doc) : Doc = x ^^ linebreak ^^ y
+
+
+    // ************************************************************************
+    // List concatenation 
+
+    let foldDocs f (docs:Doc list) : Doc = 
+        match docs with
+        | [] -> empty
+        | (x::xs) -> List.fold f x xs
+
+    let fillSep (docs:Doc list) : Doc = foldDocs (^/^) docs
+
+    let hsep (docs:Doc list) : Doc = foldDocs (^+^) docs
+
+    let vsep (docs:Doc list) : Doc = foldDocs (^@^) docs
+
+    let hcat (docs:Doc list) : Doc = foldDocs (^^) docs
+
+    let vcat (docs:Doc list) : Doc = foldDocs (^@@^) docs
+
+    let cat (docs:Doc list) : Doc = group <| vcat docs
 
     let punctuate (sep:Doc) (docs:Doc list) : Doc = 
         let rec work acc ds = 

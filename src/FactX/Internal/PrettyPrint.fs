@@ -292,7 +292,6 @@ module PrettyPrint =
 
     let fillSep (docs:Doc list) : Doc = foldDocs (^/^) docs
 
-
     let hsep (docs:Doc list) : Doc = foldDocs (^+^) docs
 
     let vsep (docs:Doc list) : Doc = foldDocs (^@^) docs

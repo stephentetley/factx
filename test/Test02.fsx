@@ -30,24 +30,18 @@ let ifthen c e1 e2 =
          ^@^ group (nest 2 (text "then" ^+^ e1))
          ^@^ group (nest 2 (text "else" ^+^ e2)))
 
-let test03 () = 
+let test03 (width:int) : unit = 
     let doc = ifthen cond expr1 expr2 
-    runTestW 80 doc
-
-let test04 () = 
-    let doc = ifthen cond expr1 expr2 
-    runTestW 20 doc
-
-let test05 () = 
-    let doc = vcat << List.map (fun x -> text x ^/^ text x) <| List.replicate 1000 "orange, blue, white, black"
-    runTestW 35 doc
+    runTestW width doc
 
 // Note pathological slow down happens quite soon. 
 // Observable at 50, potentially before...
-let test06 (ntimes:int) = 
+let test04 (ntimes:int) = 
     let s = "orange, blue, white, black"
     let doc = text s ^/^ text s
     runTestW 35 (vcat <| List.replicate ntimes doc)
+
+
 
 //let test02 () = 
 //    runTest <| prologList [simpleAtom "tree"; quotedAtom "trunk"]
