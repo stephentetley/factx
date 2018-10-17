@@ -162,7 +162,7 @@ module FactOutput =
 
         member v.Save(filePath:string) = 
             let prologModule = v.ToProlog()
-            writeDoc 160 filePath <| prologModule.Format()
+            prologModule.Save(240, filePath)
 
 [<AutoOpen>]
 module Values = 

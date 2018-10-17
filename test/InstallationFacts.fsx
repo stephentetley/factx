@@ -173,30 +173,32 @@ let assetStatus (status:AssetStatus) : string =
 
 let rec nodeToProlog (node:LabelledTree<NodeLabel>) : Value = 
     match node with
-    | Leaf (name,label) -> 
-        prologFunctor "equipment" []
-    | Tree (name,label,kids) -> 
+    | Leaf (_,label) -> 
+        prologFunctor "equipment" [prologSymbol label.Uid; prologSymbol label.Name]
+    | Tree (_,label,kids) ->
+        let nameP = prologSymbol label.Name
+        let kidsP = prologList (List.map nodeToProlog kids)
         match label.AssetType with
         | Some ProcessGroup ->             
-            prologFunctor "process_group" [prologList (List.map nodeToProlog kids)]
+            prologFunctor "process_group" [nameP; kidsP]
         | Some Process ->             
-            prologFunctor "process" [prologList (List.map nodeToProlog kids)]
+            prologFunctor "process" [nameP; kidsP]
         | Some PlantAssembly ->             
-            prologFunctor "plant_assembly" [prologList (List.map nodeToProlog kids)]
+            prologFunctor "plant_assembly" [nameP; kidsP]
         | Some PlantItem ->             
             prologFunctor "plant_item" [prologList (List.map nodeToProlog kids)]
         | Some asset -> 
             let symb = prologSymbol <| asset.ToString()
-            prologFunctor "generic_asset" [symb; prologList (List.map nodeToProlog kids)]
+            prologFunctor "generic_asset" [nameP; symb; prologList (List.map nodeToProlog kids)]
         | None -> 
-            prologFunctor "unknown_asset" (List.map nodeToProlog kids)
+            prologFunctor "unknown_asset" [nameP; kidsP]
             
 let installationToProlog (inst:Installation) : FactBase = 
     let rootClause: option<Clause> = 
         match inst with
         | Tree(_, label, kids) -> 
             let kids1 = List.map nodeToProlog kids
-            Some <| Clause.cons( signature = "installation(uid, name, status)."
+            Some <| Clause.cons( signature = "installation(uid, name, status, kids)."
                                , body = [ prologSymbol label.Uid
                                         ; prologSymbol label.Name
                                         ; prologSymbol (assetStatus label.Operational)
@@ -206,8 +208,8 @@ let installationToProlog (inst:Installation) : FactBase =
     FactBase.ofOptionList [rootClause]
 
 
-let test04 () =
-    let outFile = outputFile "installation.pl"
+let main () =
+    let outFile = outputFile "installations.pl"
     let inst = buildTopDown treeHelper (stwData ())
     let facts = 
         match inst with
@@ -215,8 +217,8 @@ let test04 () =
         | Some x -> installationToProlog x
 
     let pmodule : Module = 
-        new Module( name = "installation"
-                  , comment = "installation.pl"
+        new Module( name = "installations"
+                  , comment = "installations.pl"
                   , db = facts )
 
     pmodule.Save(outFile)

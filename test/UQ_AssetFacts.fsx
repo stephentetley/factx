@@ -22,10 +22,12 @@ open FSharp.Data
 open System.IO 
 
 
-#load "..\src\FactX\Internal\FormatCombinators.fs"
+#load "..\src\FactX\Internal\PrettyPrint.fs"
+#load "..\src\FactX\Internal\PrintProlog.fs"
 #load "..\src\FactX\Internal\PrologSyntax.fs"
 #load "..\src\FactX\FactOutput.fs"
 #load "..\src\FactX\Extra\ExcelProviderHelper.fs"
+#load "..\src\FactX\Extra\PathString.fs"
 open FactX
 open FactX.Extra.ExcelProviderHelper
 

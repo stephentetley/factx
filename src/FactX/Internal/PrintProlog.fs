@@ -9,6 +9,8 @@ open FactX.Internal.PrettyPrint
 [<AutoOpen>]
 module PrintProlog = 
     
+    // Indent-level of 4 seems good in Prolog.
+
 
     let commaSep (docs:Doc list) = foldDocs (fun ac e -> ac ^^ comma ^/^ e) docs
     
@@ -50,12 +52,15 @@ module PrintProlog =
         let lines = comment.Split [|'\n'|] |> Array.toList
         vcat <| List.map (fun s -> text (sprintf "%c %s" '%' s)) lines
 
-    /// TODO must be no space between head and open-paren            
-    let prologFact (head:string) (body:Doc list) : Doc =
-        (text <| sprintf "%s(" head) ^^ commaSep body ^^ text ")."
-
     let prologFunctor (head:string) (body:Doc list) : Doc =
-        (text <| sprintf "%s(" head) ^^ commaSep body ^^ text ")"
+        text (escapeSpecial head) ^^ lparen ^/^ group (nest 4 (commaSep body)) ^/^ rparen
+
+    /// Must be no space between head and open-paren            
+    let prologFact (head:string) (body:Doc list) : Doc =
+        prologFunctor head body ^^ dot
+
+
+
 
     /// E.g:
     ///     :- module(installation,

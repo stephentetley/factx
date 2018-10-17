@@ -5,7 +5,8 @@
 #r "FParsec"
 #r "FParsecCS"
 
-#load "..\src\FactX\Internal\FormatCombinators.fs"
+#load "..\src\FactX\Internal\PrettyPrint.fs"
+#load "..\src\FactX\Internal\PrintProlog.fs"
 #load "..\src\FactX\Internal\PrologSyntax.fs"
 #load "..\src\FactX\FactOutput.fs"
 #load "..\src\FactX\Extra\DirectoryListing.fs"

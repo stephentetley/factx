@@ -158,9 +158,9 @@ module PrologSyntax =
             vcat [ d1; d2; vcat ds ]
 
         member v.ToProlog () : string = 
-            render 80 <| v.Format()
+            render 160 <| v.Format()
         
-        member v.Save(filePath:string) = 
-            writeDoc 80 filePath (v.Format())
+        member v.Save (lineWidth:int, filePath:string) = 
+            writeDoc lineWidth filePath (v.Format())
 
 

@@ -30,7 +30,7 @@ open FactX.Extra.PathString
 open Proprietary
 
 let outputFile (filename:string) : string = 
-    System.IO.Path.Combine(@"D:\coding\prolog\spt_misc\prolog\screens\facts", filename)
+    System.IO.Path.Combine(@"D:\coding\prolog\spt-misc\prolog\screens\facts", filename)
     
 
 
