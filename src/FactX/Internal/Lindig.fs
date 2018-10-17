@@ -66,24 +66,32 @@ module Lindig =
         work width formats (fun x -> x)
 
 
-    let rec private format (w:int) (k:int) (xs:Format1 list) : SDoc = 
-        match xs with
-        | [] -> SNil
-        | (_,_,DocNil)          :: zs -> format w k zs
-        | (i,m,DocCons(x,y))    :: zs -> format w k ((i,m,x) :: (i,m,y) :: zs)
-        | (i,m,DocNest(j,x))    :: zs -> format w k ((i+j,m,x) :: zs)
-        | (_,_,DocText(s))      :: zs -> let d1 = format w (k + s.Length) zs in SText(s,d1)
-        | (_,_,DocChar(c))      :: zs -> let d1 = format w (k + 1) zs in SText(c.ToString(),d1)
-        | (_,Flat,DocBreak(s))  :: zs -> let d1 = format w (k + s.Length) zs in SText(s,d1)
-        | (i,Break,DocBreak(_)) :: zs -> 
-            let d1 = format w i zs in SLine(i,d1)
-        | (i,_,DocGroup(x))     :: zs -> 
-            if fits (w - k) ((i,Flat,x) :: zs) then 
-                printfn "FITS"
-                format w k ((i,Flat,x) :: zs)
-            else
-                printfn "NO FIT"
-                format w k ((i,Break,x) :: zs)
+    let private format (width:int) (currentIndent:int) (formats:Format1 list) : SDoc = 
+        let rec work (w:int) (k:int) (xs:Format1 list) (cont:SDoc -> SDoc) : SDoc = 
+            match xs with
+            | [] -> cont SNil
+            | (_,_,DocNil)          :: zs -> work w k zs cont
+            | (i,m,DocCons(x,y))    :: zs -> work w k ((i,m,x) :: (i,m,y) :: zs) cont
+            | (i,m,DocNest(j,x))    :: zs -> work w k ((i+j,m,x) :: zs) cont
+            | (_,_,DocText(s))      :: zs -> 
+                work w (k + s.Length) zs (fun v1 -> cont (SText(s,v1)))
+
+            | (_,_,DocChar(c))      :: zs -> 
+                work w (k + 1) zs (fun v1 -> cont (SText(c.ToString(),v1)))
+
+            | (_,Flat,DocBreak(s))  :: zs -> 
+                work w (k + s.Length) zs (fun v1 -> cont (SText(s,v1)))
+
+            | (i,Break,DocBreak(_)) :: zs -> 
+                work w i zs (fun v1 -> cont (SLine(i,v1)))
+
+            | (i,_,DocGroup(x))     :: zs -> 
+                if fits (w - k) ((i,Flat,x) :: zs) then 
+                    work w k ((i,Flat,x) :: zs) cont
+                else
+                    work w k ((i,Break,x) :: zs) cont
+        work width currentIndent formats (fun x -> x)
+
 
     let render (lineWidth:int) (doc:Doc) : string = 
         format lineWidth 0 [(0,Flat,doc)] |> sdocToString
