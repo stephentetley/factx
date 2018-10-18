@@ -35,8 +35,9 @@ module PrintProlog =
     let prologBool (value:bool) : Doc = 
         text <| if value then "true" else "false"
 
-    let prologInt (i:int) : Doc = 
+    let prologInt (i:int64) : Doc = 
        text <| i.ToString()
+
 
     let prologFloat (d:float) : Doc = 
         text <| d.ToString()

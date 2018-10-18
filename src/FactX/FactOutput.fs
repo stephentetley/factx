@@ -209,11 +209,13 @@ module Values =
         with
         | _ -> None
 
-    let prologInt (i:int) : Value = PrologSyntax.PInt i
+    let prologInt (i:int) : Value = PrologSyntax.PInt (int64 i)
+
+    let prologInt64 (i:int64) : Value = PrologSyntax.PInt i
     
     let readPrologInt (input:string) : option<Value> = 
         try 
-            let ans = int input in Some (prologInt ans)
+            let ans = int64 input in Some (prologInt64 ans)
         with
         | _ -> None
 

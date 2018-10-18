@@ -55,7 +55,7 @@ let main () =
     let path1 = getLocalDataFile "dir.txt"
 
     match buildFactBase path1 with
-    | None -> printfn "Could not decipher file '%s'" path1
+    | None -> printfn "Could not interpret the directory listing: '%s'" path1
     | Some facts -> 
         let pmodule : Module = 
             new Module( name = "directories"

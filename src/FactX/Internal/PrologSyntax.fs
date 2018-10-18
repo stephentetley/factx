@@ -76,7 +76,7 @@ module PrologSyntax =
     type Value = 
         | PChar of char
         | PString of string
-        | PInt of int
+        | PInt of int64
         | PDecimal of decimal
         | PQuotedAtom of string
         | PList of Value list

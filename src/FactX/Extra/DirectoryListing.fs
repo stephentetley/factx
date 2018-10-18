@@ -252,7 +252,7 @@ module DirectoryFacts =
             | FsFolder (name, props, kids) -> 
                 prologFunctor "folder" [ prologSymbol name; prologList (List.map work kids)]
             | FsFile (name, props, sz) -> 
-                prologFunctor "file" [ prologSymbol name]
+                prologFunctor "file" [ prologSymbol name; prologInt64 sz ]
         work fobj
 
     let fileStoreToProlog (sto:FileStore) : FactBase = 
