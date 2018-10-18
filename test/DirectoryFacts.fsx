@@ -12,10 +12,15 @@
 #load "..\src\FactX\Extra\DirectoryListing.fs"
 open FactX
 open FactX.Extra.DirectoryListing
+open System.IO
 
 
 let getLocalDataFile (fileName:string) : string = 
     System.IO.Path.Combine(__SOURCE_DIRECTORY__,"../data", fileName)
+
+let outputFile (fileName:string) : string = 
+    System.IO.Path.Combine(__SOURCE_DIRECTORY__,"../data", fileName)
+
 
 let test01 () = 
     let path1 = getLocalDataFile "dir.txt"
@@ -42,5 +47,19 @@ let test02 () =
 let pathList (path:FilePath) : Value = 
     path.Split('\\') |> Array.toList |> List.map prologString |> prologList
 
-/// If we encode LastWriteTime use something that can be parsed with
-/// parse_time (SWI Prolog).
+
+
+
+let main () =
+    let outFile = outputFile "directories.pl"
+    let path1 = getLocalDataFile "dir.txt"
+
+    match buildFactBase path1 with
+    | None -> printfn "Could not decipher file '%s'" path1
+    | Some facts -> 
+        let pmodule : Module = 
+            new Module( name = "directories"
+                      , comment = "directories.pl"
+                      , db = facts )
+
+        pmodule.Save(lineWidth = 160, filePath=outFile)

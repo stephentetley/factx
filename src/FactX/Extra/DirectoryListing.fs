@@ -243,6 +243,36 @@ module DirectoryListing =
 [<AutoOpen>]
 module DirectoryFacts = 
 
+    /// If we encode LastWriteTime use something that can be parsed with
+    /// parse_time (SWI Prolog).
+
+    let fileObjToValue (fobj:FileObj) : Value = 
+        let rec work (x:FileObj) : Value = 
+            match x with
+            | FsFolder (name, props, kids) -> 
+                prologFunctor "folder" [ prologSymbol name; prologList (List.map work kids)]
+            | FsFile (name, props, sz) -> 
+                prologFunctor "file" [ prologSymbol name]
+        work fobj
+
+    let fileStoreToProlog (sto:FileStore) : FactBase = 
+        let c1 : Clause = 
+            match sto with
+            | FileStore (path, kids) -> 
+                let kids1 = List.map fileObjToValue kids
+                Clause.cons( signature = "file_store(path, kids)."
+                                   , body = [prologSymbol path; prologList kids1])
+        FactBase.ofList [c1]
+
+
+    let buildFactBase (filePath:string) : option<FactBase> = 
+        match readDirRecurseOutput filePath with
+        | Choice1Of2 err -> None
+        | Choice2Of2 ans -> Some <| fileStoreToProlog ans
+
+
+    // ************************************************************************
+    // OLD ...
 
     let fileStore (fs:FileStore) : FactBase = 
         let makeClause (x:FileStore) = 
