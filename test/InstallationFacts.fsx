@@ -131,7 +131,8 @@ type NodeLabel =
 
 
 let makeNode (row:AssetRow) : LabelledTree<NodeLabel> = 
-    let path : PathString  =  pathString "/" row.``Common Name``
+    let commonName = row.``Common Name``.Replace("EQPT:","EQUIPMENT:")
+    let path : PathString  =  pathString "/" commonName
     let label = 
         { Uid = row.Reference
           Name = 
@@ -144,9 +145,9 @@ let makeNode (row:AssetRow) : LabelledTree<NodeLabel> =
           GridRef = row.``Loc.Ref.``
           }
     if path.ContainsRegex("^EQUIPMENT: ") then
-        Leaf (row.``Common Name``, label)
+        Leaf (commonName, label)
     else
-        Tree (row.``Common Name``, label, [])
+        Tree (commonName, label, [])
 
 
 

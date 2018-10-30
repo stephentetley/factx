@@ -53,7 +53,7 @@ module LabelledTree =
                     match Map.tryFind name store with
                     | Some(xs) -> xs
                     | None -> []
-                workList kids1 (fun xs -> cont (Tree (name, label,xs)))
+                workList kids1 (fun xs -> cont (Tree (name, label, List.rev xs)))
         and workList (nodes:LabelledTree<'label> list) (cont :LabelledTree<'label> list -> 'a) = 
             match nodes with
             | [] -> cont []
