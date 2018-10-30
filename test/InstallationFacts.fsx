@@ -174,28 +174,42 @@ let assetStatus (status:AssetStatus) : string =
     | Operational -> "OPERATIONAL"
     | StatusOther s -> s
 
-let rec nodeToProlog (node:LabelledTree<NodeLabel>) : Value = 
-    match node with
-    | Leaf (_,label) -> 
-        let nameP = prologSymbol << rightOf "EQUIPMENT: " <| label.Name
-        prologFunctor "equipment" [prologSymbol label.Uid; nameP]
-    | Tree (_,label,kids) ->
-        let nameP = prologSymbol label.Name
-        let kidsP = prologList (List.map nodeToProlog kids)
-        match label.AssetType with
-        | Some ProcessGroup ->             
-            prologFunctor "process_group" [nameP; kidsP]
-        | Some Process ->             
-            prologFunctor "process" [nameP; kidsP]
-        | Some PlantAssembly ->             
-            prologFunctor "plant_assembly" [nameP; kidsP]
-        | Some PlantItem ->             
-            prologFunctor "plant_item" [nameP; kidsP]
-        | Some asset -> 
-            let symb = prologFunctor "type" [ prologSymbol <| asset.ToString()]
-            prologFunctor "generic_asset" [nameP; symb; kidsP]
-        | None -> 
-            prologFunctor "unknown_asset" [nameP; kidsP]
+
+let nodeToProlog (tree:LabelledTree<NodeLabel>) : Value = 
+    let rec work (node:LabelledTree<NodeLabel>) (cont : Value -> 'a) = 
+        match node with
+        | Leaf (_,label) -> 
+            let nameP = prologSymbol << rightOf "EQUIPMENT: " <| label.Name
+            cont (prologFunctor "equipment" [prologSymbol label.Uid; nameP])
+        | Tree (_,label,kids) -> 
+            let nameP = prologSymbol label.Name
+            match label.AssetType with
+            | Some atype -> 
+                match atype with
+                | ProcessGroup -> 
+                    workList kids (fun ks -> cont (prologFunctor "process_group" [nameP; prologList ks])) 
+                | Process -> 
+                    workList kids (fun ks -> cont (prologFunctor "process" [nameP; prologList ks])) 
+                | PlantAssembly -> 
+                    workList kids (fun ks -> cont (prologFunctor "plant_assembly" [nameP; prologList ks])) 
+                | PlantItem -> 
+                    workList kids (fun ks -> cont (prologFunctor "plant_item" [nameP; prologList ks])) 
+                | other -> 
+                    let symb = prologFunctor "type" [ prologSymbol (other.ToString())]
+                    workList kids (fun ks -> cont (prologFunctor "generic_asset" [nameP; symb; prologList ks])) 
+            | None -> 
+                workList kids (fun ks -> cont (prologFunctor "unknown_asset" [nameP; prologList ks]))
+
+    and workList (nodes:LabelledTree<NodeLabel> list) (cont : Value list -> 'a) = 
+        match nodes with
+        | [] -> cont []
+        | z :: zs -> work z      (fun x -> 
+                     workList zs (fun xs -> 
+                     cont (x :: xs)))
+    work tree (fun a -> a)
+
+    
+
             
 let installationToProlog (inst:Installation) : FactBase = 
     let rootClause: option<Clause> = 
@@ -227,5 +241,5 @@ let main () =
                   , comment = "installations.pl"
                   , dbs = [makeFacts inst1; makeFacts inst2] )
 
-    pmodule.Save(lineWidth = 100, filePath=outFile)
+    pmodule.Save(lineWidth = 160, filePath = outFile)
     

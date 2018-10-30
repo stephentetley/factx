@@ -48,18 +48,25 @@ module LabelledTree =
         List.fold step Map.empty rows
 
     /// Fill out children
-    let rec private fillOutKids (store:FlatKids<'label>) (node:LabelledTree<'label>) : LabelledTree<'label> = 
-        match node with
-        | Leaf _ -> node
-        | Tree(name,label,_) -> 
-            let kids1 = 
-                match Map.tryFind name store with
-                | Some(xs) -> xs
-                | None -> []
-            let kids2 : LabelledTree<'label> list =
-                // The list is reversed because we always have been adding to the front.
-                List.rev <| List.map (fillOutKids store) kids1
-            Tree (name, label, kids2) 
+    /// TODO - make Tail Recursive / CPS transform
+    let private fillOutKids (store:FlatKids<'label>) (source:LabelledTree<'label>) : LabelledTree<'label> = 
+        let rec work (node:LabelledTree<'label>) (cont:LabelledTree<'label> -> 'a) = 
+            match node with
+            | Leaf _ -> cont node
+            | Tree(name,label,_) -> 
+                let kids1 = 
+                    match Map.tryFind name store with
+                    | Some(xs) -> xs
+                    | None -> []
+                workList kids1 (fun xs -> cont (Tree (name, label,xs)))
+        and workList (nodes:LabelledTree<'label> list) (cont :LabelledTree<'label> list -> 'a) = 
+            match nodes with
+            | [] -> cont []
+            | z :: zs -> 
+                work z      (fun x -> 
+                workList zs (fun xs -> 
+                cont (x :: xs))) 
+        work source (fun a -> a)
 
 
 

@@ -35,7 +35,7 @@ module Lindig =
     /// CPS / Tail recursive
     let sdocToString (source:SDoc) : string = 
         let sb = new StringBuilder ()
-        let rec work (sdoc:SDoc) cont = 
+        let rec work (sdoc:SDoc) (cont : unit -> 'a) = 
             match sdoc with 
             | SNil -> cont ()
             | SText(s,d) -> 
@@ -50,7 +50,7 @@ module Lindig =
 
     let writeSDoc (path:string) (source:SDoc) : unit = 
         use sw = IO.File.CreateText(path)
-        let rec work (sdoc:SDoc) cont = 
+        let rec work (sdoc:SDoc) (cont : unit -> 'a) = 
             match sdoc with 
             | SNil -> cont ()
             | SText(s,d) -> 

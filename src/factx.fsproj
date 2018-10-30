@@ -7,8 +7,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>53cab3f0-aa94-4a53-a146-77055d8c859b</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>factx_fsharp</RootNamespace>
-    <AssemblyName>factx_fsharp</AssemblyName>
+    <RootNamespace>FactX</RootNamespace>
+    <AssemblyName>FactX.FSharp</AssemblyName>
     <UseStandardResourceNames>true</UseStandardResourceNames>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.4.3.0</TargetFSharpCoreVersion>

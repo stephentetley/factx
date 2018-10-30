@@ -8,7 +8,7 @@
     <ProjectGuid>c8c311fa-c931-445e-9990-5d8504fd0bf7</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>factx_test</RootNamespace>
-    <AssemblyName>factx_test</AssemblyName>
+    <AssemblyName>FactX.FSharp.Test</AssemblyName>
     <UseStandardResourceNames>true</UseStandardResourceNames>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
