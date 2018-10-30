@@ -168,6 +168,11 @@ module DirectoryListing =
             match x with
             | FolderLabel(name,_) -> name
             | FileLabel(name,_,_) -> name
+        member x.Properties = 
+            match x with
+            | FolderLabel(_,props) -> props
+            | FileLabel(_,props,_) -> props
+        
 
 
     let private treeHelper : ILabelledTreeBuilder<Row,Label> = 
@@ -189,16 +194,21 @@ module DirectoryListing =
 
 
     let fileObjToValue (fobj:LabelledTree<Label>) : Value = 
+        let getDateTime (label:Label) : Value = 
+            match label.Properties.ModificationTime with
+                    | None -> prologAtom "unknown"
+                    | Some dt -> prologDateTime dt
+
         let rec work (x:LabelledTree<Label>) : Value = 
             match x with
             | Tree (_, label, kids) -> 
-                prologFunctor "folder" [ prologSymbol label.Name; prologList (List.map work kids)]
+                prologFunctor "folder" [ prologSymbol label.Name; getDateTime label; prologList (List.map work kids)]
             | Leaf (_, label) -> 
                 let sz = 
                     match label with
                     | FileLabel (_,_,sz) -> sz
                     | _ -> 0L
-                prologFunctor "file" [ prologSymbol label.Name; prologInt64 sz ]
+                prologFunctor "file" [ prologSymbol label.Name; getDateTime label; prologInt64 sz ]
         work fobj
 
     let private buildFileStore (blocks:Block list) : LabelledTree<Label> list = 

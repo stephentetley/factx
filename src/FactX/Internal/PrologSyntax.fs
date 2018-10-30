@@ -78,6 +78,7 @@ module PrologSyntax =
         | PString of string
         | PInt of int64
         | PDecimal of decimal
+        | PAtom of string       
         | PQuotedAtom of string
         | PList of Value list
         | PFunctor of Identifier * Value list
@@ -87,6 +88,7 @@ module PrologSyntax =
             | PString s -> prologString s
             | PInt i -> prologInt i
             | PDecimal d -> prologDecimal d
+            | PAtom s -> simpleAtom s
             | PQuotedAtom s -> quotedAtom s
             | PList vs -> prologList (List.map (fun (x:Value) -> x.Format()) vs)
             | PFunctor(name, vs) -> prologFunctor name (List.map (fun (x:Value) -> x.Format()) vs)

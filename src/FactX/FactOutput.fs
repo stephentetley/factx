@@ -170,10 +170,13 @@ module FactOutput =
 
 [<AutoOpen>]
 module Values = 
+    open System
 
     type Value = PrologSyntax.Value
 
-    /// Create a Prolog string value.
+    let prologAtom (input:string) : Value = PrologSyntax.PAtom input
+
+    /// Create a Prolog "symbol" i.e a quoted atom .
     /// No error checking if the string is null or empty
     let prologSymbol (input:string) : Value = PrologSyntax.PQuotedAtom input
 
@@ -239,3 +242,15 @@ module Values =
         match value with
         | Some v -> v
         | None -> prologSymbol "UNKNOWN"
+
+    
+    /// Output date in ISO 8601 format
+    /// e.g. 2006-12-08
+    let prologDate (value:DateTime) : Value = 
+        prologString <| value.ToString(format = "yyyy-MM-dd")
+
+    /// Output date-timein ISO 8601 format
+    /// e.g. 2006-12-08T17:29:44
+    let prologDateTime (value:DateTime) : Value = 
+        prologString <| value.ToString("yyyy-MM-ddThh:mm:ss")
+
