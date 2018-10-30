@@ -28,12 +28,7 @@ module LabelledTree =
 
     type private FlatKids<'label> = Map<Name, LabelledTree<'label> list>
 
-    // Root is always first
-    // TODO this may be too strong a condition.
-    let private getRoot (rows:'row list) : 'row option = 
-        match rows with
-        | x :: _ -> Some x
-        | _ -> None
+
 
     
     // Flat kids have no recusion, i.e. Tree is just Tree(_,_,[])
@@ -48,7 +43,7 @@ module LabelledTree =
         List.fold step Map.empty rows
 
     /// Fill out children
-    /// TODO - make Tail Recursive / CPS transform
+   
     let private fillOutKids (store:FlatKids<'label>) (source:LabelledTree<'label>) : LabelledTree<'label> = 
         let rec work (node:LabelledTree<'label>) (cont:LabelledTree<'label> -> 'a) = 
             match node with
@@ -71,6 +66,7 @@ module LabelledTree =
 
 
     let buildTopDown (helper:ILabelledTreeBuilder<'row,'label>) 
+                        (getRoot:'row list -> option<'row>)
                         (rows: 'row list) : LabelledTree<'label> option = 
         match getRoot rows with 
         | Some rootRow -> 
@@ -78,5 +74,9 @@ module LabelledTree =
             Some <| fillOutKids flatKids (helper.MakeNode rootRow)
         | None -> None
 
-
-
+    let buildTopDownForest (helper:ILabelledTreeBuilder<'row,'label>) 
+                        (getRoots:'row list -> 'row list)
+                        (rows: 'row list) : LabelledTree<'label> list = 
+        let roots = getRoots rows
+        let flatKids  = makeFlatKids helper rows
+        List.map (fun root -> fillOutKids flatKids (helper.MakeNode root)) roots

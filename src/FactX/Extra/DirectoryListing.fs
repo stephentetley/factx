@@ -12,6 +12,8 @@ open FParsec
 
 open FactX.Internal
 open FactX
+open FactX.Extra.PathString
+open FactX.Extra.LabelledTree
 
 [<AutoOpen>]
 module DirectoryListing = 
@@ -28,47 +30,31 @@ module DirectoryListing =
           ModificationTime : DateTime option
         }
  
+    type Row = 
+        | FolderRow of Name * Properties * FilePath
+        | FileRow of Name * Properties * Size * FilePath
+        member x.Name = 
+            match x with
+            | FolderRow(name,_,_) -> name
+            | FileRow(name,_,_,_) -> name
 
-    type FileObj = 
-        | FsFolder of Name * Properties * FileObj list
-        | FsFile of Name * Properties * Size
+        member x.Path = 
+            match x with
+            | FolderRow(_,_,path) -> path
+            | FileRow(_,_,_,path) -> path
+    type Block = 
+        { Path: FilePath 
+          Rows: Row list }
+        
 
-    type FileStore = 
-        | FileStore of FilePath * FileObj list
+
 
 
     let makeDateTime (year:int) (month:int) (day:int) (hour:int) (minute:int) (second:int) : DateTime = 
         new DateTime(year, month, day, hour, minute, second)
 
 
-    /// ***** Operations on Files and Folders
-
-
-    let getName (source:FileObj) : string = 
-        match source with
-        | FsFolder(name,_ ,_) -> name
-        | FsFile(name,_,_) -> name
-
-    let isFile (source:FileObj) : bool = 
-        match source with
-        | FsFolder _ -> false
-        | FsFile _ -> true
-
-    let isFolder (source:FileObj) : bool = 
-        match source with
-        | FsFolder _ -> true
-        | FsFile _ -> false
-
-    let tryGetExtension (source:FileObj) : string option = 
-        match source with
-        | FsFolder _ -> None
-        | FsFile (name,_,_) -> Some <| Path.GetExtension name
-
-    let getFiles1 (source:FileStore) : FileObj list = 
-        match source with
-        | FileStore (_,xs) -> List.filter isFile xs
     
-
     // *************************************
     // PARSER
 
@@ -128,175 +114,112 @@ module DirectoryListing =
         let underline = restOfLine false
         columns .>> newline .>> underline
 
-    // Note - file store is flat at parse time (needs postprocessing to build)
-    let private pFileObj : Parser<FileObj,unit> = 
+    // Note - file store is flat at parse time (represented as a "Row")
+    // It needs postprocessing to build.
+    let private pRow (pathTo:string) : Parser<Row,unit> = 
         let pFolder mode = 
              pipe2 (symbol pDateTime) 
                    pName 
-                   (fun timestamp name -> FsFolder (name, { Mode = Some mode; ModificationTime = Some timestamp}, []))
+                   (fun timestamp name -> FolderRow (name, { Mode = Some mode; ModificationTime = Some timestamp}, pathTo))
         let pFile mode = 
             pipe3 (symbol pDateTime) 
                   (symbol pint64) 
                   pName 
-                  (fun timestamp size name-> FsFile (name, { Mode = Some mode; ModificationTime = Some timestamp}, size))
+                  (fun timestamp size name-> FileRow (name, { Mode = Some mode; ModificationTime = Some timestamp}, size, pathTo))
         let parseK mode = 
             if isDir mode then pFolder mode else pFile mode
         (symbol pMode) >>= parseK
 
 
-    type Block = string * FileObj list
+
 
 
     let private pBlock : Parser<Block, unit> = 
-        pipe3 (spaces >>. pDirectoryDirective) 
-              (twice blankline >>. lineOf pHeadings >>. many1 (lineOf pFileObj))
-              spaces
-              (fun dirName objs zzz -> (dirName, objs))
+        parse { 
+            let! parent = (spaces >>. pDirectoryDirective)  
+            do! blankline
+            do! blankline
+            let! _ = lineOf pHeadings
+            let! rows = many1 (lineOf (pRow parent))
+            return { Path = parent; Rows = rows }
+            }
+
 
 
     let private pListing : Parser<Block list,unit> = many (pBlock .>> spaces)
+
+    let readDirRecurseOutput (inputPath:string) : Choice<string,Block list> = 
+        let source = File.ReadAllText(inputPath)
+        match runParserOnString pListing () inputPath source with
+        | Success(a,_,_) -> Choice2Of2 a
+        | Failure(s,_,_) -> Choice1Of2 s
+
+
 
     // *************************************
     // Build from flat.
 
     // TODO - should use LabelledTree builder
 
-    type private Level1Kids = Map<Name, FileObj list>
-
-    // Root is always first
-    let private getRoot (blocks:Block list) : Block option = 
-        match blocks with
-        | x :: _ -> Some x
-        | _ -> None
-
-
-    let private makeLevel1Kids (blocks:Block list) : Level1Kids = 
-        let step acc (dirName, objs) = Map.add dirName objs acc
-        List.fold step Map.empty blocks
-
-    let rec private makeRecur (store:Level1Kids) (parent:Name) (fileObj:FileObj) : FileObj = 
-        match fileObj with
-        | FsFile _ -> fileObj
-        | FsFolder(name,props,_) -> 
-            let fullName = parent + "\\" + name
-            let kids1 = 
-                match Map.tryFind fullName store with
-                | Some(xs) -> xs
-                | None -> []
-            let kids2 = List.map (makeRecur store fullName) kids1
-            FsFolder (name,props,kids2) 
-
-
-
-    let private buildTopDown (blocks:Block list) : FileStore option = 
-        match blocks with 
-        | (dirName,objs) :: _ -> 
-            let level1Kids  = makeLevel1Kids blocks
-            let realKids    = List.map (makeRecur level1Kids dirName) objs
-            Some <| FileStore (dirName, realKids)
-        | [] -> None
-
-
-
-    let readDirRecurseOutput (inputPath:string) : Choice<string,FileStore> = 
-        let source = File.ReadAllText(inputPath)
-        match runParserOnString pListing () inputPath source with
-        | Success(a,_,_) ->  
-            match buildTopDown a with
-            | None -> Choice1Of2 "Parsed, but could not build FileStore"
-            | Some ans -> Choice2Of2 ans
-        | Failure(s,_,_) -> Choice1Of2 s
-
-
-    // *************************************
-    // Display
-
-    let private ciCompare (obj1:FileObj) (obj2:FileObj) : int  = 
-        String.Compare(getName obj1, getName obj2, ignoreCase=true)
-
-    let private catPath (str1:string) (str2:string) : string = 
-        if String.IsNullOrEmpty str1 then str2 else str1 + "\\" + str2
-
-    let private display1 (sb:StringBuilder) (source:FileObj) : unit = 
-        let rec work (path:string) (obj1:FileObj)  = 
-            match obj1 with
-            | FsFile (name,_,_) -> sb.AppendLine(catPath path name) |> ignore
-            | FsFolder (name,_,xs) -> 
-                let path1 = catPath path name
-                sb.AppendLine(path1 + "\\") |> ignore
-                let sortedKids = List.sortWith ciCompare xs
-                List.iter (work path1) sortedKids 
-        work "" source
-
-    /// Displays the output as a simple list of folders and files in
-    /// case-insensitive order. The output is patterned after DiffMerge's folder view.
-    let display (source:FileStore) : string = 
-        let sb = new StringBuilder ()
-        
-        match source with
-        | FileStore (path,xs) -> 
-            let sortedKids = List.sortWith ciCompare xs
-            sb.AppendLine(path) |> ignore
-            List.iter (display1 sb) sortedKids
-            sb.ToString ()
-
-[<AutoOpen>]
-module DirectoryFacts = 
-
-    /// If we encode LastWriteTime use something that can be parsed with
-    /// parse_time (SWI Prolog).
-
-    let fileObjToValue (fobj:FileObj) : Value = 
-        let rec work (x:FileObj) : Value = 
+    type Label = 
+        | FolderLabel of Name * Properties
+        | FileLabel of Name * Properties * Size
+        member x.Name = 
             match x with
-            | FsFolder (name, props, kids) -> 
-                prologFunctor "folder" [ prologSymbol name; prologList (List.map work kids)]
-            | FsFile (name, props, sz) -> 
-                prologFunctor "file" [ prologSymbol name; prologInt64 sz ]
+            | FolderLabel(name,_) -> name
+            | FileLabel(name,_,_) -> name
+
+
+    let private treeHelper : ILabelledTreeBuilder<Row,Label> = 
+        { new ILabelledTreeBuilder<Row,Label>
+          with member this.GetParentName (row:Row) = 
+                    match row with
+                    | FileRow(_,_,_,path) -> path
+                    | FolderRow(_,_,path) -> path
+
+               member this.MakeNode (row:Row) = 
+                    match row with
+                    | FileRow(name,props,sz,path) ->
+                        let fullpath = path + "\\" + name
+                        Leaf(fullpath,FileLabel(name,props,sz)) 
+
+                    | FolderRow(name,props,path) ->
+                        let fullpath = path + "\\" + name
+                        Tree(fullpath,FolderLabel(name,props),[]) }
+
+
+    let fileObjToValue (fobj:LabelledTree<Label>) : Value = 
+        let rec work (x:LabelledTree<Label>) : Value = 
+            match x with
+            | Tree (_, label, kids) -> 
+                prologFunctor "folder" [ prologSymbol label.Name; prologList (List.map work kids)]
+            | Leaf (_, label) -> 
+                let sz = 
+                    match label with
+                    | FileLabel (_,_,sz) -> sz
+                    | _ -> 0L
+                prologFunctor "file" [ prologSymbol label.Name; prologInt64 sz ]
         work fobj
 
-    let fileStoreToProlog (sto:FileStore) : FactBase = 
-        let c1 : Clause = 
-            match sto with
-            | FileStore (path, kids) -> 
-                let kids1 = List.map fileObjToValue kids
-                Clause.cons( signature = "file_store(path, kids)."
-                                   , body = [prologSymbol path; prologList kids1])
-        FactBase.ofList [c1]
+    let private buildFileStore (blocks:Block list) : LabelledTree<Label> list = 
+        let allRows = List.collect (fun (b:Block) -> b.Rows) blocks
+        match blocks with
+        | [] -> []
+        | b1 :: _ -> 
+            let getRoots (xs:Row list) = 
+                List.filter (fun (row:Row) -> row.Path = b1.Path) xs
+            buildTopDownForest treeHelper getRoots allRows
 
 
-    let buildFactBase (filePath:string) : option<FactBase> = 
-        match readDirRecurseOutput filePath with
-        | Choice1Of2 err -> None
-        | Choice2Of2 ans -> Some <| fileStoreToProlog ans
+    let listingToProlog (inputPath:string) : option<FactBase> =
+        match readDirRecurseOutput inputPath with
+        | Choice1Of2 err -> failwith err
+        | Choice2Of2 ans -> 
+            let root = match ans with | [] -> ""| (b1 :: bs) -> b1.Path
 
+            let trees = buildFileStore ans
+            let kids = List.map (fun (tree:LabelledTree<Label>) -> fileObjToValue tree) trees
+            let c1 = Clause.cons( signature = "file_store(path,kids)."
+                                , body = [prologSymbol root; prologList kids] )
+            Some <| FactBase.ofList [c1]
 
-    // ************************************************************************
-    // OLD ...
-
-    let fileStore (fs:FileStore) : FactBase = 
-        let makeClause (x:FileStore) = 
-            { Signature = parseSignature "file_store(path_to_root)."
-              Body = 
-                    match x with
-                    | FileStore(path,_) -> [ PrologSyntax.PQuotedAtom path ] 
-            }
-        FactBase.ofList [makeClause fs]
-
-
-    let driveLetter (path:FilePath) : string = 
-        let arr = path.Split('\\')
-        if arr.Length > 1 then 
-            arr.[0]
-        else 
-            ""
-
-    let drive (fs:FileStore) : FactBase = 
-        let makeClause (x:FileStore) = 
-            { Signature = parseSignature "file_store_drive(path_to_root, drive)."
-              Body = 
-                    match x with
-                    | FileStore(path,_) -> 
-                        [ PrologSyntax.PQuotedAtom path; PrologSyntax.PQuotedAtom (driveLetter path) ] 
-            }
-        FactBase.ofList [makeClause fs]

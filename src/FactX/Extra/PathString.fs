@@ -28,7 +28,7 @@ module PathString =
             String.concat v.Separator v.Steps
 
         override v.ToString() : string = 
-            sprintf "StringPath {%s}" <| v.Output()
+            String.concat v.Separator v.Steps
 
         member v.Clone (separator:string) : PathString = 
             new PathString (separator = separator, pathSteps = v.Steps)

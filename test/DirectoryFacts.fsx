@@ -9,6 +9,8 @@
 #load "..\src\FactX\Internal\PrintProlog.fs"
 #load "..\src\FactX\Internal\PrologSyntax.fs"
 #load "..\src\FactX\FactOutput.fs"
+#load "..\src\FactX\Extra\PathString.fs"
+#load "..\src\FactX\Extra\LabelledTree.fs"
 #load "..\src\FactX\Extra\DirectoryListing.fs"
 open FactX
 open FactX.Extra.DirectoryListing
@@ -26,7 +28,7 @@ let test01 () =
     let path1 = getLocalDataFile "dir.txt"
     match readDirRecurseOutput path1 with
     | Choice1Of2 err -> failwith err
-    | Choice2Of2 ans -> printfn "%s" <| display ans
+    | Choice2Of2 ans -> printfn "%s" <| ans.ToString()
 
 
 
@@ -34,13 +36,13 @@ let test01 () =
 // Note - to make facts a "filestore" must have a name
 // The obvious name is the <path-to-root>.
 
-let test02 () = 
-    let path1 = getLocalDataFile "dir.txt"
-    match readDirRecurseOutput path1 with
-    | Choice1Of2 err -> failwith err
-    | Choice2Of2 ans -> 
-        let fs:FactBase = fileStore ans in (fs.ToProlog()) |> printfn "%A" 
-        let fs:FactBase = drive ans in (fs.ToProlog()) |> printfn "%A" 
+//let test02 () = 
+//    let path1 = getLocalDataFile "dir.txt"
+//    match readDirRecurseOutput path1 with
+//    | Choice1Of2 err -> failwith err
+//    | Choice2Of2 ans -> 
+//        let fs:FactBase = fileStore ans in (fs.ToProlog()) |> printfn "%A" 
+//        let fs:FactBase = drive ans in (fs.ToProlog()) |> printfn "%A" 
 
 // SWI-Prolog has a pcre module which suggests representing paths
 // as lists of strings might be useful.
@@ -54,12 +56,11 @@ let main () =
     let outFile = outputFile "directories.pl"
     let path1 = getLocalDataFile "dir.txt"
 
-    match buildFactBase path1 with
+    match listingToProlog path1 with
     | None -> printfn "Could not interpret the directory listing: '%s'" path1
     | Some facts -> 
         let pmodule : Module = 
             new Module( name = "directories"
                       , comment = "directories.pl"
                       , db = facts )
-
         pmodule.Save(lineWidth = 160, filePath=outFile)

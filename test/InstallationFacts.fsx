@@ -159,8 +159,16 @@ let treeHelper : ILabelledTreeBuilder<AssetRow, NodeLabel> =
       with member this.GetParentName (row:AssetRow) = parentName row.``Common Name``
            member this.MakeNode (row:AssetRow) = makeNode row }
 
+           
+// Root is always first
+// TODO this may be too strong a condition.
+let getRoot (rows:'row list) : 'row option = 
+    match rows with
+    | x :: _ -> Some x
+    | _ -> None
+
 let test03 () =
-    buildTopDown treeHelper (stwData ())
+    buildTopDown treeHelper getRoot (stwData ())
 
 type Installation = LabelledTree<NodeLabel>
 
@@ -228,8 +236,8 @@ let installationToProlog (inst:Installation) : FactBase =
 
 let main () =
     let outFile = outputFile "installations.pl"
-    let inst1 = buildTopDown treeHelper (stwData ())
-    let inst2 = buildTopDown treeHelper (stfData ())
+    let inst1 = buildTopDown treeHelper getRoot (stwData ())
+    let inst2 = buildTopDown treeHelper getRoot (stfData ())
 
     let makeFacts (inst:option<Installation>) : FactBase = 
         match inst with
