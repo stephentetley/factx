@@ -120,44 +120,68 @@ module PrologSyntax =
 
         member v.ExportSignature = (v.FactName, v.Arity)
     
-   
+
+    /// SWI Prolog specific
+    type ImportStatement = 
+        | LibraryImport of Identifier
+        | FileImport of string
+        member v.Format () = 
+            let body =
+                match v with
+                | LibraryImport(name) -> text "library" ^^ parens (text name)
+                | FileImport(name) -> 
+                    if name.Contains(" ") then
+                        dquotes (text name)
+                    else
+                        text name
+            text ":- use_module" ^^ parens body ^^ dot
 
 
     /// This an object, not a record so it can have different constructors
     type Module = 
         val ModuleName : string
+        val Imports : ImportStatement list
         val GlobalComment : string
         val Exports : (Identifier * int) list
         val Database : FactSet list
-        new (name:string, comment:string, db:FactSet list) = 
+
+        new (name:string, imports: ImportStatement list, comment:string, db:FactSet list) = 
             { ModuleName = name
+            ; Imports = imports
             ; GlobalComment = comment
             ; Exports = db |> List.map (fun a -> a.ExportSignature)
             ; Database = db }
 
+        // Note - as this is an internal module we (likely) shouldn't 
+        // need to overload the constructor.
+
         new (name:string, db:FactSet list) = 
             { ModuleName = name
+            ; Imports = []
             ; GlobalComment = sprintf "%s.pl" name
             ; Exports = db |> List.map (fun a -> a.ExportSignature)
             ; Database = db }
 
         new (name:string, comment:string, db:FactSet) = 
             { ModuleName = name
+            ; Imports = []
             ; GlobalComment = comment
             ; Exports = [db.ExportSignature]
             ; Database = [db] }
         
         new (name:string, db:FactSet) = 
             { ModuleName = name
+            ; Imports = []
             ; GlobalComment = sprintf "%s.pl" name
             ; Exports = [db.ExportSignature]
             ; Database = [db] }
 
         member v.Format () = 
-            let d1 = prologComment v.GlobalComment
-            let d2 = moduleDirective v.ModuleName v.Exports
+            let d1 = vcat (List.map (fun (x:ImportStatement) -> x.Format()) v.Imports)
+            let d2 = prologComment v.GlobalComment
+            let d3 = moduleDirective v.ModuleName v.Exports
             let ds = List.map (fun (col:FactSet) -> col.Format()) v.Database
-            vcat [ d1; empty; d2; empty; vcat ds ]
+            vcat [ d1; empty; d2; empty; d3; empty; vcat ds ]
 
         member v.ToProlog () : string = 
             render 160 <| v.Format()

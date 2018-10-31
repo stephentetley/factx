@@ -19,6 +19,8 @@ module FactOutput =
             | (Some(x) :: rest) -> work (x::ac) rest
         work [] source
 
+    type SwiImportStatement = PrologSyntax.ImportStatement
+
     type ClauseBody = PrologSyntax.Value list
 
     type Clause = 
@@ -134,32 +136,60 @@ module FactOutput =
 
     type Module = 
         val ModuleName : string
-        val GlobalComment : string
+        val mutable ImportList : SwiImportStatement list
+        val mutable TopLevelComment : string
         val Database : FactBase
         new (name:string, db:FactBase) = 
             { ModuleName = name
-            ; GlobalComment = ""
+            ; ImportList = []
+            ; TopLevelComment = ""
             ; Database = db }
 
         new (name:string, dbs:FactBase list) = 
             { ModuleName = name
-            ; GlobalComment = ""
+            ; ImportList = []
+            ; TopLevelComment = ""
             ; Database = mergeFactBases dbs }
 
         new (name:string, comment:string, db:FactBase) = 
             { ModuleName = name
-            ; GlobalComment = comment
+            ; ImportList = []
+            ; TopLevelComment = comment
+            ; Database = db }
+        
+        new (name:string, imports: SwiImportStatement list, comment:string, db:FactBase) = 
+            { ModuleName = name
+            ; ImportList = imports
+            ; TopLevelComment = comment
             ; Database = db }
 
         new (name:string, comment:string, dbs:FactBase list) = 
             { ModuleName = name
-            ; GlobalComment = comment
+            ; ImportList = []
+            ; TopLevelComment = comment
             ; Database = mergeFactBases dbs }
 
-        member v.ToProlog() : PrologSyntax.Module = 
-            let prologFacts = v.Database.ToProlog () 
-            new PrologSyntax.Module (name = v.ModuleName, comment = v.GlobalComment, db = prologFacts)
+        new (name:string, imports:SwiImportStatement list, comment:string, dbs:FactBase list) = 
+            { ModuleName = name
+            ; ImportList = imports
+            ; TopLevelComment = comment
+            ; Database = mergeFactBases dbs }
 
+        member private v.ToProlog() : PrologSyntax.Module = 
+            let prologFacts = v.Database.ToProlog () 
+            new PrologSyntax.Module ( name = v.ModuleName
+                                    , imports = v.ImportList
+                                    , comment = v.TopLevelComment
+                                    , db = prologFacts)
+
+        member v.GlobalComment 
+            with get() : string = v.GlobalComment
+            and set (comment:string) = v.TopLevelComment <- comment
+
+        member v.Imports 
+            with get() : SwiImportStatement list = v.ImportList
+            and set (imports:SwiImportStatement list) = v.ImportList <- imports
+                
         member v.Save(filePath:string) = 
             let prologModule = v.ToProlog()
             prologModule.Save(240, filePath)
@@ -167,6 +197,18 @@ module FactOutput =
         member v.Save(lineWidth:int, filePath:string) = 
             let prologModule = v.ToProlog()
             prologModule.Save(lineWidth, filePath)
+
+    // Imports
+
+    /// SWI Prolog specific
+    /// :- use_module(library(<libName>)).
+    let useLibrary (libName:string) : PrologSyntax.ImportStatement =
+        PrologSyntax.LibraryImport(libName)
+
+    /// SWI Prolog specific
+    /// :- use_module(library(<modulePath>)).
+    let useMoule(modulePath:string) : PrologSyntax.ImportStatement =
+        PrologSyntax.FileImport(modulePath)
 
 [<AutoOpen>]
 module Values = 

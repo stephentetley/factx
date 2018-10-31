@@ -42,6 +42,7 @@ module DirectoryListing =
             match x with
             | FolderRow(_,_,path) -> path
             | FileRow(_,_,_,path) -> path
+
     type Block = 
         { Path: FilePath 
           Rows: Row list }
@@ -159,7 +160,9 @@ module DirectoryListing =
     // *************************************
     // Build from flat.
 
-    // TODO - should use LabelledTree builder
+    // TODO - potentially we should (optionally) generate SWI-Prolog records
+    // for properties, (and file and folder?)
+    // See Manual, Section A.31 library(record)
 
     type Label = 
         | FolderLabel of Name * Properties
@@ -198,17 +201,28 @@ module DirectoryListing =
             match label.Properties.ModificationTime with
                     | None -> prologAtom "unknown"
                     | Some dt -> prologDateTime dt
+        
+        let getMode (label:Label) : Value = 
+            match label.Properties.Mode with
+                    | None -> prologAtom "unknown"
+                    | Some dt -> prologSymbol dt
 
         let rec work (x:LabelledTree<Label>) : Value = 
             match x with
             | Tree (_, label, kids) -> 
-                prologFunctor "folder" [ prologSymbol label.Name; getDateTime label; prologList (List.map work kids)]
+                prologFunctor "folder" [ prologSymbol label.Name
+                                       ; getDateTime label
+                                       ; getMode label
+                                       ; prologList (List.map work kids)]
             | Leaf (_, label) -> 
                 let sz = 
                     match label with
                     | FileLabel (_,_,sz) -> sz
                     | _ -> 0L
-                prologFunctor "file" [ prologSymbol label.Name; getDateTime label; prologInt64 sz ]
+                prologFunctor "file" [ prologSymbol label.Name
+                                     ; getDateTime label
+                                     ; getMode label
+                                     ; prologInt64 sz ]
         work fobj
 
     let private buildFileStore (blocks:Block list) : LabelledTree<Label> list = 
@@ -226,7 +240,6 @@ module DirectoryListing =
         | Choice1Of2 err -> failwith err
         | Choice2Of2 ans -> 
             let root = match ans with | [] -> ""| (b1 :: bs) -> b1.Path
-
             let trees = buildFileStore ans
             let kids = List.map (fun (tree:LabelledTree<Label>) -> fileObjToValue tree) trees
             let c1 = Clause.cons( signature = "file_store(path,kids)."

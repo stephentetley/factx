@@ -52,15 +52,24 @@ let pathList (path:FilePath) : Value =
 
 
 
-let main () =
-    let outFile = outputFile "directories.pl"
-    let path1 = getLocalDataFile "dir.txt"
-
-    match listingToProlog path1 with
-    | None -> printfn "Could not interpret the directory listing: '%s'" path1
+let genListing (infile:string) (outfile:string) =
+    match listingToProlog infile with
+    | None -> printfn "Could not interpret the directory listing: '%s'" infile
     | Some facts -> 
         let pmodule : Module = 
             new Module( name = "directories"
                       , comment = "directories.pl"
                       , db = facts )
-        pmodule.Save(lineWidth = 160, filePath=outFile)
+        pmodule.Save(lineWidth = 160, filePath=outfile)
+
+// We should consider generating SWI Prolog record accessors
+
+let main () = 
+    let outfile = outputFile "directories.pl"
+    let infile = getLocalDataFile "dir.txt"
+    genListing infile outfile
+
+let temp01 () = 
+    let infile = @"G:\work\Projects\events2\temp\site-work-sorted.dir.txt"
+    let outfile = @"G:\work\Projects\events2\temp\directories.pl"
+    genListing infile outfile
