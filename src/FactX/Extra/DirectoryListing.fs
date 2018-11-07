@@ -64,7 +64,6 @@ module DirectoryListing =
     let private ws1 : Parser<string,unit> = many1Chars (pchar ' ' <|> pchar '\t')
 
     let private symbol (p:Parser<'a,unit>)      : Parser<'a,unit> = p .>> ws
-    let private symbol1 (p:Parser<'a,unit>)     : Parser<'a,unit> = p .>> ws1
 
     let private keyword (s:string) : Parser<string,unit> = pstring s .>> ws
     let private keyword1 (s:string) : Parser<string,unit> = pstring s .>> ws1
@@ -117,7 +116,6 @@ module DirectoryListing =
         parse { 
             let! timestamp = symbol pDateTime 
             let! name = pName 
-            printfn "Folder: %s" name
             return (FolderRow (name, { Mode = Some mode; ModificationTime = Some timestamp}, pathTo))
             }
 
@@ -126,7 +124,6 @@ module DirectoryListing =
             let! timestamp = symbol pDateTime
             let! size = symbol pint64
             let! name = pName 
-            printfn "File: %s" name
             return (FileRow (name, { Mode = Some mode; ModificationTime = Some timestamp}, size, pathTo))
             }
 
@@ -231,7 +228,7 @@ module DirectoryListing =
                                             ; prologInt64 sz ]
         work fobj
 
-    let private buildFileStore (blocks:Block list) : LabelledTree<Label> list = 
+    let private buildFileStore1 (blocks:Block list) : LabelledTree<Label> list = 
         let allRows = List.collect (fun (b:Block) -> b.Rows) blocks
         match blocks with
         | [] -> []
@@ -240,15 +237,18 @@ module DirectoryListing =
                 List.filter (fun (row:Row) -> row.Path = b1.Path) xs
             buildTopDownForest treeHelper getRoots allRows
 
+    let private buildFileStore (blocks:Block list) : Value = 
+        let root = match blocks with | [] -> ""| (b1 :: bs) -> b1.Path
+        let trees = buildFileStore1 blocks
+        let kids = List.map (fun (tree:LabelledTree<Label>) -> fileObjToValue tree) trees
+        prologFunctor "file_store" [ prologSymbol root; prologList kids ]
 
-    let listingToProlog (inputPath:string) : option<FactBase> =
+    let listingToProlog (inputPath:string) (name:string) : option<FactBase> =
         match readDirRecurseOutput inputPath with
         | Choice1Of2 err -> failwith err
         | Choice2Of2 ans -> 
-            let root = match ans with | [] -> ""| (b1 :: bs) -> b1.Path
-            let trees = buildFileStore ans
-            let kids = List.map (fun (tree:LabelledTree<Label>) -> fileObjToValue tree) trees
-            let c1 = Clause.cons( signature = "file_store(path,kids)."
-                                , body = [prologSymbol root; prologList kids] )
+            let store = buildFileStore ans
+            let c1 = Clause.cons( signature = "listing(name,store)."
+                                , body = [prologSymbol name; store] )
             Some <| FactBase.ofList [c1]
 

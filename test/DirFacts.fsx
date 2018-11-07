@@ -50,10 +50,8 @@ let pathList (path:FilePath) : Value =
     path.Split('\\') |> Array.toList |> List.map prologString |> prologList
 
 
-
-
-let genListing (infile:string) (outfile:string) =
-    match listingToProlog infile with
+let writeListing (infile:string) (name:string) (outfile:string) : unit =
+    match listingToProlog infile name with
     | None -> printfn "Could not interpret the directory listing: '%s'" infile
     | Some facts -> 
         let pmodule : Module = 
@@ -67,9 +65,9 @@ let genListing (infile:string) (outfile:string) =
 let main () = 
     let outfile = outputFile "directories.pl"
     let infile = getLocalDataFile "dir.txt"
-    genListing infile outfile
+    writeListing infile "directories" outfile
 
 let temp01 () = 
     let infile = getLocalDataFile "very-large.txt"
     let outfile = outputFile "very-large.pl"
-    genListing infile outfile
+    writeListing infile "very-large" outfile
