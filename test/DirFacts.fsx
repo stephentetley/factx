@@ -55,8 +55,8 @@ let writeListing (infile:string) (name:string) (outfile:string) : unit =
     | None -> printfn "Could not interpret the directory listing: '%s'" infile
     | Some facts -> 
         let pmodule : Module = 
-            new Module( name = "directories"
-                      , comment = "directories.pl"
+            new Module( name = name
+                      , comment = name
                       , db = facts )
         pmodule.Save(lineWidth = 160, filePath=outfile)
 
@@ -69,5 +69,5 @@ let main () =
 
 let temp01 () = 
     let infile = getLocalDataFile "very-large.txt"
-    let outfile = outputFile "very-large.pl"
-    writeListing infile "very-large" outfile
+    let outfile = outputFile "very_large.pl"
+    writeListing infile "very_large" outfile

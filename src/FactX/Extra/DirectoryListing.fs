@@ -213,7 +213,7 @@ module DirectoryListing =
         let rec work (x:LabelledTree<Label>) : Value = 
             match x with
             | Tree (_, label, kids) -> 
-                prologFunctor "folder_object" [ prologSymbol label.Name
+                prologFunctor "folder_object" [ prologString label.Name
                                               ; getDateTime label
                                               ; getMode label
                                               ; prologList (List.map work kids)]
@@ -222,7 +222,7 @@ module DirectoryListing =
                     match label with
                     | FileLabel (_,_,sz) -> sz
                     | _ -> 0L
-                prologFunctor "file_object" [ prologSymbol label.Name
+                prologFunctor "file_object" [ prologString label.Name
                                             ; getDateTime label
                                             ; getMode label
                                             ; prologInt64 sz ]
