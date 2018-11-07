@@ -6,13 +6,11 @@ namespace FactX.Extra.DirectoryListing
 
 open System
 open System.IO
-open System.Text
 
 open FParsec
 
-open FactX.Internal
+
 open FactX
-open FactX.Extra.PathString
 open FactX.Extra.LabelledTree
 
 [<AutoOpen>]
@@ -71,14 +69,19 @@ module DirectoryListing =
     let private keyword (s:string) : Parser<string,unit> = pstring s .>> ws
     let private keyword1 (s:string) : Parser<string,unit> = pstring s .>> ws1
 
-    let private lineOf (p:Parser<'a,unit>) : Parser<'a,unit> = 
-        p .>> newline
 
-    let private twice (p:Parser<'a,unit>) : Parser<('a * 'a),unit> = pipe2 p p (fun a b -> (a,b))
+    let private emptyLine : Parser<unit,unit> = newline >>. preturn ()
 
-    let private blankline : Parser<unit,unit> = lineOf ws >>. preturn ()
-
-    let private pName : Parser<Name,unit> = restOfLine false |>> (fun s -> s.TrimEnd ())
+    // Names may span multiple lines
+    let private pName : Parser<Name,unit> = 
+        let line1 = restOfLine true
+        let linesK = many1 (pchar ' ') >>. restOfLine true
+        parse { 
+            let! s = line1 
+            let! ss = many linesK 
+            let name1 = String.concat "" (s::ss)
+            return name1.Trim()
+            }
 
 
     // Note this is UK centric    
@@ -94,17 +97,11 @@ module DirectoryListing =
 
     let private isDir (mode:string) : bool = mode.StartsWith("d")
 
-    // Note - if directory name longer than 100(?) chars it is listed on a new line
-    let pDirPath : Parser<Name,unit> = 
-        let indent = pstring "    "
-        let line1 = pName .>> newline
-        let linesK = indent >>. pName .>> newline
-        pipe2 line1 (many linesK) (fun s ss -> String.concat "" (s::ss))
 
 
     let private pDirectoryDirective : Parser<Name,unit> = 
         let indent = manyChars (pchar ' ')
-        indent >>. pstring "Directory:" >>. spaces >>. pDirPath
+        indent >>. keyword1 "Directory:" >>. pName
 
     let private pHeadings : Parser<string list,unit> = 
         let columns = pipe4 (keyword "Mode")
@@ -115,20 +112,29 @@ module DirectoryListing =
         let underline = restOfLine false
         columns .>> newline .>> underline
 
+
+    let private pFolder (pathTo:string) (mode:string) : Parser<Row, unit> = 
+        parse { 
+            let! timestamp = symbol pDateTime 
+            let! name = pName 
+            printfn "Folder: %s" name
+            return (FolderRow (name, { Mode = Some mode; ModificationTime = Some timestamp}, pathTo))
+            }
+
+    let private pFile (pathTo:string) (mode:string) : Parser<Row, unit> = 
+        parse { 
+            let! timestamp = symbol pDateTime
+            let! size = symbol pint64
+            let! name = pName 
+            printfn "File: %s" name
+            return (FileRow (name, { Mode = Some mode; ModificationTime = Some timestamp}, size, pathTo))
+            }
+
     // Note - file store is flat at parse time (represented as a "Row")
     // It needs postprocessing to build.
     let private pRow (pathTo:string) : Parser<Row,unit> = 
-        let pFolder mode = 
-             pipe2 (symbol pDateTime) 
-                   pName 
-                   (fun timestamp name -> FolderRow (name, { Mode = Some mode; ModificationTime = Some timestamp}, pathTo))
-        let pFile mode = 
-            pipe3 (symbol pDateTime) 
-                  (symbol pint64) 
-                  pName 
-                  (fun timestamp size name-> FileRow (name, { Mode = Some mode; ModificationTime = Some timestamp}, size, pathTo))
         let parseK mode = 
-            if isDir mode then pFolder mode else pFile mode
+            if isDir mode then pFolder pathTo mode else pFile pathTo mode
         (symbol pMode) >>= parseK
 
 
@@ -137,11 +143,11 @@ module DirectoryListing =
 
     let private pBlock : Parser<Block, unit> = 
         parse { 
-            let! parent = (spaces >>. pDirectoryDirective)  
-            do! blankline
-            do! blankline
-            let! _ = lineOf pHeadings
-            let! rows = many1 (lineOf (pRow parent))
+            let! parent = (spaces >>. pDirectoryDirective) 
+            do! emptyLine
+            do! emptyLine
+            let! _ = pHeadings .>> newline
+            let! rows = many1 (pRow parent)
             return { Path = parent; Rows = rows }
             }
 

@@ -70,6 +70,6 @@ let main () =
     genListing infile outfile
 
 let temp01 () = 
-    let infile = @"G:\work\Projects\events2\temp\site-work-sorted.dir.txt"
-    let outfile = @"G:\work\Projects\events2\temp\directories.pl"
+    let infile = getLocalDataFile "very-large.txt"
+    let outfile = outputFile "very-large.pl"
     genListing infile outfile

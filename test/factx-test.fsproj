@@ -49,7 +49,7 @@
     <None Include="SaiFacts.fsx" />
     <None Include="UQ_RtuFacts.fsx" />
     <None Include="UQ_AssetFacts.fsx" />
-    <None Include="DirectoryFacts.fsx" />
+    <None Include="DirFacts.fsx" />
     <None Include="Hawkeyes.fsx" />
     <None Include="Outstations.fsx" />
     <None Include="LMP.fsx" />

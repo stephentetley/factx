@@ -51,7 +51,7 @@ module LabelledTree =
             | Tree(name,label,_) -> 
                 let kids1 = 
                     match Map.tryFind name store with
-                    | Some(xs) -> xs
+                    | Some(ks) -> ks
                     | None -> []
                 workList kids1 (fun xs -> cont (Tree (name, label, List.rev xs)))
         and workList (nodes:LabelledTree<'label> list) (cont :LabelledTree<'label> list -> 'a) = 
