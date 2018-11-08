@@ -241,7 +241,7 @@ module DirectoryListing =
         let root = match blocks with | [] -> ""| (b1 :: bs) -> b1.Path
         let trees = buildFileStore1 blocks
         let kids = List.map (fun (tree:LabelledTree<Label>) -> fileObjToValue tree) trees
-        prologFunctor "file_store" [ prologSymbol root; prologList kids ]
+        prologFunctor "file_store" [ prologString root; prologList kids ]
 
     let listingToProlog (inputPath:string) (name:string) : option<FactBase> =
         match readDirRecurseOutput inputPath with
