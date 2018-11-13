@@ -51,7 +51,7 @@ let pathList (path:FilePath) : Value =
 
 
 let writeListing (infile:string) (name:string) (outfile:string) : unit =
-    match listingToProlog infile name with
+    match listingToProlog infile with
     | None -> printfn "Could not interpret the directory listing: '%s'" infile
     | Some facts -> 
         let pmodule : Module = 
@@ -68,6 +68,6 @@ let main () =
     writeListing infile "directories" outfile
 
 let temp01 () = 
-    let infile = getLocalDataFile "very-large.txt"
-    let outfile = outputFile "very_large.pl"
-    writeListing infile "very_large" outfile
+    let infile = getLocalDataFile "rtu-listing.txt"
+    let outfile = outputFile "rtu.pl"
+    writeListing infile "rtu" outfile

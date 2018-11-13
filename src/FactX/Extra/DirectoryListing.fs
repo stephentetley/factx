@@ -243,12 +243,12 @@ module DirectoryListing =
         let kids = List.map (fun (tree:LabelledTree<Label>) -> fileObjToValue tree) trees
         prologFunctor "file_store" [ prologString root; prologList kids ]
 
-    let listingToProlog (inputPath:string) (name:string) : option<FactBase> =
+    let listingToProlog (inputPath:string) : option<FactBase> =
         match readDirRecurseOutput inputPath with
         | Choice1Of2 err -> failwith err
         | Choice2Of2 ans -> 
             let store = buildFileStore ans
-            let c1 = Clause.cons( signature = "listing(name,store)."
-                                , body = [prologSymbol name; store] )
+            let c1 = Clause.cons( signature = "listing(store)."
+                                , body = [store] )
             Some <| FactBase.ofList [c1]
 
