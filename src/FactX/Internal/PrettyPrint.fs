@@ -10,12 +10,13 @@
 
 namespace FactX.Internal.PrettyPrint
 
-open System.Text
-open System
 
 [<AutoOpen>]
-module Lindig = 
+module PrettyPrint = 
     
+    open System.Text
+    open System
+
     type Doc = 
         | DocNil
         | DocCons of Doc * Doc
@@ -121,7 +122,7 @@ module Lindig =
     
     let empty : Doc = DocNil
 
-    let char (c:char) : Doc = DocChar c
+    let character (c:char) : Doc = DocChar c
 
     let text (s:string) : Doc = DocText s
 
@@ -144,56 +145,56 @@ module Lindig =
     // Character printers
 
     /// Single left parenthesis: '('
-    let lparen : Doc = char '('
+    let lparen : Doc = character '('
 
     /// Single right parenthesis: ')'
-    let rparen : Doc = char ')'
+    let rparen : Doc = character ')'
 
     /// Single left angle: '<'
-    let langle : Doc = char '<'
+    let langle : Doc = character '<'
 
     /// Single right angle: '>'
-    let rangle : Doc = char '>'
+    let rangle : Doc = character '>'
 
     /// Single left brace: '{'
-    let lbrace : Doc = char '{'
+    let lbrace : Doc = character '{'
     
     /// Single right brace: '}'
-    let rbrace : Doc= char '}'
+    let rbrace : Doc= character '}'
     
     /// Single left square bracket: '['
-    let lbracket : Doc = char '['
+    let lbracket : Doc = character '['
     
     /// Single right square bracket: ']'
-    let rbracket : Doc = char ']'
+    let rbracket : Doc = character ']'
 
 
     /// Single quote: '
-    let squote : Doc= char '\''
+    let squote : Doc= character '\''
 
     ///The document @dquote@ contains a double quote, '\"'.
-    let dquote : Doc = char '"'
+    let dquote : Doc = character '"'
 
     /// The document @semi@ contains a semi colon, \";\".
-    let semi : Doc = char ';'
+    let semi : Doc = character ';'
 
     /// The document @colon@ contains a colon, \":\".
-    let colon : Doc = char ':'
+    let colon : Doc = character ':'
 
     /// The document @comma@ contains a comma, \",\".
-    let comma : Doc = char ','
+    let comma : Doc = character ','
 
     /// The document @space@ contains a single space, \" \".
-    let space : Doc = char ' '
+    let space : Doc = character ' '
 
     /// The document @dot@ contains a single dot, \".\".
-    let dot : Doc = char '.'
+    let dot : Doc = character '.'
 
     /// The document @backslash@ contains a back slash, \"\\\".
-    let backslash : Doc = char '\\'
+    let backslash : Doc = character '\\'
 
     /// The document @equals@ contains an equal sign, \"=\".
-    let equals : Doc = char '='
+    let equals : Doc = character '='
 
 
     // ************************************************************************
@@ -208,16 +209,16 @@ module Lindig =
     /// Concatenates d1 and d2 horizontally, with spaceBreak.
     let (^/^) (d1:Doc)  (d2:Doc) : Doc = 
         match d1,d2 with
-        | DocNil, _ -> d1
-        | _, DocNil -> d2
-        |_, _       -> d1 ^^ spacebreak ^^ d2
+        | DocNil, d -> d
+        | d, DocNil -> d
+        | _, _ -> d1 ^^ spacebreak ^^ d2
 
     /// Concatenates d1 and d2 vertically, with optionally breaking space.
     let (^//^) (d1:Doc)  (d2:Doc) : Doc = 
         match d1,d2 with
-        | DocNil, _ -> d1
-        | _, DocNil -> d2
-        |_, _    -> d1 ^^ linebreak ^^ d2
+        | DocNil, d -> d
+        | d, DocNil -> d
+        | _, _ -> d1 ^^ linebreak ^^ d2
 
 
     /// Haskell / PPrint's: <$>

@@ -6,16 +6,17 @@
 #r "FParsecCS"
 open FParsec
 
-#load "..\src\FactX\Internal\FormatCombinators.fs"
+#load "..\src\FactX\Internal\PrettyPrint.fs"
+#load "..\src\FactX\Internal\PrintProlog.fs"
 #load "..\src\FactX\Internal\PrologSyntax.fs"
 #load "..\src\FactX\FactOutput.fs"
-open FactX.Internal.FormatCombinators
+open FactX.Internal.PrettyPrint
 open FactX.Internal
 
 
 let test01 () = 
-    let d1 = formatString "Hello" +^+ formatString "world!"
-    let d2 = formatString "***** ******"
+    let d1 = text "Hello" +^+ text "world!"
+    let d2 = text "***** ******"
     render (indent 2 (d1 @@@ d2)) |> printfn "%s"
 
     let fact1 : Doc = 
