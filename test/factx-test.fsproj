@@ -56,6 +56,7 @@
     <None Include="LevelCalibration.fsx" />
     <None Include="ScreenFacts.fsx" />
     <None Include="InstallationFacts.fsx" />
+    <None Include="PowerUpTimes.fsx" />
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
