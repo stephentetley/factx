@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
-#I @"..\packages\FParsec.1.0.4-RC3\lib\portable-net45+win8+wp8+wpa81"
+#I @"C:\Users\stephen\.nuget\packages\FParsec\1.0.4-rc3\lib\netstandard1.6"
 #r "FParsec"
 #r "FParsecCS"
 open FParsec
@@ -15,7 +15,7 @@ open FactX.Internal
 
 
 let test01 () = 
-    let d1 = text "Hello" +^+ text "world!"
+    let d1 = text "Hello" ^+^ text "world!"
     let d2 = text "***** ******"
     render (indent 2 (d1 @@@ d2)) |> printfn "%s"
 

@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.168
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FactX", "src\FactX.fsproj", "{DA08AB38-A487-420E-B51E-CB5248DB7D0E}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FactXTest", "test\FactXTest.fsproj", "{4CF8BBBD-3242-4C2A-BB54-7967AF38EC9F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DA08AB38-A487-420E-B51E-CB5248DB7D0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA08AB38-A487-420E-B51E-CB5248DB7D0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA08AB38-A487-420E-B51E-CB5248DB7D0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA08AB38-A487-420E-B51E-CB5248DB7D0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CF8BBBD-3242-4C2A-BB54-7967AF38EC9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CF8BBBD-3242-4C2A-BB54-7967AF38EC9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CF8BBBD-3242-4C2A-BB54-7967AF38EC9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CF8BBBD-3242-4C2A-BB54-7967AF38EC9F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {58110E5F-FEAB-49FC-AE17-16AF59419B45}
+	EndGlobalSection
+EndGlobal

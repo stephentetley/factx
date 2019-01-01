@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
-#I @"..\packages\FParsec.1.0.4-RC3\lib\portable-net45+win8+wp8+wpa81"
+#I @"C:\Users\stephen\.nuget\packages\FParsec\1.0.4-rc3\lib\netstandard1.6"
 #r "FParsec"
 #r "FParsecCS"
 
-#I @"..\packages\FSharp.Data.3.0.0-beta3\lib\net45"
+#I @"C:\Users\stephen\.nuget\packages\FSharp.Data\3.0.0\lib\netstandard2.0"
 #r @"FSharp.Data.dll"
 open FSharp.Data
 
