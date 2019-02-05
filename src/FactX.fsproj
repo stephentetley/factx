@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="TempPretty.fs" />
     <Compile Include="FactX\Internal\PrintProlog.fs" />
     <Compile Include="FactX\Internal\PrologSyntax.fs" />
     <Compile Include="FactX\FactOutput.fs" />
@@ -18,7 +17,7 @@
 
   <ItemGroup>
     <PackageReference Include="FParsec" Version="1.0.4-RC3" />
-    <PackageReference Include="SLFormat" Version="1.0.1" />
+    <PackageReference Include="SLFormat" Version="1.0.2-alpha-20190205" />
   </ItemGroup>
 
 </Project>
