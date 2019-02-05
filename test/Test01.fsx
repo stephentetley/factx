@@ -1,27 +1,35 @@
-﻿// Copyright (c) Stephen Tetley 2018
+﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
+
+#r "netstandard"
 
 #I @"C:\Users\stephen\.nuget\packages\FParsec\1.0.4-rc3\lib\netstandard1.6"
 #r "FParsec"
 #r "FParsecCS"
 open FParsec
 
-#load "..\src\FactX\Internal\PrettyPrint.fs"
+#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.1\lib\netstandard2.0"
+#r "SLFormat"
+open SLFormat.Pretty
+
 #load "..\src\FactX\Internal\PrintProlog.fs"
 #load "..\src\FactX\Internal\PrologSyntax.fs"
 #load "..\src\FactX\FactOutput.fs"
-open FactX.Internal.PrettyPrint
+
 open FactX.Internal
+open FactX.Internal.PrintProlog
+
+let testRender (doc:Doc) : unit = 
+    render 80 doc |> printfn "%s"
 
 
 let test01 () = 
     let d1 = text "Hello" ^+^ text "world!"
     let d2 = text "***** ******"
-    render (indent 2 (d1 @@@ d2)) |> printfn "%s"
+    render 80 (indent 2 (d1 ^@@^ d2)) |> printfn "%s"
 
     let fact1 : Doc = 
-        prologFact (formatString "address") 
-                    [quotedAtom "UID001"; prologString "1, Yellow Brick Road" ]
+        prologFact "address" [quotedAtom "UID001"; prologString "1, Yellow Brick Road" ]
     testRender fact1 
 
     let mdirective = 
@@ -33,17 +41,17 @@ let test01 () =
     testRender mdirective 
 
 let test02 () = 
-    let doc1 = commaSepListVertically [formatString "one"; formatString "two"; formatString "three"]
+    let doc1 = commaSep [text "one"; text "two"; text "three"]
     let doc2 = indent 10 doc1
     testRender doc1 
     testRender doc2
 
 let test03 () = 
-    let doc1 = indent 10 (formatString "start")
+    let doc1 = indent 10 (text "start")
     testRender doc1
 
 let test04 () = 
-    vsep [formatString "start"; empty; formatString "end" ]
+    vcat [text "start"; empty; text "end" ]
         |> testRender
 
 // Temp - parsing signatures.

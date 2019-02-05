@@ -1,9 +1,12 @@
-﻿// Copyright (c) Stephen Tetley 2018
+﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
 
-#load "..\src\FactX\Internal\PrettyPrint.fs"
-open FactX.Internal.PrettyPrint
+#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.1\lib\netstandard2.0"
+#r "SLFormat"
+open SLFormat.Pretty
+
+
 
 let runTest (doc:Doc) : unit = printfn "%s\n" <| render  80 doc
 let runTestW (width:int) (doc:Doc) : unit = printfn "%s\n" <| render width doc

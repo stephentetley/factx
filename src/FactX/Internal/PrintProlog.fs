@@ -1,16 +1,16 @@
-﻿// Copyright (c) Stephen Tetley 2018
+﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
 namespace FactX.Internal.PrintProlog
 
-open FactX.Internal.PrettyPrint
+
 
 
 [<AutoOpen>]
 module PrintProlog = 
     
     // Indent-level of 4 seems good in Prolog.
-
+    open SLFormat.Pretty
 
     let commaSep (docs:Doc list) = foldDocs (fun ac e -> ac ^^ comma ^/^ e) docs
     let commaSepV (docs:Doc list) = foldDocs (fun ac e -> ac ^@^ comma ^/^ e) docs

@@ -1,23 +1,16 @@
-﻿// Copyright (c) Stephen Tetley 2018
+﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
 // Note we should probably consider SWI-Prolog's tables
 // if we need to look towards efficiency.
 
-
 namespace FactX.Internal
-
-open System
-open System.IO
-
-open FParsec
-
-open FactX.Internal.PrettyPrint
-open FactX.Internal.PrintProlog
 
 
 [<AutoOpen>]
 module FactSignature = 
+
+    open FParsec
 
     // If we want to allow function symbols / nesting we could encode them as
     // name, arity, parens(ellipsis), e.g. "phone_number/1(..)".
@@ -39,7 +32,7 @@ module FactSignature =
     // Parsing signatures.
 
     let private lexeme : Parser<string, unit> = 
-        let opts = IdentifierOptions(isAsciiIdStart = isLetter)
+        let opts = new FParsec.CharParsers.IdentifierOptions(isAsciiIdStart = isLetter)
         identifier opts .>> spaces
 
     let private lparen : Parser<unit, unit> = (pchar '(') >>. spaces
@@ -65,6 +58,11 @@ module FactSignature =
 
 [<RequireQualifiedAccess>]
 module PrologSyntax = 
+
+
+    open SLFormat.Pretty
+
+    open FactX.Internal.PrintProlog
 
     /// Note - this syntax favours output not creation.
 

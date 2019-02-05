@@ -5,6 +5,9 @@
 #r "FParsec"
 #r "FParsecCS"
 
+#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.1\lib\netstandard2.0"
+#r "SLFormat"
+
 #I @"C:\Users\stephen\.nuget\packages\FSharp.Data\3.0.0\lib\netstandard2.0"
 #r @"FSharp.Data.dll"
 open FSharp.Data
@@ -13,7 +16,6 @@ open FSharp.Data
 open System
 open System.Text.RegularExpressions
 
-#load "..\src\FactX\Internal\PrettyPrint.fs"
 #load "..\src\FactX\Internal\PrintProlog.fs"
 #load "..\src\FactX\Internal\PrologSyntax.fs"
 #load "..\src\FactX\FactOutput.fs"

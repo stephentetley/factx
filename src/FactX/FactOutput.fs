@@ -1,15 +1,12 @@
-﻿// Copyright (c) Stephen Tetley 2018
+﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
 namespace FactX
 
-
-
-open FactX.Internal
-open FactX.Internal.PrettyPrint
-
 [<AutoOpen>]
 module FactOutput = 
+
+    open FactX.Internal
 
     let allSomes (source:(option<'a>) list) : option<'a list> = 
         let rec work ac xs = 
@@ -213,6 +210,8 @@ module FactOutput =
 [<AutoOpen>]
 module Values = 
     open System
+    
+    open FactX.Internal
 
     type Value = PrologSyntax.Value
 
