@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="TempPretty.fs" />
     <Compile Include="FactX\Internal\PrintProlog.fs" />
     <Compile Include="FactX\Internal\PrologSyntax.fs" />
     <Compile Include="FactX\FactOutput.fs" />

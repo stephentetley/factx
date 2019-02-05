@@ -13,10 +13,11 @@ module PrintProlog =
     open SLFormat.Pretty
 
     let commaSep (docs:Doc list) = foldDocs (fun ac e -> ac ^^ comma ^/^ e) docs
-    let commaSepV (docs:Doc list) = foldDocs (fun ac e -> ac ^@^ comma ^/^ e) docs
+    // let commaSepV (docs:Doc list) = foldDocs (fun ac e -> ac ^@@^ comma ^/^ e) docs
 
-    let prologList (docs:Doc list) : Doc = brackets (commaSep docs)
-    let prologListV (docs:Doc list) : Doc = brackets (commaSepV docs)
+    /// Print vertically
+    let prologList (docs:Doc list) : Doc = 
+        enclose lbracket rbracket  <| foldDocs (fun x y -> x ^^ comma ^@@^ y) docs
 
     let private escapeSpecial (source:string) : string = 
         source.Replace("\\" , "\\\\")
@@ -56,7 +57,7 @@ module PrintProlog =
         vcat <| List.map (fun s -> text (sprintf "%c %s" '%' s)) lines
 
     let prologFunctor (head:string) (body:Doc list) : Doc =
-        nest 4 (text (escapeSpecial head) ^^ lparen ^/^ group (commaSep body)) ^^ rparen
+        nest 4 (text (escapeSpecial head) ^^ lparen ^//^ commaSep body ^^ rparen)
 
     /// Must be no space between head and open-paren            
     let prologFact (head:string) (body:Doc list) : Doc =
