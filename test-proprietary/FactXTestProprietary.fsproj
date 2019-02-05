@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Proprietary.fs" />
+    <None Include="SampleExtractor.fsx" />
+    <None Include="SaiFacts.fsx" />
+    <None Include="UQ_RtuFacts.fsx" />
+    <None Include="UQ_AssetFacts.fsx" />
+    <None Include="Hawkeyes.fsx" />
+    <None Include="Outstations.fsx" />
+    <None Include="LMP.fsx" />
+    <None Include="LevelCalibration.fsx" />
+    <None Include="ScreenFacts.fsx" />
+    <None Include="InstallationFacts.fsx" />
+    <None Include="PowerUpTimes.fsx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ExcelProvider" Version="1.0.1" />
+    <PackageReference Include="FParsec" Version="1.0.4-RC3" />
+    <PackageReference Include="FSharp.Data" Version="3.0.0" />
+    <PackageReference Include="SLFormat" Version="1.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\FactX.fsproj" />
+  </ItemGroup>
+  
+</Project>

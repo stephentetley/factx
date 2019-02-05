@@ -7,10 +7,8 @@
 #r "FParsec"
 #r "FParsecCS"
 
-
 #I @"C:\Users\stephen\.nuget\packages\slformat\1.0.1\lib\netstandard2.0"
 #r "SLFormat"
-
 
 #I @"C:\Users\stephen\.nuget\packages\ExcelProvider\1.0.1\lib\netstandard2.0"
 #r "ExcelProvider.Runtime.dll"
