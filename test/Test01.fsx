@@ -8,7 +8,7 @@
 #r "FParsecCS"
 open FParsec
 
-#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190205\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190207\lib\netstandard2.0"
 #r "SLFormat"
 open SLFormat.Pretty
 
