@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
+#r "netstandard"
+// open System.IO 
 
 #I @"C:\Users\stephen\.nuget\packages\FParsec\1.0.4-rc3\lib\netstandard1.6"
 #r "FParsec"
@@ -23,14 +25,14 @@ open FSharp.Interop.Excel
 #load "..\src\FactX\Internal\PrintProlog.fs"
 #load "..\src\FactX\Internal\PrologSyntax.fs"
 #load "..\src\FactX\FactOutput.fs"
-#load "..\src\FactX\Extra\ExcelProviderHelper.fs"
-#load "..\src\FactX\Extra\String.fs"
+#load "..\src-extra\FactX\Extra\ExcelProviderHelper.fs"
+#load "..\src-extra\FactX\Extra\String.fs"
 open FactX
 open FactX.Extra.ExcelProviderHelper
 open FactX.Extra.String
 
 let outputFileName (filename:string) : string = 
-    System.IO.Path.Combine(@"G:\work\Projects\events2\point-blue\prolog\facts", filename) 
+    System.IO.Path.Combine(__SOURCE_DIRECTORY__, @"..\data" , filename) 
 
 type CsoTable = 
     ExcelFile< FileName = @"G:\work\Projects\events2\point-blue\hawkeyes.xlsx",

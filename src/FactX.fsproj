@@ -8,11 +8,6 @@
     <Compile Include="FactX\Internal\PrintProlog.fs" />
     <Compile Include="FactX\Internal\PrologSyntax.fs" />
     <Compile Include="FactX\FactOutput.fs" />
-    <Compile Include="FactX\Extra\ExcelProviderHelper.fs" />
-    <Compile Include="FactX\Extra\String.fs" />
-    <Compile Include="FactX\Extra\PathString.fs" />
-    <Compile Include="FactX\Extra\LabelledTree.fs" />
-    <Compile Include="FactX\Extra\DirectoryListing.fs" />
   </ItemGroup>
 
   <ItemGroup>

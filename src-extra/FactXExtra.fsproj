@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="FactX\Extra\ExcelProviderHelper.fs" />
+    <Compile Include="FactX\Extra\String.fs" />
+    <Compile Include="FactX\Extra\PathString.fs" />
+    <Compile Include="FactX\Extra\LabelledTree.fs" />
+    <Compile Include="FactX\Extra\DirectoryListing.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\FactX.fsproj" />
+  </ItemGroup>
+
+</Project>

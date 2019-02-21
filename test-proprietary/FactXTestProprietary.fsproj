@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\src-extra\FactXExtra.fsproj" />
     <ProjectReference Include="..\src\FactX.fsproj" />
   </ItemGroup>
   

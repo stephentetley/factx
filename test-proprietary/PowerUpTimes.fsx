@@ -1,6 +1,10 @@
 ﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
+#r "netstandard"
+#r "System.Xml.Linq.dll"
+
+
 #I @"C:\Users\stephen\.nuget\packages\FParsec\1.0.4-rc3\lib\netstandard1.6"
 #r "FParsec"
 #r "FParsecCS"
@@ -19,10 +23,10 @@ open System.Text.RegularExpressions
 #load "..\src\FactX\Internal\PrintProlog.fs"
 #load "..\src\FactX\Internal\PrologSyntax.fs"
 #load "..\src\FactX\FactOutput.fs"
-#load "..\src\FactX\Extra\ExcelProviderHelper.fs"
-#load "..\src\FactX\Extra\PathString.fs"
-#load "..\src\FactX\Extra\String.fs"
-#load "..\src\FactX\Extra\LabelledTree.fs"
+#load "..\src-extra\FactX\Extra\ExcelProviderHelper.fs"
+#load "..\src-extra\FactX\Extra\PathString.fs"
+#load "..\src-extra\FactX\Extra\String.fs"
+#load "..\src-extra\FactX\Extra\LabelledTree.fs"
 open FactX
 open FactX.Extra.ExcelProviderHelper
 open FactX.Extra.PathString

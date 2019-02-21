@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
+#r "netstandard"
+
+
 #I @"C:\Users\stephen\.nuget\packages\FParsec\1.0.4-rc3\lib\netstandard1.6"
 #r "FParsec"
 #r "FParsecCS"
@@ -21,7 +24,7 @@ open FSharp.Interop.Excel
 #load "..\src\FactX\Internal\PrintProlog.fs"
 #load "..\src\FactX\Internal\PrologSyntax.fs"
 #load "..\src\FactX\FactOutput.fs"
-#load "..\src\FactX\Extra\ExcelProviderHelper.fs"
+#load "..\src-extra\FactX\Extra\ExcelProviderHelper.fs"
 open FactX
 open FactX.Extra.ExcelProviderHelper
 
