@@ -7,7 +7,7 @@
 #r "FParsec"
 #r "FParsecCS"
 
-#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190207\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190222\lib\netstandard2.0"
 #r "SLFormat"
 
 
@@ -68,8 +68,8 @@ let writeListing (infile:string) (name:string) (outfile:string) : unit =
 // We should consider generating SWI Prolog record accessors
 
 let main () = 
-    let outfile = outputFile "directories.pl"
     let infile = getLocalDataFile "dir.txt"
+    let outfile = outputFile "directories.pl"
     writeListing infile "directories" outfile
 
 let temp01 () = 

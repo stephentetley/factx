@@ -8,7 +8,7 @@
 #r "FParsec"
 #r "FParsecCS"
 
-#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190207\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190222\lib\netstandard2.0"
 #r "SLFormat"
 
 #I @"C:\Users\stephen\.nuget\packages\ExcelProvider\1.0.1\lib\netstandard2.0"
@@ -19,7 +19,6 @@
 #r "ExcelDataReader.dll"
 #r "ExcelProvider.DesignTime.dll"
 open FSharp.Interop.Excel
-
 
 #load "..\src\FactX\Internal\PrintProlog.fs"
 #load "..\src\FactX\Internal\PrologSyntax.fs"

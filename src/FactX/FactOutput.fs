@@ -8,6 +8,7 @@ module FactOutput =
 
     open FactX.Internal
 
+    /// TO CPS transform
     let allSomes (source:(option<'a>) list) : option<'a list> = 
         let rec work ac xs = 
             match xs with 

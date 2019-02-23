@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
+// This module has had stack overflow exceptions, possibly with sl-format.
+
 #r "netstandard"
 
 #I @"C:\Users\stephen\.nuget\packages\FParsec\1.0.4-rc3\lib\netstandard1.6"
 #r "FParsec"
 #r "FParsecCS"
 
-#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190207\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190222\lib\netstandard2.0"
 #r "SLFormat"
 
 #I @"C:\Users\stephen\.nuget\packages\ExcelProvider\1.0.1\lib\netstandard2.0"
@@ -18,7 +20,6 @@
 #r "ExcelDataReader.dll"
 #r "ExcelProvider.DesignTime.dll"
 open FSharp.Interop.Excel
-
 
 
 #load "..\src\FactX\Internal\PrintProlog.fs"
@@ -36,7 +37,7 @@ open FactX.Extra.LabelledTree
 
 
 let outputFile (filename:string) : string = 
-    System.IO.Path.Combine(@"D:\coding\prolog\spt-misc\prolog\screens\facts", filename)
+    System.IO.Path.Combine(__SOURCE_DIRECTORY__, @"..\data", filename)
 
 
 
@@ -245,16 +246,16 @@ let main () =
     let outFile = outputFile "installations.pl"
     let inst1 = buildTopDown treeHelper getRoot (stwData ())
     let inst2 = buildTopDown treeHelper getRoot (stfData ())
-
+    printfn "insts done"
     let makeFacts (inst:option<Installation>) : FactBase = 
         match inst with
         | None -> FactBase.ofList []
         | Some x -> installationToProlog x
-
+    printfn "facts done"
     let pmodule : Module = 
         new Module( name = "installations"
                   , comment = "installations.pl"
                   , dbs = [makeFacts inst1; makeFacts inst2] )
-
+    printfn "pmodule done"
     pmodule.Save(lineWidth = 160, filePath = outFile)
     

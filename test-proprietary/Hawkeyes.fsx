@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
+
+
 #r "netstandard"
 // open System.IO 
 
@@ -8,7 +10,7 @@
 #r "FParsec"
 #r "FParsecCS"
 
-#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190207\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190222\lib\netstandard2.0"
 #r "SLFormat"
 
 
@@ -21,6 +23,7 @@
 #r "ExcelDataReader.dll"
 #r "ExcelProvider.DesignTime.dll"
 open FSharp.Interop.Excel
+
 
 #load "..\src\FactX\Internal\PrintProlog.fs"
 #load "..\src\FactX\Internal\PrologSyntax.fs"

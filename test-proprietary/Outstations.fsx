@@ -9,7 +9,7 @@
 #r "FParsecCS"
 
 
-#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190207\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190222\lib\netstandard2.0"
 #r "SLFormat"
 
 
@@ -25,7 +25,6 @@ open FSharp.Interop.Excel
 #I @"C:\Users\stephen\.nuget\packages\FSharp.Data\3.0.0\lib\netstandard2.0"
 #r @"FSharp.Data.dll"
 open FSharp.Data
-
 
 #load "..\src\FactX\Internal\PrintProlog.fs"
 #load "..\src\FactX\Internal\PrologSyntax.fs"

@@ -8,7 +8,7 @@
 #r "FParsecCS"
 open FParsec
 
-#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190207\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190222\lib\netstandard2.0"
 #r "SLFormat"
 open SLFormat.Pretty
 
@@ -79,3 +79,11 @@ let test04 () =
 let test05 () = 
     testRender <| (PrologSyntax.PDecimal 1.078M).Format()
 
+let test06 () = 
+    testRender <| (PrologSyntax.PList [PrologSyntax.PDecimal 1.078M]).Format()
+
+let test06a () = 
+    testRender <| PrologSyntax.valueFormat (PrologSyntax.PList [PrologSyntax.PDecimal 1.078M])
+
+let test07 () = 
+    PrologSyntax.PList [PrologSyntax.PDecimal 1.078M] |> printfn "%O"

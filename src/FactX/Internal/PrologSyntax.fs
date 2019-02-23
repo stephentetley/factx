@@ -80,16 +80,32 @@ module PrologSyntax =
         | PQuotedAtom of string
         | PList of Value list
         | PFunctor of Identifier * Value list
-        member v.Format () = 
-            match v with
-            | PChar c -> prologChar c
-            | PString s -> prologString s
-            | PInt i -> prologInt i
-            | PDecimal d -> prologDecimal d
-            | PAtom s -> simpleAtom s
-            | PQuotedAtom s -> quotedAtom s
-            | PList vs -> prologList (List.map (fun (x:Value) -> x.Format()) vs)
-            | PFunctor(name, vs) -> prologFunctor name (List.map (fun (x:Value) -> x.Format()) vs)
+
+        /// CPS transformed!
+        member v.Format () : Doc = 
+            let rec work (term:Value) (cont:Doc -> Doc) : Doc =
+                match term with
+                | PChar c -> cont (prologChar c)
+                | PString s -> cont (prologString s)
+                | PInt i -> cont (prologInt i)
+                | PDecimal d -> cont (prologDecimal d)
+                | PAtom s -> cont (simpleAtom s)
+                | PQuotedAtom s -> cont (quotedAtom s)
+                | PList xs -> 
+                    workList [] xs (fun vs -> 
+                    cont (prologList vs))
+                | PFunctor(name, xs) -> 
+                    workList [] xs (fun vs -> 
+                    cont (prologFunctor name vs))
+            and workList (acc:Doc List) (terms: Value list) (cont:Doc list -> Doc) : Doc =
+                match terms with
+                | [] -> cont (List.rev acc)
+                | x :: rest -> 
+                    work x (fun v1 -> 
+                    workList (v1::acc) rest cont)
+            work v (fun x -> x)
+
+
 
 
     /// To consider...
