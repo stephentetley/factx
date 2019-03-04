@@ -1,7 +1,11 @@
 ﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
-// This module has had stack overflow exceptions, possibly with sl-format.
+// This module has had stack overflow exceptions.
+// This was caused by using a Debug build of SLFormat.
+// Debug builds disable tail call optimization. 
+// In the first instance of StackOverflowException's
+// check that SLFormat is a releae build.
 
 #r "netstandard"
 
@@ -9,7 +13,7 @@
 #r "FParsec"
 #r "FParsecCS"
 
-#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190222\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190304\lib\netstandard2.0"
 #r "SLFormat"
 
 #I @"C:\Users\stephen\.nuget\packages\ExcelProvider\1.0.1\lib\netstandard2.0"
@@ -246,16 +250,13 @@ let main () =
     let outFile = outputFile "installations.pl"
     let inst1 = buildTopDown treeHelper getRoot (stwData ())
     let inst2 = buildTopDown treeHelper getRoot (stfData ())
-    printfn "insts done"
     let makeFacts (inst:option<Installation>) : FactBase = 
         match inst with
         | None -> FactBase.ofList []
         | Some x -> installationToProlog x
-    printfn "facts done"
     let pmodule : Module = 
         new Module( name = "installations"
                   , comment = "installations.pl"
                   , dbs = [makeFacts inst1; makeFacts inst2] )
-    printfn "pmodule done"
     pmodule.Save(lineWidth = 160, filePath = outFile)
     

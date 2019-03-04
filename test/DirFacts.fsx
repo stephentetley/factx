@@ -7,7 +7,7 @@
 #r "FParsec"
 #r "FParsecCS"
 
-#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190222\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190304\lib\netstandard2.0"
 #r "SLFormat"
 
 
@@ -71,8 +71,3 @@ let main () =
     let infile = getLocalDataFile "dir.txt"
     let outfile = outputFile "directories.pl"
     writeListing infile "directories" outfile
-
-let temp01 () = 
-    let infile = getLocalDataFile "rtu-listing.txt"
-    let outfile = outputFile "rtu.pl"
-    writeListing infile "rtu" outfile

@@ -32,7 +32,7 @@ module FactSignature =
     // Parsing signatures.
 
     let private lexeme : Parser<string, unit> = 
-        let opts = new FParsec.CharParsers.IdentifierOptions(isAsciiIdStart = isLetter)
+        let opts = new CharParsers.IdentifierOptions(isAsciiIdStart = isLetter)
         identifier opts .>> spaces
 
     let private lparen : Parser<unit, unit> = (pchar '(') >>. spaces
@@ -201,6 +201,8 @@ module PrologSyntax =
             render 160 <| v.Format()
         
         member v.Save (lineWidth:int, filePath:string) = 
-            writeDoc lineWidth filePath (v.Format())
+            let ss = v.Format()
+            writeDoc lineWidth filePath ss
+            
 
 
