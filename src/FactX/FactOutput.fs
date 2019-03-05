@@ -228,13 +228,22 @@ module Values =
     /// Note Symbols are trimmed to remove trailing whitespace.
     let optPrologSymbol (input:string) : option<Value> = 
         match input with
-        | null -> None
-        | "" -> None
+        | null | "" -> None
         | ss -> 
             let s1 = ss.Trim() 
             if s1.Length > 0 then
                 Some (prologSymbol s1)
             else None
+
+    let defaultPrologSymbol (defaultIfNull:string) 
+                            (input:string) : Value = 
+        match input with
+        | null | "" -> prologSymbol defaultIfNull
+        | ss -> 
+            let s1 = ss.Trim() 
+            if s1.Length > 0 then
+                prologSymbol s1
+            else prologSymbol defaultIfNull
 
     let prologChar (input:char) : Value = PrologSyntax.PChar input
 

@@ -56,14 +56,14 @@ let instClause (row:InstRow) : option<Clause> =
                               ; optPrologSymbol row.SiteCommonName
                               ; optPrologSymbol row.InstReference 
                               ; optPrologSymbol row.InstCommonName
-                              ; optPrologSymbol row.AssetType
-                              ; optPrologSymbol row.AssetStatus
-                              ; optPrologSymbol row.``DA Zone``
-                              ; optPrologSymbol row.``Postal Address 1``
-                              ; optPrologSymbol row.``Postal Address 2``
-                              ; optPrologSymbol row.``Postal Address 3``
-                              ; optPrologSymbol row.``Postal Address 4``
-                              ; optPrologSymbol row.``Post Code``
+                              ; defaultPrologSymbol "none"  row.AssetType |> Some
+                              ; defaultPrologSymbol "none"  row.AssetStatus |> Some
+                              ; defaultPrologSymbol "none"  row.``DA Zone`` |> Some
+                              ; defaultPrologSymbol "none" row.``Postal Address 1`` |> Some
+                              ; defaultPrologSymbol "none" row.``Postal Address 2`` |> Some
+                              ; defaultPrologSymbol "none" row.``Postal Address 3`` |> Some
+                              ; defaultPrologSymbol "none" row.``Postal Address 4`` |> Some
+                              ; defaultPrologSymbol "none" row.``Post Code`` |> Some
                               ] )
 
 
@@ -76,6 +76,7 @@ let genInstFacts (rows:InstRow list) : unit =
     let pmodule : Module = 
         new Module("installation_facts", "installation_facts.pl", [ insts ])
 
+    printfn "insts count: %i" (rows.Length)
     pmodule.Save(outFile)
 
 let main () = 
