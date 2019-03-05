@@ -218,9 +218,10 @@ module Values =
 
     let prologAtom (input:string) : Value = PrologSyntax.PAtom input
 
-    /// Create a Prolog "symbol" i.e a quoted atom .
+    /// Create a Prolog "symbol" i.e a single quoted atom .
     /// No error checking if the string is null or empty
-    let prologSymbol (input:string) : Value = PrologSyntax.PQuotedAtom input
+    let prologSymbol (input:string) : Value =
+        PrologSyntax.PQuotedAtom input
 
     /// Safe version of pSymbol.
     /// If the string is null or empty None is returned.

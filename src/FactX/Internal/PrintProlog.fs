@@ -19,14 +19,17 @@ module PrintProlog =
     let prologList (docs:Doc list) : Doc = 
         enclose lbracket rbracket  <| foldDocs (fun x y -> x ^^ comma ^@@^ y) docs
 
+    // TODO Not sure this is right.
     let private escapeSpecial (source:string) : string = 
-        source.Replace("\\" , "\\\\")
-
+        let s1 = source.Replace("\\" , "\\\\")
+        let s2 = s1.Replace("'", "\\'")
+        s2
 
     let simpleAtom (value:string) : Doc = text value
 
     // This must escape.
-    let quotedAtom (value:string) : Doc = text <| sprintf "'%s'" (escapeSpecial value)
+    let quotedAtom (value:string) : Doc = 
+        text <| sprintf "'%s'" (escapeSpecial value)
 
     let prologString (value:string) : Doc = 
         text <| sprintf "\"%s\"" (escapeSpecial value)

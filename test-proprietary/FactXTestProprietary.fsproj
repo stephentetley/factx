@@ -17,6 +17,7 @@
     <None Include="ScreenFacts.fsx" />
     <None Include="InstallationFacts.fsx" />
     <None Include="PowerUpTimes.fsx" />
+    <None Include="SiteInsts.fsx" />
   </ItemGroup>
 
   <ItemGroup>
