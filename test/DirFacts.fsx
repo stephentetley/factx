@@ -20,6 +20,8 @@
 open FactX
 open FactX.Extra.DirectoryListing
 open System.IO
+open System.Drawing
+open System.Drawing
 
 
 let getLocalDataFile (fileName:string) : string = 
@@ -67,7 +69,35 @@ let writeListing (infile:string) (name:string) (outfile:string) : unit =
 
 // We should consider generating SWI Prolog record accessors
 
-let main () = 
-    let infile = getLocalDataFile "dir.txt"
-    let outfile = outputFile "directories.pl"
+let main (localFile:string) = 
+    let infile = getLocalDataFile localFile
+    let name1 = Path.GetFileName infile |> fun x -> Path.ChangeExtension(x,"pl")
+    let outfile = outputFile name1
     writeListing infile "directories" outfile
+
+let dateString (odate:System.DateTime option) : string = 
+    match odate with
+    | None -> ""
+    | Some date -> date.ToString("dd/MM/yyyy")
+
+
+
+let printFileRow (path:string) (row:Row) : unit =
+    match row with
+    | FileRow(_,_,_,_) -> 
+        printfn "%s,%s" row.Name (dateString row.Properties.ModificationTime)
+    | FolderRow(_,_,_) -> ()
+
+let printBlock (block:Block) : unit = 
+    List.iter (printFileRow block.Path) block.Rows
+
+
+let tempCsv (localFile:string) = 
+    let infile = getLocalDataFile localFile
+    match readDirRecurseOutput infile with
+    | Choice1Of2 msg -> failwith msg
+    | Choice2Of2 blocks -> List.iter printBlock blocks
+
+
+
+
