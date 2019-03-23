@@ -66,8 +66,6 @@ module PrologSyntax =
 
     /// Note - this syntax favours output not creation.
 
-    /// TODO - should Format take a thunk like ToString() ?
-
     type Identifier = string
 
     /// Note - Sequences/tuples not represented (should they be?)

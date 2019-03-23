@@ -7,6 +7,7 @@
   <ItemGroup>
     <Compile Include="FactX\Internal\PrintProlog.fs" />
     <Compile Include="FactX\Internal\PrologSyntax.fs" />
+    <Compile Include="FactX\Internal\Syntax2.fs" />
     <Compile Include="FactX\FactOutput.fs" />
   </ItemGroup>
 
