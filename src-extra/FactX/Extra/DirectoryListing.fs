@@ -1,4 +1,4 @@
-﻿// Copyright (c) Stephen Tetley 2018
+﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
 namespace FactX.Extra.DirectoryListing
@@ -31,15 +31,24 @@ module DirectoryListing =
     type Row = 
         | FolderRow of Name * Properties * FilePath
         | FileRow of Name * Properties * Size * FilePath
-        member x.Name = 
-            match x with
-            | FolderRow(name,_,_) -> name
-            | FileRow(name,_,_,_) -> name
+        member x.Name 
+            with get () : string = 
+                match x with
+                | FolderRow(name,_,_) -> name
+                | FileRow(name,_,_,_) -> name
 
-        member x.Path = 
-            match x with
-            | FolderRow(_,_,path) -> path
-            | FileRow(_,_,_,path) -> path
+        member x.Properties 
+            with get () :Properties = 
+                match x with
+                | FolderRow(_,props,_) -> props
+                | FileRow(_,props,_,_) -> props
+
+        member x.Path
+            with get () : string = 
+                match x with
+                | FolderRow(_,_,path) -> path
+                | FileRow(_,_,_,path) -> path
+
 
     type Block = 
         { Path: FilePath 
@@ -50,7 +59,7 @@ module DirectoryListing =
 
 
     let makeDateTime (year:int) (month:int) (day:int) (hour:int) (minute:int) (second:int) : DateTime = 
-        new DateTime(year, month, day, hour, minute, second)
+        new DateTime(year=year, month=month, day=day, hour=hour, minute=minute, second=second)
 
 
     
@@ -202,31 +211,45 @@ module DirectoryListing =
     let fileObjToValue (fobj:LabelledTree<Label>) : Value = 
         let getDateTime (label:Label) : Value = 
             match label.Properties.ModificationTime with
-                    | None -> prologAtom "unknown"
-                    | Some dt -> prologDateTime dt
+            | None -> prologAtom "unknown"
+            | Some dt -> prologDateTime dt
         
         let getMode (label:Label) : Value = 
             match label.Properties.Mode with
-                    | None -> prologAtom "unknown"
-                    | Some dt -> prologSymbol dt
+            | None -> prologAtom "unknown"
+            | Some dt -> prologSymbol dt
 
-        let rec work (x:LabelledTree<Label>) : Value = 
+        /// CPS transformed
+        let rec work (x:LabelledTree<Label>) 
+                     (cont: Value -> Value) : Value = 
             match x with
             | Tree (_, label, kids) -> 
-                prologFunctor "folder_object" [ prologString label.Name
-                                              ; getDateTime label
-                                              ; getMode label
-                                              ; prologList (List.map work kids)]
+                workList kids (fun vs -> 
+                cont (prologFunctor "folder_object" 
+                                     [ prologString label.Name
+                                     ; getDateTime label
+                                     ; getMode label
+                                     ; prologList vs]))
             | Leaf (_, label) -> 
                 let sz = 
                     match label with
                     | FileLabel (_,_,sz) -> sz
                     | _ -> 0L
-                prologFunctor "file_object" [ prologString label.Name
-                                            ; getDateTime label
-                                            ; getMode label
-                                            ; prologInt64 sz ]
-        work fobj
+                cont (prologFunctor "file_object" 
+                                    [ prologString label.Name
+                                    ; getDateTime label
+                                    ; getMode label
+                                    ; prologInt64 sz ])
+        
+        and workList (kids:LabelledTree<Label> list) 
+                     (cont: Value list -> Value) : Value = 
+            match kids with
+            | [] -> cont []
+            | x :: xs ->
+                work x (fun v1 -> 
+                workList xs (fun vs -> 
+                cont (v1::vs)))
+        work fobj (fun x -> x)
 
     let private buildFileStore1 (blocks:Block list) : LabelledTree<Label> list = 
         let allRows = List.collect (fun (b:Block) -> b.Rows) blocks
