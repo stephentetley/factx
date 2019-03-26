@@ -4,18 +4,17 @@
 namespace FactX.Extra.DirectoryListing
 
 
-open System
-open System.IO
 
-open FParsec
-
-
-open FactX
-open FactX.Extra.LabelledTree
 
 [<AutoOpen>]
 module DirectoryListing = 
+    open System
+    open System.IO
 
+    open FParsec
+
+    open FactX
+    open FactX.Extra.LabelledTree
 
     type Name = string
     type FilePath = string

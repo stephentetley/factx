@@ -2,6 +2,7 @@
 // License: BSD 3 Clause
 
 #r "netstandard"
+#r "System.Xml.Linq"
 open System.IO 
 
 
