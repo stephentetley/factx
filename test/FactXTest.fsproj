@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <PackageReference Include="FParsec" Version="1.0.4-RC3" />
-    <PackageReference Include="FSharp.Data" Version="3.0.0" />
   </ItemGroup>
 
   <ItemGroup>

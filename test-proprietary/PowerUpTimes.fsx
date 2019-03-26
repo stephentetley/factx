@@ -12,7 +12,7 @@
 #I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190304\lib\netstandard2.0"
 #r "SLFormat"
 
-#I @"C:\Users\stephen\.nuget\packages\FSharp.Data\3.0.0\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\FSharp.Data\3.0.1\lib\netstandard2.0"
 #r @"FSharp.Data.dll"
 open FSharp.Data
 
