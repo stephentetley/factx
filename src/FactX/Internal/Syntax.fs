@@ -2,11 +2,11 @@
 // License: BSD 3 Clause
 
 
-namespace FactX.Internal.Syntax2
+namespace FactX.Internal.Syntax
 
 
 [<AutoOpen>]
-module Syntax2 = 
+module Syntax = 
         
     open System
 
@@ -38,7 +38,7 @@ module Syntax2 =
     type Clause = Clause of Predicate * Predicate list
 
 
-    type Directive = Directive of Identifier * Term list
+    type Directive = Directive of Term
 
 
 
@@ -130,7 +130,7 @@ module Syntax2 =
         match pred with
         | Predicate(a1,[]) -> ppAtom a1
         | Predicate(a1,xs) -> 
-            ppAtom a1 ^^ commaList (List.map ppTerm xs)
+            ppAtom a1 ^^ tupled (List.map ppTerm xs)
 
 
 
@@ -147,5 +147,5 @@ module Syntax2 =
 
     let ppDirective (source:Directive) : Doc = 
         match source with
-        | Directive(name, body) -> 
-            text ":-" ^+^ text name ^^ parens (commaSep <| List.map ppTerm body)
+        | Directive(term) -> 
+            text ":-" ^+^ ppTerm term

@@ -10,6 +10,7 @@
     <Compile Include="Old\FactX\FactOutput.fs" />
     <Compile Include="FactX\Internal\Syntax.fs" />
     <Compile Include="FactX\FactOutput.fs" />
+    <Compile Include="FactX\FactWriter.fs" />
   </ItemGroup>
 
   <ItemGroup>

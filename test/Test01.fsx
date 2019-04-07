@@ -12,12 +12,12 @@ open FParsec
 #r "SLFormat"
 open SLFormat.Pretty
 
-#load "..\src\Old\FactX\Internal\PrintProlog.fs"
-#load "..\src\Old\FactX\Internal\PrologSyntax.fs"
-#load "..\src\Old\FactX\FactOutput.fs"
 
-open Old.FactX.Internal
-open Old.FactX.Internal.PrintProlog
+#load "..\src\FactX\Internal\Syntax.fs"
+#load "..\src\FactX\FactOutput.fs"
+
+open FactX.Internal.Syntax
+open FactX.FactOutput
 
 let testRender (doc:Doc) : unit = 
     render 80 doc |> printfn "%s"
@@ -28,20 +28,20 @@ let test01 () =
     let d2 = text "***** ******"
     render 80 (indent 2 (d1 ^@@^ d2)) |> printfn "%s"
 
-    let fact1 : Doc = 
-        prologFact "address" [quotedAtom "UID001"; prologString "1, Yellow Brick Road" ]
-    testRender fact1 
+    let fact1 : Fact = 
+        fact "address" [quotedAtom "UID001"; prologString "1, Yellow Brick Road" ]
+    testRender (ppPredicate fact1 )
 
     let mdirective = 
         moduleDirective "os_relations" 
-                        [ "osName", 2
-                        ; "osType", 2
-                        ; "odComment", 2
+                        [ "osName/2"
+                        ; "osType/2"
+                        ; "odComment/2"
                         ]
-    testRender mdirective 
+    testRender (ppDirective mdirective)
 
 let test02 () = 
-    let doc1 = commaSep [text "one"; text "two"; text "three"]
+    let doc1 = commaList [text "one"; text "two"; text "three"]
     let doc2 = indent 10 doc1
     testRender doc1 
     testRender doc2
@@ -54,36 +54,12 @@ let test04 () =
     vcat [text "start"; empty; text "end" ]
         |> testRender
 
-// Temp - parsing signatures.
-
-//let lexeme : Parser<string, 'u> = 
-//    let opts = IdentifierOptions(isAsciiIdStart = isLetter)
-//    identifier opts .>> spaces
-
-//let lparen : Parser<unit, 'u> = (pchar '(') >>. spaces
-//let rparen : Parser<unit, 'u> = (pchar ')') >>. spaces
-//let comma : Parser<unit, 'u> = (pchar ',') >>. spaces
-//let dot : Parser<unit, 'u> = (pchar '.') >>. spaces
-
-
-//let pSignature : Parser<Signature, 'u> =
-//    let body = between lparen rparen (sepBy lexeme comma)
-//    pipe3 lexeme body dot (fun x xs _ -> Signature(x,xs))
-
-//let test05 () = 
-//    runParserOnString lexeme () "NONE" "identifier_one()."
-
-//let test06 () = 
-//    runParserOnString pSignature () "NONE" "identifier_one(blue, yellow)."
-
 let test05 () = 
-    testRender <| (PrologSyntax.PDecimal 1.078M).Format()
+    testRender <| ppLiteral (Decimal 1.078M)
 
 let test06 () = 
-    testRender <| (PrologSyntax.PList [PrologSyntax.PDecimal 1.078M]).Format()
+    testRender <| ppTerm (List [Literal (Decimal 1.078M)])
 
-let test06a () = 
-    testRender <| PrologSyntax.valueFormat (PrologSyntax.PList [PrologSyntax.PDecimal 1.078M])
 
 let test07 () = 
-    PrologSyntax.PList [PrologSyntax.PDecimal 1.078M] |> printfn "%O"
+    List [Literal (Decimal 1.078M)] |> printfn "%O"
