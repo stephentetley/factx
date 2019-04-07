@@ -8,6 +8,7 @@ module FactWriter =
     open System.IO
     open SLFormat.Pretty
 
+    open FactX.Internal
     open FactX.Internal.Syntax
     open FactX
 
@@ -56,16 +57,46 @@ module FactWriter =
     // ****************************************************
     // Run
 
-    /// This runs the finalizer on userResources
-    let runRewriteMonad (outPath:string) (lineWidth:int) (ma:FactWriter<'a>) : 'a = 
+    let runFactWriter (lineWidth:int) (outPath:string) (ma:FactWriter<'a>) : 'a = 
         use sw = new StreamWriter(outPath)
         apply1 ma sw lineWidth
+
+    /// Implemented in CPS 
+    let mapM (mf: 'a -> FactWriter<'b>) 
+             (source:'a list) : FactWriter<'b list> = 
+        FactWriter <| fun handle lineWidth -> 
+            let rec work (xs:'a list) (cont : 'b list -> 'b list) = 
+                match xs with
+                | [] -> cont []
+                | y :: ys -> 
+                    let ans1 = apply1 (mf y) handle lineWidth
+                    work ys (fun anslist ->
+                    cont (ans1::anslist))
+            work source id
+
+    /// Implemented in CPS 
+    let mapMz (mf: 'a -> FactWriter<'b>) 
+              (source:'a list) : FactWriter<unit> = 
+        FactWriter <| fun handle lineWidth -> 
+            let rec work (xs:'a list) (cont : unit -> unit) = 
+                match xs with
+                | [] -> cont ()
+                | y :: ys -> 
+                    let _ = apply1 (mf y) handle lineWidth
+                    work ys (fun _ ->
+                    cont ())
+            work source id
 
 
     let tellDoc (doc:Doc) : FactWriter<unit> =
         FactWriter <| fun handle lineWidth ->
             let text = render lineWidth doc
-            handle.WriteLine line
+            handle.WriteLine text
+
+    
+    let comment (body:string) : FactWriter<unit> = 
+        tellDoc (ppComment body)
+
 
 
     let moduleDirective (modName:string) (exports:string list) : FactWriter<unit> =  

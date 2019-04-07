@@ -31,6 +31,8 @@ module FactOutput =
     let prologDecimal (d:decimal) : Term = Literal (Decimal d)
 
 
+
+
     let moduleDirective (modName:string) (exports:string list) : Directive = 
         Directive(Functor(SimpleAtom "module", [simpleAtom modName; List (List.map simpleAtom exports)]))
 

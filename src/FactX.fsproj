@@ -8,6 +8,7 @@
     <Compile Include="Old\FactX\Internal\PrintProlog.fs" />
     <Compile Include="Old\FactX\Internal\PrologSyntax.fs" />
     <Compile Include="Old\FactX\FactOutput.fs" />
+    <Compile Include="FactX\Internal\Common.fs" />
     <Compile Include="FactX\Internal\Syntax.fs" />
     <Compile Include="FactX\FactOutput.fs" />
     <Compile Include="FactX\FactWriter.fs" />
