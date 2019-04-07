@@ -26,14 +26,14 @@
 open FSharp.Interop.Excel
 
 
-#load "..\src\FactX\Internal\PrintProlog.fs"
-#load "..\src\FactX\Internal\PrologSyntax.fs"
-#load "..\src\FactX\FactOutput.fs"
+#load "..\src\Old\FactX\Internal\PrintProlog.fs"
+#load "..\src\Old\FactX\Internal\PrologSyntax.fs"
+#load "..\src\Old\FactX\FactOutput.fs"
 #load "..\src-extra\FactX\Extra\ExcelProviderHelper.fs"
 #load "..\src-extra\FactX\Extra\PathString.fs"
 #load "..\src-extra\FactX\Extra\String.fs"
 #load "..\src-extra\FactX\Extra\LabelledTree.fs"
-open FactX
+open Old.FactX
 open FactX.Extra.ExcelProviderHelper
 open FactX.Extra.PathString
 open FactX.Extra.String

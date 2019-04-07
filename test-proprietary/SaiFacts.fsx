@@ -27,11 +27,11 @@ open FSharp.Interop.Excel
 open FSharp.Data
 
 
-#load "..\src\FactX\Internal\PrintProlog.fs"
-#load "..\src\FactX\Internal\PrologSyntax.fs"
-#load "..\src\FactX\FactOutput.fs"
+#load "..\src\Old\FactX\Internal\PrintProlog.fs"
+#load "..\src\Old\FactX\Internal\PrologSyntax.fs"
+#load "..\src\Old\FactX\FactOutput.fs"
 #load "..\src-extra\FactX\Extra\ExcelProviderHelper.fs"
-open FactX
+open Old.FactX
 open FactX.Extra.ExcelProviderHelper
 
 

@@ -12,12 +12,12 @@ open FParsec
 #r "SLFormat"
 open SLFormat.Pretty
 
-#load "..\src\FactX\Internal\PrintProlog.fs"
-#load "..\src\FactX\Internal\PrologSyntax.fs"
-#load "..\src\FactX\FactOutput.fs"
+#load "..\src\Old\FactX\Internal\PrintProlog.fs"
+#load "..\src\Old\FactX\Internal\PrologSyntax.fs"
+#load "..\src\Old\FactX\FactOutput.fs"
 
-open FactX.Internal
-open FactX.Internal.PrintProlog
+open Old.FactX.Internal
+open Old.FactX.Internal.PrintProlog
 
 let testRender (doc:Doc) : unit = 
     render 80 doc |> printfn "%s"

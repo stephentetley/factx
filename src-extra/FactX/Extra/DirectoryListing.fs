@@ -13,7 +13,7 @@ module DirectoryListing =
 
     open FParsec
 
-    open FactX
+    open Old.FactX
     open FactX.Extra.LabelledTree
 
     type Name = string

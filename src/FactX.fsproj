@@ -5,9 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="FactX\Internal\PrintProlog.fs" />
-    <Compile Include="FactX\Internal\PrologSyntax.fs" />
-    <Compile Include="FactX\Internal\Syntax2.fs" />
+    <Compile Include="Old\FactX\Internal\PrintProlog.fs" />
+    <Compile Include="Old\FactX\Internal\PrologSyntax.fs" />
+    <Compile Include="Old\FactX\FactOutput.fs" />
+    <Compile Include="FactX\Internal\Syntax.fs" />
     <Compile Include="FactX\FactOutput.fs" />
   </ItemGroup>
 

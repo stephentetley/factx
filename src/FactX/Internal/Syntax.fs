@@ -22,15 +22,15 @@ module Syntax2 =
         | Decimal of decimal
 
     type Atom = 
-        | Atom of string
+        | SimpleAtom of string
         | QuotedAtom of string
 
     type Term = 
-        | TLiteral of Literal
-        | TAtom of Atom
-        | TVariable of Identifier
-        | TFunctor of Atom * Term list
-        | TList of Term list
+        | Literal of Literal
+        | Atom of Atom
+        | Variable of Identifier
+        | Functor of Atom * Term list
+        | List of Term list
 
 
     type Predicate = Predicate of Atom * Term list
@@ -44,6 +44,7 @@ module Syntax2 =
 
 
     // ****************************************************
+    // Pretty printing
 
     let private commaSep (docs:Doc list) = foldDocs (fun ac e -> ac ^^ comma ^/^ e) docs
 
@@ -100,20 +101,20 @@ module Syntax2 =
 
     let ppAtom (atom:Atom) : Doc  = 
         match atom with
-        | Atom s -> simpleAtom s
+        | SimpleAtom s -> simpleAtom s
         | QuotedAtom s -> quotedAtom s
 
     let ppTerm (term:Term) : Doc  = 
         let rec work (t1:Term) (cont:Doc -> Doc) : Doc =
             match t1 with
-            | TLiteral x -> cont (ppLiteral x)
-            | TAtom x -> cont (ppAtom x)
-            | TVariable v -> cont (text v)
-            | TFunctor(a1,xs) -> 
+            | Literal x -> cont (ppLiteral x)
+            | Atom x -> cont (ppAtom x)
+            | Variable v -> cont (text v)
+            | Functor(a1,xs) -> 
                 let name = ppAtom a1
                 workList xs (fun vs -> 
                 cont (prologFunctor name vs))
-            | TList xs -> 
+            | List xs -> 
                 workList xs (fun vs -> 
                 cont (prologList vs))
         and workList (terms: Term list) (cont:Doc list -> Doc) : Doc =
