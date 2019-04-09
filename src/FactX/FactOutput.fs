@@ -23,6 +23,7 @@ module FactOutput =
 
     let quotedAtom (input:string) : Term = Atom (QuotedAtom input)
 
+    let charTerm (input:char) : Term = Literal (Char input)
 
     let stringTerm (input:string) : Term = 
         match input with 
@@ -55,6 +56,9 @@ module FactOutput =
 
     let functor (name:string) (elements:Term list) : Term = 
         Functor(SimpleAtom name, elements)
+
+    let dictTerm (name:string) (elements: (string * Term) list) : Term = 
+        Dict(name, elements)
 
 
     let predicate (name:string) (elements:Term list) : Predicate = 
