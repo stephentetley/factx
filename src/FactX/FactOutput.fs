@@ -31,6 +31,10 @@ module FactOutput =
     let prologDecimal (d:decimal) : Term = Literal (Decimal d)
 
 
+    /// ''
+    let prologNull : Term = Atom (QuotedAtom "")
+
+
 
 
     let moduleDirective (modName:string) (exports:string list) : Directive = 

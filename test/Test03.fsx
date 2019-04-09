@@ -23,6 +23,6 @@ let demo01 () =
     runFactWriter 160 outPath 
         <|  factWriter {
             do! comment "dummy_writer.pl"
-            do! comment "directories..."
+            do! moduleDirective "directories" ["listing/1"]
             return ()
         }

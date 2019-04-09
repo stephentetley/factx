@@ -15,30 +15,36 @@ module FactWriter =
     type ErrMsg = string
 
     /// TODO - potentially add indent level
+
+    type private LineWidth = int
+
     type FactWriter<'a> = 
-        FactWriter of (StreamWriter -> int -> 'a)
+        FactWriter of (int -> StreamWriter -> LineWidth -> 'a * int)
 
 
     let inline private apply1 (ma: FactWriter<'a>) 
+                              (state:int)
                               (handle: StreamWriter) 
-                              (lineWidth:int) : 'a= 
-        let (FactWriter f) = ma in f handle lineWidth
+                              (lineWidth:int) : 'a * int = 
+        let (FactWriter f) = ma in f state handle lineWidth
 
 
     let inline mreturn (x:'a) : FactWriter<'a> = 
-        FactWriter <| fun _ _ -> x
+        FactWriter <| fun st _ _ -> (x, st)
 
 
     let inline private bindM (ma: FactWriter<'a>) 
                         (f :'a -> FactWriter<'b>) : FactWriter<'b> =
-        FactWriter <| fun handle lineWidth -> 
-            let x = apply1 ma handle lineWidth in apply1 (f x) handle lineWidth
+        FactWriter <| fun st handle lineWidth -> 
+            let (x, st1) = apply1 ma st handle lineWidth
+            apply1 (f x) st1 handle lineWidth
 
     /// Haskell's (>>)
     let inline private combineM (mfirst:FactWriter<'a>) 
                                 (msecond:FactWriter<'b>) : FactWriter<'b> = 
-        FactWriter <| fun handle lineWidth -> 
-            let _ =  apply1 mfirst handle lineWidth in apply1 msecond handle lineWidth
+        FactWriter <| fun st handle lineWidth -> 
+            let (_, st1) =  apply1 mfirst st handle lineWidth
+            apply1 msecond st1 handle lineWidth
 
 
     let inline private delayM (fn:unit -> FactWriter<'a>) : FactWriter<'a> = 
@@ -59,39 +65,40 @@ module FactWriter =
 
     let runFactWriter (lineWidth:int) (outPath:string) (ma:FactWriter<'a>) : 'a = 
         use sw = new StreamWriter(outPath)
-        apply1 ma sw lineWidth
+        apply1 ma 0 sw lineWidth |> fst
 
     /// Implemented in CPS 
     let mapM (mf: 'a -> FactWriter<'b>) 
              (source:'a list) : FactWriter<'b list> = 
-        FactWriter <| fun handle lineWidth -> 
-            let rec work (xs:'a list) (cont : 'b list -> 'b list) = 
+        FactWriter <| fun st handle lineWidth -> 
+            let rec work (st1:int) (xs:'a list) (cont : int -> 'b list -> 'b list * int) = 
                 match xs with
-                | [] -> cont []
+                | [] -> cont st1 []
                 | y :: ys -> 
-                    let ans1 = apply1 (mf y) handle lineWidth
-                    work ys (fun anslist ->
-                    cont (ans1::anslist))
-            work source id
+                    let (ans1, st2) = apply1 (mf y) st handle lineWidth
+                    work st2 ys (fun st3 anslist ->
+                    cont st3 (ans1::anslist))
+            work st source (fun s ans -> (ans, s))
 
     /// Implemented in CPS 
     let mapMz (mf: 'a -> FactWriter<'b>) 
               (source:'a list) : FactWriter<unit> = 
-        FactWriter <| fun handle lineWidth -> 
-            let rec work (xs:'a list) (cont : unit -> unit) = 
+        FactWriter <| fun st handle lineWidth -> 
+            let rec work (st1:int) (xs:'a list) (cont : int -> unit * int) = 
                 match xs with
-                | [] -> cont ()
+                | [] -> cont st1
                 | y :: ys -> 
-                    let _ = apply1 (mf y) handle lineWidth
-                    work ys (fun _ ->
-                    cont ())
-            work source id
+                    let (_, st2) = apply1 (mf y) st1 handle lineWidth
+                    work st2 ys (fun st3 ->
+                    cont st3)
+            work st source (fun s -> ((), s))
 
 
     let tellDoc (doc:Doc) : FactWriter<unit> =
-        FactWriter <| fun handle lineWidth ->
+        FactWriter <| fun st handle lineWidth ->
             let text = render lineWidth doc
             handle.WriteLine text
+            ((), st)
 
     
     let comment (body:string) : FactWriter<unit> = 
