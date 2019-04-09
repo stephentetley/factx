@@ -31,6 +31,7 @@ module Syntax =
         | Variable of Identifier
         | Functor of Atom * Term list
         | List of Term list
+        | Dict of Identifier * (Identifier * Term) list
 
 
     type Predicate = Predicate of Atom * Term list
@@ -85,12 +86,19 @@ module Syntax =
 
     let ppIdentifier (name:Identifier) : Doc = text name
 
-    let private prologFunctor (head:Doc) (body:Doc list) : Doc =
+    let private ppFunctor (head:Doc) (body:Doc list) : Doc =
         nest 4 (head ^^ lparen ^//^ commaSep body ^^ rparen)
 
     /// Print vertically
-    let private prologList (docs:Doc list) : Doc = 
+    let private ppList (docs:Doc list) : Doc = 
         enclose lbracket rbracket  <| foldDocs (fun x y -> x ^^ comma ^@@^ y) docs
+
+
+
+    let private ppDict (tag:Doc) (docs:Doc list) : Doc = 
+        let body = foldDocs (fun x y -> x ^^ comma ^@@^ y) docs
+        tag ^^ enclose lbrace rbrace body
+
 
     let ppLiteral (literal:Literal) : Doc = 
         match literal with
@@ -113,10 +121,13 @@ module Syntax =
             | Functor(a1,xs) -> 
                 let name = ppAtom a1
                 workList xs (fun vs -> 
-                cont (prologFunctor name vs))
+                cont (ppFunctor name vs))
             | List xs -> 
                 workList xs (fun vs -> 
-                cont (prologList vs))
+                cont (ppList vs))
+            | Dict(tag,xs) -> 
+                workList2 xs (fun vs -> 
+                cont (ppDict (ppIdentifier tag) vs))
         and workList (terms: Term list) (cont:Doc list -> Doc) : Doc =
             match terms with
             | [] -> cont []
@@ -124,6 +135,14 @@ module Syntax =
                 work x (fun v1 -> 
                 workList rest (fun vs -> 
                 cont (v1::vs)))
+        and workList2 (terms: (Identifier * Term) list) (cont:Doc list -> Doc) : Doc =
+            match terms with
+            | [] -> cont []
+            | (name,x) :: rest -> 
+                work x (fun v1 -> 
+                let pair = ppIdentifier name ^^ colon ^^ v1
+                workList2 rest (fun vs -> 
+                cont (pair::vs)))
         work term (fun x -> x)
 
     let ppPredicate (pred:Predicate) : Doc = 

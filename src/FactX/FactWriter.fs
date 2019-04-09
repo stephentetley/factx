@@ -70,20 +70,20 @@ module FactWriter =
     /// Implemented in CPS 
     let mapM (mf: 'a -> FactWriter<'b>) 
              (source:'a list) : FactWriter<'b list> = 
-        FactWriter <| fun st handle lineWidth -> 
+        FactWriter <| fun state handle lineWidth -> 
             let rec work (st1:int) (xs:'a list) (cont : int -> 'b list -> 'b list * int) = 
                 match xs with
                 | [] -> cont st1 []
                 | y :: ys -> 
-                    let (ans1, st2) = apply1 (mf y) st handle lineWidth
+                    let (ans1, st2) = apply1 (mf y) st1 handle lineWidth
                     work st2 ys (fun st3 anslist ->
                     cont st3 (ans1::anslist))
-            work st source (fun s ans -> (ans, s))
+            work state source (fun s ans -> (ans, s))
 
     /// Implemented in CPS 
     let mapMz (mf: 'a -> FactWriter<'b>) 
               (source:'a list) : FactWriter<unit> = 
-        FactWriter <| fun st handle lineWidth -> 
+        FactWriter <| fun state handle lineWidth -> 
             let rec work (st1:int) (xs:'a list) (cont : int -> unit * int) = 
                 match xs with
                 | [] -> cont st1
@@ -91,8 +91,30 @@ module FactWriter =
                     let (_, st2) = apply1 (mf y) st1 handle lineWidth
                     work st2 ys (fun st3 ->
                     cont st3)
-            work st source (fun s -> ((), s))
+            work state source (fun s -> ((), s))
 
+    let replicateM (count:int) (ma:FactWriter<'a>) : FactWriter<'a list> = 
+        FactWriter <| fun state handle lineWidth -> 
+            let rec work (st1:int) (i:int) (cont : int -> 'a list -> 'a list * int) = 
+                if i <= 0 then 
+                    cont st1 []
+                else
+                    let (ans1, st2) = apply1 ma st1 handle lineWidth
+                    work st2 (i-1) (fun st3 anslist ->
+                    cont st3 (ans1::anslist))
+            work state count (fun s ans -> (ans, s))
+
+
+    let replicateMz (count:int) (ma:FactWriter<'a>) : FactWriter<unit> = 
+        FactWriter <| fun state handle lineWidth -> 
+            let rec work (st1:int) (i:int) (cont : int -> unit * int) = 
+                if i <= 0 then 
+                    cont st1
+                else
+                    let (_, st2) = apply1 ma st1 handle lineWidth
+                    work st2 (i-1) (fun st3 ->
+                    cont st3)
+            work state count (fun s -> ((), s))
 
     let tellDoc (doc:Doc) : FactWriter<unit> =
         FactWriter <| fun st handle lineWidth ->
@@ -100,12 +122,17 @@ module FactWriter =
             handle.WriteLine text
             ((), st)
 
-    
+    let newline : FactWriter<unit> = 
+        tellDoc emptyDoc
+
+    let newlines (count:int) : FactWriter<unit> = 
+        replicateMz count newline
+
     let comment (body:string) : FactWriter<unit> = 
         tellDoc (ppComment body)
 
+    let directive (body:Directive) : FactWriter<unit> = 
+        tellDoc (ppDirective body)
 
-
-    let moduleDirective (modName:string) (exports:string list) : FactWriter<unit> =  
-        let prolog = FactOutput.moduleDirective modName exports
-        tellDoc (ppDirective prolog)
+    let predicate (body:Predicate) : FactWriter<unit>  =
+        tellDoc (ppPredicate body)

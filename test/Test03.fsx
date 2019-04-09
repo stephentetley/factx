@@ -12,6 +12,7 @@ open SLFormat.Pretty
 #load "..\src\FactX\FactOutput.fs"
 #load "..\src\FactX\FactWriter.fs"
 open FactX.Internal.Syntax
+open FactX.FactOutput
 open FactX.FactWriter
 
 let outputFileName (filename:string) : string = 
@@ -23,6 +24,8 @@ let demo01 () =
     runFactWriter 160 outPath 
         <|  factWriter {
             do! comment "dummy_writer.pl"
-            do! moduleDirective "directories" ["listing/1"]
+            do! newlines 3
+            do! directive (moduleDirective "directories" ["listing/1"])
+            do! newline
             return ()
         }
