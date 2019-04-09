@@ -13,7 +13,7 @@ module DirectoryListing =
 
     open FParsec
 
-    open Old.FactX
+    open FactX
     open FactX.Extra.LabelledTree
 
     type Name = string
@@ -207,41 +207,41 @@ module DirectoryListing =
                         Tree(fullpath,FolderLabel(name,props),[]) }
 
 
-    let fileObjToValue (fobj:LabelledTree<Label>) : Value = 
-        let getDateTime (label:Label) : Value = 
+    let fileObjToValue (fobj:LabelledTree<Label>) : Term = 
+        let getDateTime (label:Label) : Term = 
             match label.Properties.ModificationTime with
-            | None -> prologAtom "unknown"
-            | Some dt -> prologDateTime dt
+            | None -> simpleAtom "unknown"
+            | Some dt -> dateTimeTerm dt
         
-        let getMode (label:Label) : Value = 
+        let getMode (label:Label) : Term = 
             match label.Properties.Mode with
-            | None -> prologAtom "unknown"
-            | Some dt -> prologSymbol dt
+            | None -> simpleAtom "unknown"
+            | Some s -> simpleAtom s
 
         /// CPS transformed
         let rec work (x:LabelledTree<Label>) 
-                     (cont: Value -> Value) : Value = 
+                     (cont: Term -> Term) : Term = 
             match x with
             | Tree (_, label, kids) -> 
                 workList kids (fun vs -> 
-                cont (prologFunctor "folder_object" 
-                                     [ prologString label.Name
+                cont (functor "folder_object" 
+                                     [ stringTerm label.Name
                                      ; getDateTime label
                                      ; getMode label
-                                     ; prologList vs]))
+                                     ; listTerm vs]))
             | Leaf (_, label) -> 
                 let sz = 
                     match label with
                     | FileLabel (_,_,sz) -> sz
                     | _ -> 0L
-                cont (prologFunctor "file_object" 
-                                    [ prologString label.Name
+                cont (functor "file_object" 
+                                    [ stringTerm label.Name
                                     ; getDateTime label
                                     ; getMode label
-                                    ; prologInt64 sz ])
+                                    ; int64Term sz ])
         
         and workList (kids:LabelledTree<Label> list) 
-                     (cont: Value list -> Value) : Value = 
+                     (cont: Term list -> Term) : Term = 
             match kids with
             | [] -> cont []
             | x :: xs ->
@@ -259,18 +259,15 @@ module DirectoryListing =
                 List.filter (fun (row:Row) -> row.Path = b1.Path) xs
             buildTopDownForest treeHelper getRoots allRows
 
-    let private buildFileStore (blocks:Block list) : Value = 
+    let private buildFileStore (blocks:Block list) : Term = 
         let root = match blocks with | [] -> ""| (b1 :: bs) -> b1.Path
         let trees = buildFileStore1 blocks
         let kids = List.map (fun (tree:LabelledTree<Label>) -> fileObjToValue tree) trees
-        prologFunctor "file_store" [ prologString root; prologList kids ]
+        functor "file_store" [ stringTerm root; listTerm kids ]
 
-    let listingToProlog (inputPath:string) : option<FactBase> =
+    let listingToProlog (inputPath:string) : option<Term> =
         match readDirRecurseOutput inputPath with
-        | Choice1Of2 err -> failwith err
-        | Choice2Of2 ans -> 
-            let store = buildFileStore ans
-            let c1 = Clause.cons( signature = "listing(store)."
-                                , body = [store] )
-            Some <| FactBase.ofList [c1]
+        | Choice1Of2 err -> printfn "%s" err; None
+        | Choice2Of2 ans -> buildFileStore ans |> Some
+            
 

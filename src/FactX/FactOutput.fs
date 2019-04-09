@@ -6,9 +6,8 @@ namespace FactX
 [<AutoOpen>]
 module FactOutput = 
 
+    open System
     open FactX.Syntax
-
-
 
     type Signature = Signature of string * string list
 
@@ -30,7 +29,9 @@ module FactOutput =
         | null -> Literal (String "")
         | ss -> Literal (String ss)
 
-    let intTerm (i:int64) : Term = Literal (Int i)
+    let intTerm (i:int) : Term = Literal (Int (int64 i))
+
+    let int64Term (i:int64) : Term = Literal (Int  i)
 
     let decimalTerm (d:decimal) : Term = Literal (Decimal d)
 
@@ -38,10 +39,26 @@ module FactOutput =
     /// ''
     let nullTerm : Term = Atom (QuotedAtom "")
 
-    let functor (name:string) (elements:Term list) = 
+
+    /// Output date in ISO 8601 format
+    /// e.g. 2006-12-08
+    let dateTerm (value:DateTime) : Term = 
+        stringTerm <| value.ToString(format = "yyyy-MM-dd")
+
+    /// Output date-timein ISO 8601 format
+    /// e.g. 2006-12-08T17:29:44
+    let dateTimeTerm (value:DateTime) : Term = 
+        stringTerm <| value.ToString("yyyy-MM-ddThh:mm:ss")
+
+
+    let listTerm (elements:Term list) : Term = List elements
+
+    let functor (name:string) (elements:Term list) : Term = 
         Functor(SimpleAtom name, elements)
 
 
+    let predicate (name:string) (elements:Term list) : Predicate = 
+        Predicate(SimpleAtom name, elements)
 
     let moduleDirective (modName:string) (exports:string list) : Directive = 
         Directive(Functor(SimpleAtom "module", [simpleAtom modName; List (List.map simpleAtom exports)]))

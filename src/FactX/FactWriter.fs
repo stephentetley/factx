@@ -126,11 +126,11 @@ module FactWriter =
     let newlines (count:int) : FactWriter<unit> = 
         replicateMz count newline
 
-    let comment (body:string) : FactWriter<unit> = 
+    let tellComment (body:string) : FactWriter<unit> = 
         tellDoc (ppComment body)
 
-    let directive (body:Directive) : FactWriter<unit> = 
+    let tellDirective (body:Directive) : FactWriter<unit> = 
         tellDoc (ppDirective body)
 
-    let predicate (body:Predicate) : FactWriter<unit>  =
+    let tellPredicate (body:Predicate) : FactWriter<unit>  =
         tellDoc (ppPredicate body)

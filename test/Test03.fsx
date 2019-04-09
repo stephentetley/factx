@@ -22,9 +22,9 @@ let demo01 () =
     let outPath = outputFileName "dummy_writer.pl"
     runFactWriter 160 outPath 
         <|  factWriter {
-            do! comment "dummy_writer.pl"
+            do! tellComment "dummy_writer.pl"
             do! newlines 3
-            do! directive (moduleDirective "directories" ["listing/1"])
+            do! tellDirective (moduleDirective "directories" ["listing/1"])
             do! newline
             return ()
         }

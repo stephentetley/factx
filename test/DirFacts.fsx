@@ -11,18 +11,17 @@
 #r "SLFormat"
 
 
-#load "..\src\Old\FactX\Internal\PrintProlog.fs"
-#load "..\src\Old\FactX\Internal\PrologSyntax.fs"
-#load "..\src\Old\FactX\FactOutput.fs"
+#load "..\src\FactX\Internal\Common.fs"
+#load "..\src\FactX\Syntax.fs"
+#load "..\src\FactX\FactOutput.fs"
+#load "..\src\FactX\FactWriter.fs"
 #load "..\src-extra\FactX\Extra\PathString.fs"
 #load "..\src-extra\FactX\Extra\LabelledTree.fs"
 #load "..\src-extra\FactX\Extra\DirectoryListing.fs"
-open Old.FactX
+open FactX
+open FactX.FactWriter
 open FactX.Extra.DirectoryListing
 open System.IO
-open System.Drawing
-open System.Drawing
-
 
 let getLocalDataFile (fileName:string) : string = 
     System.IO.Path.Combine(__SOURCE_DIRECTORY__,"../data", fileName)
@@ -53,19 +52,26 @@ let test01 () =
 
 // SWI-Prolog has a pcre module which suggests representing paths
 // as lists of strings might be useful.
-let pathList (path:FilePath) : Value = 
-    path.Split('\\') |> Array.toList |> List.map prologString |> prologList
+let pathList (path:FilePath) : Term = 
+    path.Split('\\') |> Array.toList |> List.map stringTerm |> listTerm
 
 
-let writeListing (infile:string) (name:string) (outfile:string) : unit =
+let writeListing (infile:string) (moduleName:string) (outPath:string) : unit =
     match listingToProlog infile with
     | None -> printfn "Could not interpret the directory listing: '%s'" infile
-    | Some facts -> 
-        let pmodule : Module = 
-            new Module( name = name
-                      , comment = name
-                      , db = facts )
-        pmodule.Save(lineWidth = 160, filePath=outfile)
+    | Some listing -> 
+        let justfile = FileInfo(outPath).Name
+        runFactWriter 160 outPath 
+            <|  factWriter {
+                do! tellComment justfile
+                do! newlines 3
+                do! tellDirective (moduleDirective moduleName ["listing/1"])
+                do! newline
+                do! tellPredicate (predicate "listing" [listing])
+                do! newline
+                return ()
+            }
+
 
 // We should consider generating SWI Prolog record accessors
 
@@ -75,28 +81,7 @@ let main (localFile:string) =
     let outfile = outputFile name1
     writeListing infile "directories" outfile
 
-let dateString (odate:System.DateTime option) : string = 
-    match odate with
-    | None -> ""
-    | Some date -> date.ToString("dd/MM/yyyy")
 
-
-
-let printFileRow (path:string) (row:Row) : unit =
-    match row with
-    | FileRow(_,_,_,_) -> 
-        printfn "%s,%s" row.Name (dateString row.Properties.ModificationTime)
-    | FolderRow(_,_,_) -> ()
-
-let printBlock (block:Block) : unit = 
-    List.iter (printFileRow block.Path) block.Rows
-
-
-let tempCsv (localFile:string) = 
-    let infile = getLocalDataFile localFile
-    match readDirRecurseOutput infile with
-    | Choice1Of2 msg -> failwith msg
-    | Choice2Of2 blocks -> List.iter printBlock blocks
 
 
 
