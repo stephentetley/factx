@@ -8,11 +8,10 @@ open SLFormat.Pretty
 
 
 #load "..\src\FactX\Internal\Common.fs"
-#load "..\src\FactX\Internal\Syntax.fs"
+#load "..\src\FactX\Syntax.fs"
 #load "..\src\FactX\FactOutput.fs"
 #load "..\src\FactX\FactWriter.fs"
-open FactX.Internal.Syntax
-open FactX.FactOutput
+open FactX
 open FactX.FactWriter
 
 let outputFileName (filename:string) : string = 

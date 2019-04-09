@@ -12,11 +12,11 @@ open FParsec
 #r "SLFormat"
 open SLFormat.Pretty
 
-
-#load "..\src\FactX\Internal\Syntax.fs"
+#load "..\src\FactX\Internal\Common.fs"
+#load "..\src\FactX\Syntax.fs"
 #load "..\src\FactX\FactOutput.fs"
 
-open FactX.Internal.Syntax
+open FactX.Syntax
 open FactX.FactOutput
 
 let testRender (doc:Doc) : unit = 
@@ -29,7 +29,7 @@ let test01 () =
     render 80 (indent 2 (d1 ^@@^ d2)) |> printfn "%s"
 
     let fact1 : Fact = 
-        fact "address" [quotedAtom "UID001"; prologString "1, Yellow Brick Road" ]
+        fact "address" [quotedAtom "UID001"; stringTerm "1, Yellow Brick Road" ]
     testRender (ppPredicate fact1 )
 
     let mdirective = 

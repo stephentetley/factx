@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 
-namespace FactX.Internal.Syntax
+namespace FactX
 
 
 [<AutoOpen>]
@@ -11,6 +11,8 @@ module Syntax =
     open System
 
     open SLFormat.Pretty            // Lib: sl-format
+    open FactX.Internal.Common
+
 
     type Identifier = string
 
@@ -49,18 +51,13 @@ module Syntax =
 
     let private commaSep (docs:Doc list) = foldDocs (fun ac e -> ac ^^ comma ^/^ e) docs
 
-    // TODO 
-    //Not sure this is right / complete.
-    let private escapeSpecial (source:string) : string = 
-        let s1 = source.Replace("\\" , "\\\\")
-        let s2 = s1.Replace("'", "\\'")
-        s2
+
 
         
-    let simpleAtom (value:string) : Doc = text value
+    let ppSimpleAtom (value:string) : Doc = text value
 
     // This must escape.
-    let quotedAtom (value:string) : Doc = 
+    let ppQuotedAtom (value:string) : Doc = 
         text <| sprintf "'%s'" (escapeSpecial value)
 
     let ppChar (value:char) : Doc =  text <| sprintf "0'%c" value
@@ -109,8 +106,8 @@ module Syntax =
 
     let ppAtom (atom:Atom) : Doc  = 
         match atom with
-        | SimpleAtom s -> simpleAtom s
-        | QuotedAtom s -> quotedAtom s
+        | SimpleAtom s -> ppSimpleAtom s
+        | QuotedAtom s -> ppQuotedAtom s
 
     let ppTerm (term:Term) : Doc  = 
         let rec work (t1:Term) (cont:Doc -> Doc) : Doc =

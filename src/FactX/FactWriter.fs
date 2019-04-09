@@ -8,8 +8,6 @@ module FactWriter =
     open System.IO
     open SLFormat.Pretty
 
-    open FactX.Internal
-    open FactX.Internal.Syntax
     open FactX
 
     type ErrMsg = string

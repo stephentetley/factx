@@ -3,9 +3,10 @@
 
 namespace FactX
 
+[<AutoOpen>]
 module FactOutput = 
 
-    open FactX.Internal.Syntax
+    open FactX.Syntax
 
 
 
@@ -23,17 +24,22 @@ module FactOutput =
 
     let quotedAtom (input:string) : Term = Atom (QuotedAtom input)
 
-    let prologString (input:string) : Term = 
+
+    let stringTerm (input:string) : Term = 
         match input with 
         | null -> Literal (String "")
         | ss -> Literal (String ss)
 
-    let prologDecimal (d:decimal) : Term = Literal (Decimal d)
+    let intTerm (i:int64) : Term = Literal (Int i)
+
+    let decimalTerm (d:decimal) : Term = Literal (Decimal d)
 
 
     /// ''
-    let prologNull : Term = Atom (QuotedAtom "")
+    let nullTerm : Term = Atom (QuotedAtom "")
 
+    let functor (name:string) (elements:Term list) = 
+        Functor(SimpleAtom name, elements)
 
 
 
