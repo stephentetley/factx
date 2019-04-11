@@ -51,7 +51,10 @@ let makeOutputPath (fileName:string) : string =
 
 
 let address2 (row:InstallationsRow) : Predicate = 
-    predicate "address" [ quotedAtom row.InstReference; stringTerm row.``Full Address`` ]
+    predicate "address" 
+                [ quotedAtom row.InstReference
+                ; stringTerm row.``Full Address`` 
+                ]
 
 let writeListing (rows: InstallationsRow list) (outPath:string) : unit =
     let justfile = FileInfo(outPath).Name

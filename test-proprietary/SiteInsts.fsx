@@ -3,9 +3,6 @@
 
 #r "netstandard"
 
-#I @"C:\Users\stephen\.nuget\packages\FParsec\1.0.4-rc3\lib\netstandard1.6"
-#r "FParsec"
-#r "FParsecCS"
 
 #I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190304\lib\netstandard2.0"
 #r "SLFormat"
@@ -21,11 +18,13 @@ open FSharp.Interop.Excel
 
 
 
-#load "..\src\Old\FactX\Internal\PrintProlog.fs"
-#load "..\src\Old\FactX\Internal\PrologSyntax.fs"
-#load "..\src\Old\FactX\FactOutput.fs"
+#load "..\src\FactX\Internal\Common.fs"
+#load "..\src\FactX\Syntax.fs"
+#load "..\src\FactX\FactOutput.fs"
+#load "..\src\FactX\FactWriter.fs"
 #load "..\src-extra\FactX\Extra\ExcelProviderHelper.fs"
-open Old.FactX
+open FactX
+open FactX.FactWriter
 open FactX.Extra.ExcelProviderHelper
 
 
@@ -50,34 +49,39 @@ let readInstSpreadsheet () : InstRow list =
          
     excelReadRowsAsList helper (new InstTable())
 
-let instClause (row:InstRow) : option<Clause> = 
-    Clause.optionCons( signature = "installation(site_ref, site_name, inst_ref, inst_name, asset_type, status, daz, address1, address2, address3, address4, postcode)."
-                     , body = [ optPrologSymbol row.SiteReference
-                              ; optPrologSymbol row.SiteCommonName
-                              ; optPrologSymbol row.InstReference 
-                              ; optPrologSymbol row.InstCommonName
-                              ; defaultPrologSymbol "none"  row.AssetType |> Some
-                              ; defaultPrologSymbol "none"  row.AssetStatus |> Some
-                              ; defaultPrologSymbol "none"  row.``DA Zone`` |> Some
-                              ; defaultPrologSymbol "none" row.``Postal Address 1`` |> Some
-                              ; defaultPrologSymbol "none" row.``Postal Address 2`` |> Some
-                              ; defaultPrologSymbol "none" row.``Postal Address 3`` |> Some
-                              ; defaultPrologSymbol "none" row.``Postal Address 4`` |> Some
-                              ; defaultPrologSymbol "none" row.``Post Code`` |> Some
-                              ] )
+let signature : string = "installation(site_ref, site_name, inst_ref, inst_name, asset_type, status, daz, address1, address2, address3, address4, postcode)."
+
+let installation12 (row:InstRow) : Predicate = 
+    predicate "installation" 
+                [ quotedAtom row.SiteReference
+                ; quotedAtom row.SiteCommonName
+                ; quotedAtom row.InstReference 
+                ; quotedAtom row.InstCommonName
+                ; quotedAtom row.AssetType
+                ; quotedAtom  row.AssetStatus
+                ; quotedAtom  row.``DA Zone``
+                ; stringTerm row.``Postal Address 1``
+                ; stringTerm row.``Postal Address 2``
+                ; stringTerm row.``Postal Address 3``
+                ; stringTerm row.``Postal Address 4``
+                ; stringTerm row.``Post Code``
+                ] 
 
 
 let genInstFacts (rows:InstRow list) : unit = 
     let outFile = outputFileName "installation_facts.pl"
+    runFactWriter 160 outFile 
+        <|  factWriter {
+            do! tellComment "installation_facts.pl"
+            do! newline
+            do! tellDirective (moduleDirective "installation_facts" ["installation/12"])
+            do! newline
+            do! tellComment signature
+            do! mapMz (tellPredicate << installation12) rows
+            do! newline
+            return ()
+        }
 
-    let insts : FactBase     = 
-        rows |> List.map instClause |> FactBase.ofOptionList
-
-    let pmodule : Module = 
-        new Module("installation_facts", "installation_facts.pl", [ insts ])
-
-    printfn "insts count: %i" (rows.Length)
-    pmodule.Save(outFile)
 
 let main () = 
     readInstSpreadsheet () |> genInstFacts

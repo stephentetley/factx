@@ -18,10 +18,18 @@ module FactOutput =
     let fact (name:string) (terms:Term list) : Predicate =
         Predicate(SimpleAtom name, terms) 
 
+
+    /// ''
+    let nullTerm : Term = Atom (QuotedAtom "")
+
     /// eg. true, false, none, null
     let simpleAtom (input:string) : Term = Atom (SimpleAtom input)
 
-    let quotedAtom (input:string) : Term = Atom (QuotedAtom input)
+    /// A null string is represented as ''
+    let quotedAtom (input:string) : Term = 
+        match input with
+        | null -> nullTerm
+        | _ -> Atom (QuotedAtom input)
 
     let charTerm (input:char) : Term = Literal (Char input)
 
@@ -37,8 +45,7 @@ module FactOutput =
     let decimalTerm (d:decimal) : Term = Literal (Decimal d)
 
 
-    /// ''
-    let nullTerm : Term = Atom (QuotedAtom "")
+
 
 
     /// Output date in ISO 8601 format

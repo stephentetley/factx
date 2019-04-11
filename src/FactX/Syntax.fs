@@ -146,7 +146,7 @@ module Syntax =
         match pred with
         | Predicate(a1,[]) -> ppAtom a1
         | Predicate(a1,xs) -> 
-            ppAtom a1 ^^ tupled (List.map ppTerm xs) ^^ dot
+            nest 4 (ppAtom a1 ^^ tupled (List.map ppTerm xs) ^^ dot)
 
 
 

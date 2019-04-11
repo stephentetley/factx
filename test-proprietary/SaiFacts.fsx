@@ -4,9 +4,6 @@
 #r "netstandard"
 #r "System.Xml.Linq"
 
-#I @"C:\Users\stephen\.nuget\packages\FParsec\1.0.4-rc3\lib\netstandard1.6"
-#r "FParsec"
-#r "FParsecCS"
 
 #I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190304\lib\netstandard2.0"
 #r "SLFormat"
@@ -27,11 +24,13 @@ open FSharp.Interop.Excel
 open FSharp.Data
 
 
-#load "..\src\Old\FactX\Internal\PrintProlog.fs"
-#load "..\src\Old\FactX\Internal\PrologSyntax.fs"
-#load "..\src\Old\FactX\FactOutput.fs"
+#load "..\src\FactX\Internal\Common.fs"
+#load "..\src\FactX\Syntax.fs"
+#load "..\src\FactX\FactOutput.fs"
+#load "..\src\FactX\FactWriter.fs"
 #load "..\src-extra\FactX\Extra\ExcelProviderHelper.fs"
-open Old.FactX
+open FactX
+open FactX.FactWriter
 open FactX.Extra.ExcelProviderHelper
 
 
@@ -59,42 +58,46 @@ let readSaiRowRows () : SaiRow list =
 let outputFileName (filename:string) : string = 
     System.IO.Path.Combine(@"G:\work\common_data\prolog", filename) 
 
+// signature = "site_name(uid, common_name)." 
+let siteName2 (row:SaiRow) : Predicate = 
+    predicate "site_name"
+                [ quotedAtom row.InstReference
+                ; stringTerm row.InstCommonName 
+                ]
 
-let siteNameClause (row:SaiRow) : option<Clause> = 
-    Clause.optionCons( signature = "site_name(uid, common_name)."
-                     , body = [ optPrologSymbol     row.InstReference
-                              ; optPrologString     row.InstCommonName ] )
+// ignature = "asset_type(uid, type)."
+let assetType2 (row:SaiRow) : Predicate = 
+    predicate "asset_type"
+                [ quotedAtom row.InstReference
+                ; quotedAtom row.AssetType 
+                ]
 
-
-let assetTypeClause (row:SaiRow) : option<Clause> = 
-    Clause.optionCons( signature = "asset_type(uid, type)."
-                     , body = [ optPrologSymbol     row.InstReference
-                              ; optPrologSymbol  row.AssetType ] )
-
-let assetStatusClause (row:SaiRow) : option<Clause> = 
-    Clause.optionCons( signature = "asset_status(uid, status)."
-                     , body = [ optPrologSymbol row.InstReference
-                              ; optPrologSymbol row.AssetStatus ] )
+// signature = "asset_status(uid, status)."
+let assetStatus2 (row:SaiRow) : Predicate = 
+    predicate "asset_status"
+                [ quotedAtom row.InstReference
+                ; quotedAtom row.AssetStatus 
+                ]
 
 
 
 let genSiteFacts (rows:SaiRow list) : unit = 
     let outFile = outputFileName "sai_facts.pl"
+    runFactWriter 160 outFile 
+        <|  factWriter {
+            do! tellComment "sai_facts.pl"
+            do! newline
+            do! tellDirective (moduleDirective "sai_facts" ["site_name/2"; "asset_type/2"; "asset_status/2"])
+            do! newline
+            do! mapMz (tellPredicate << siteName2) rows
+            do! newline
+            do! mapMz (tellPredicate << assetType2) rows
+            do! newline
+            do! mapMz (tellPredicate << assetStatus2) rows
+            do! newline
+            return ()
+        }
 
-    let siteNames : FactBase     = 
-        rows |> List.map siteNameClause |> FactBase.ofOptionList
-
-    let assetTypes : FactBase    = 
-        rows |> List.map assetTypeClause |> FactBase.ofOptionList
-
-    let assetStatus : FactBase   = 
-        rows |> List.map assetStatusClause |> FactBase.ofOptionList
-
-    let pmodule : Module = 
-        new Module("sai_facts", "sai_facts.pl", [ siteNames; assetTypes; assetStatus ])
-
-
-    pmodule.Save(outFile)
 
 
     
@@ -112,41 +115,44 @@ type OutstationRow = OustationTable.Row
 let readOutstationRows () : OutstationRow list = 
     (new OustationTable()).Rows |> Seq.toList
 
+// signature = "os_name(od_name, outstation_name)."
+let osName2 (row:OutstationRow) : Predicate = 
+    predicate "os_name"
+                [ quotedAtom row.``OD name``
+                ; quotedAtom    row.``OS name`` 
+                ]
 
-let osNameClause (row:OutstationRow) : option<Clause> = 
-    Clause.optionCons( signature = "os_name(od_name, outstation_name)."
-                     , body = [ optPrologSymbol    row.``OD name``
-                              ; optPrologSymbol    row.``OS name`` ] )
+// signature = "os_type(od_name, os_type)."
+let osType2 (row:OutstationRow) : Predicate = 
+    predicate "os_type"
+                [ quotedAtom row.``OD name``
+                ; quotedAtom row.``OS type`` 
+                ]
 
-let osTypeClause (row:OutstationRow) : option<Clause> = 
-    Clause.optionCons( signature = "os_type(od_name, os_type)."
-                     , body = [ optPrologSymbol    row.``OD name``
-                              ; optPrologSymbol    row.``OS type`` ] )
-
-
-let odCommentClause (row:OutstationRow) : option<Clause> = 
-    Clause.optionCons( signature = "od_comment(od_name, comment)."
-                     , body = [ optPrologSymbol     row.``OD name``
-                              ; optPrologSymbol     row.``OD comment`` ] )
+// ignature = "od_comment(od_name, comment)."
+let odComment2 (row:OutstationRow) : Predicate = 
+    predicate "od_comment"
+                [ quotedAtom row.``OD name``
+                ; quotedAtom row.``OD comment`` 
+                ]
 
 
 let genOsFacts (rows:OutstationRow list) : unit = 
     let outFile = outputFileName "os_facts.pl"
-    
-    let osNames : FactBase  = 
-        rows |> List.map osNameClause |> FactBase.ofOptionList
-
-    let osTypes : FactBase  = 
-        rows |> List.map osTypeClause |> FactBase.ofOptionList
-
-    let comments : FactBase = 
-        rows |> List.map odCommentClause |> FactBase.ofOptionList
-
-    let pmodule : Module = 
-        new Module ("os_facts", "os_facts.pl", [osNames; osTypes; comments])
-
-    pmodule.Save(outFile)
-
+    runFactWriter 160 outFile 
+        <|  factWriter {
+            do! tellComment "os_facts.pl"
+            do! newline
+            do! tellDirective (moduleDirective "os_facts" ["os_name/2"; "os_type/2"; "od_comment/2"])
+            do! newline
+            do! mapMz (tellPredicate << osName2) rows
+            do! newline
+            do! mapMz (tellPredicate << osType2) rows
+            do! newline
+            do! mapMz (tellPredicate << odComment2) rows
+            do! newline
+            return ()
+        }
 
 
 let main () : unit = 
