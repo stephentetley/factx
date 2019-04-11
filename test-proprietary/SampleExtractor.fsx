@@ -2,10 +2,9 @@
 // License: BSD 3 Clause
 
 #r "netstandard"
+open System.IO
 
-#I @"C:\Users\stephen\.nuget\packages\FParsec\1.0.4-rc3\lib\netstandard1.6"
-#r "FParsec"
-#r "FParsecCS"
+
 
 #I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190304\lib\netstandard2.0"
 #r "SLFormat"
@@ -20,11 +19,13 @@
 open FSharp.Interop.Excel
 
 
-#load "..\src\Old\FactX\Internal\PrintProlog.fs"
-#load "..\src\Old\FactX\Internal\PrologSyntax.fs"
-#load "..\src\Old\FactX\FactOutput.fs"
+#load "..\src\FactX\Internal\Common.fs"
+#load "..\src\FactX\Syntax.fs"
+#load "..\src\FactX\FactOutput.fs"
+#load "..\src\FactX\FactWriter.fs"
 #load "..\src-extra\FactX\Extra\ExcelProviderHelper.fs"
-open Old.FactX
+open FactX
+open FactX.FactWriter
 open FactX.Extra.ExcelProviderHelper
 
 // ********** DATA SETUP **********
@@ -49,45 +50,24 @@ let makeOutputPath (fileName:string) : string =
 
 
 
+let address2 (row:InstallationsRow) : Predicate = 
+    predicate "address" [ quotedAtom row.InstReference; stringTerm row.``Full Address`` ]
 
-// ** Generate Prolog facts.
-let genAddresses () = 
+let writeListing (rows: InstallationsRow list) (outPath:string) : unit =
+    let justfile = FileInfo(outPath).Name
+    runFactWriter 160 outPath 
+        <|  factWriter {
+            do! tellComment justfile
+            do! newline
+            do! tellDirective (moduleDirective "addresses" ["address/2"])
+            do! newline
+            do! tellComment "address(id:atom, address_text:string)."
+            do! mapMz (tellPredicate << address2) rows
+            do! newline
+            return ()
+        }
+
+let main () = 
     let outFile = makeOutputPath "addresses.pl"
-
-    let makeClause (row:InstallationsRow) : Option<Clause>= 
-        Clause.optionCons ( signature = "address(refnum, full_address)."
-                          , body = [ optPrologSymbol    row.InstReference
-                                   ; optPrologString    row.``Full Address`` ] )
-
-
-    let addresses : FactBase = 
-        readInstallations () |> List.map makeClause  |> FactBase.ofOptionList
-
-    let pmodule : Module = 
-        new Module("addresses", "addresses.pl", addresses)
-
-    pmodule.Save(outFile)
-
-
-let genAssetNames () = 
-    let outFile = makeOutputPath "asset_names.pl"
-
-    let makeClause (row:InstallationsRow) : option<Clause> = 
-        Clause.optionCons ( signature = "asset_name(refnum, name)."
-                          , body = [ optPrologSymbol    row.InstReference
-                                   ; optPrologString    row.InstCommonName ] )
-
-    let assetNames : FactBase = 
-        readInstallations () |> List.map makeClause |> FactBase.ofOptionList
-
-    let pmodule : Module= 
-        new Module("asset_names", "asset_names.pl", assetNames)
-
-    pmodule.Save(outFile)
-    
-
-let main () : unit = 
-    genAddresses ()
-    genAssetNames ()
-    printfn "Done."
-
+    readInstallations () 
+        |> fun rows -> writeListing rows outFile
