@@ -7,6 +7,7 @@
   <ItemGroup>
     <Compile Include="Proprietary.fs" />
     <None Include="SampleExtractor.fsx" />
+    <None Include="Temp.fsx" />
     <None Include="SaiFacts.fsx" />
     <None Include="UQ_RtuFacts.fsx" />
     <None Include="UQ_AssetFacts.fsx" />

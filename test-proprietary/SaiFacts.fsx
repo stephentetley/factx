@@ -26,6 +26,7 @@ open FSharp.Data
 
 #load "..\src\FactX\Internal\Common.fs"
 #load "..\src\FactX\Syntax.fs"
+#load "..\src\FactX\Pretty.fs"
 #load "..\src\FactX\FactOutput.fs"
 #load "..\src\FactX\FactWriter.fs"
 #load "..\src-extra\FactX\Extra\ExcelProviderHelper.fs"

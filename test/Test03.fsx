@@ -10,6 +10,7 @@ open SLFormat.Pretty
 #load "..\src\FactX\Internal\Common.fs"
 #load "..\src\FactX\Syntax.fs"
 #load "..\src\FactX\FactOutput.fs"
+#load "..\src\FactX\Pretty.fs"
 #load "..\src\FactX\FactWriter.fs"
 open FactX
 open FactX.FactWriter

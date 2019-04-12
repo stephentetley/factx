@@ -14,10 +14,11 @@ open SLFormat.Pretty
 
 #load "..\src\FactX\Internal\Common.fs"
 #load "..\src\FactX\Syntax.fs"
+#load "..\src\FactX\Pretty.fs"
 #load "..\src\FactX\FactOutput.fs"
 
-open FactX.Syntax
-open FactX.FactOutput
+open FactX
+open FactX.Pretty
 
 let testRender (doc:Doc) : unit = 
     render 80 doc |> printfn "%s"

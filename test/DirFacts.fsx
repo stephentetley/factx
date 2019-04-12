@@ -13,6 +13,7 @@
 
 #load "..\src\FactX\Internal\Common.fs"
 #load "..\src\FactX\Syntax.fs"
+#load "..\src\FactX\Pretty.fs"
 #load "..\src\FactX\FactOutput.fs"
 #load "..\src\FactX\FactWriter.fs"
 #load "..\src-extra\FactX\Extra\PathString.fs"
@@ -20,13 +21,11 @@
 #load "..\src-extra\FactX\Extra\DirectoryListing.fs"
 open FactX
 open FactX.FactWriter
+
 open FactX.Extra.DirectoryListing
 open System.IO
 
 let getLocalDataFile (fileName:string) : string = 
-    System.IO.Path.Combine(__SOURCE_DIRECTORY__,"../data", fileName)
-
-let outputFile (fileName:string) : string = 
     System.IO.Path.Combine(__SOURCE_DIRECTORY__,"../data", fileName)
 
 
@@ -56,14 +55,15 @@ let pathList (path:FilePath) : Term =
     path.Split('\\') |> Array.toList |> List.map stringTerm |> listTerm
 
 
-let writeListing (infile:string) (moduleName:string) (outPath:string) : unit =
-    match listingToProlog infile with
-    | None -> printfn "Could not interpret the directory listing: '%s'" infile
+let writeListing (inputPath:string) (moduleName:string)  : unit =
+    match listingToProlog inputPath with
+    | None -> printfn "Could not interpret the directory listing: '%s'" inputPath
     | Some listing -> 
-        let justfile = FileInfo(outPath).Name
+        let justFile = sprintf "%s.pl" moduleName
+        let outPath = Path.Combine( Path.GetDirectoryName(inputPath), justFile)
         runFactWriter 160 outPath 
             <|  factWriter {
-                do! tellComment justfile
+                do! tellComment justFile
                 do! newlines 3
                 do! tellDirective (moduleDirective moduleName ["listing/1"])
                 do! newline
@@ -75,13 +75,12 @@ let writeListing (infile:string) (moduleName:string) (outPath:string) : unit =
 
 // We should consider generating SWI Prolog record accessors
 
-let main (localFile:string) = 
-    let infile = getLocalDataFile localFile
-    let name1 = Path.GetFileName infile |> fun x -> Path.ChangeExtension(x,"pl")
-    let outfile = outputFile name1
-    writeListing infile "directories" outfile
+let main (inputPath:string) = 
+    writeListing inputPath "directories"
 
-
+let demo01 () = 
+    let inputPath = getLocalDataFile "dir.txt"
+    writeListing inputPath "directories"
 
 
 

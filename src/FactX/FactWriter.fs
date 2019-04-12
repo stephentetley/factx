@@ -3,12 +3,16 @@
 
 namespace FactX
 
+// Open explicitly as we use some good names that we shouldn't
+// have exclusive purchase on.
+
 module FactWriter = 
 
     open System.IO
     open SLFormat.Pretty
 
     open FactX
+    open FactX.Pretty
 
     type ErrMsg = string
 
