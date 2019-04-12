@@ -210,13 +210,13 @@ module DirectoryListing =
     let fileObjToValue (fobj:LabelledTree<Label>) : Term = 
         let getDateTime (label:Label) : Term = 
             match label.Properties.ModificationTime with
-            | None -> simpleAtom "unknown"
+            | None -> nullTerm
             | Some dt -> dateTimeTerm dt
         
         let getMode (label:Label) : Term = 
             match label.Properties.Mode with
-            | None -> simpleAtom "unknown"
-            | Some s -> simpleAtom s
+            | None -> nullTerm
+            | Some s -> stringTerm s
 
         /// CPS transformed
         let rec work (x:LabelledTree<Label>) 
