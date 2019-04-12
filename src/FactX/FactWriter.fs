@@ -138,3 +138,9 @@ module FactWriter =
 
     let tellPredicate (body:Predicate) : FactWriter<unit>  =
         tellDoc (ppPredicate body)
+
+
+    let optTellPredicate (optBody:Predicate option) : FactWriter<unit>  =
+        match optBody with
+        | None -> mreturn ()
+        | Some body -> tellDoc (ppPredicate body)

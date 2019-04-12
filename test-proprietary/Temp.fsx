@@ -46,8 +46,33 @@ let readOutstations () : OsRow list =
          
     excelReadRowsAsList helper (new OsTable()) 
 
+
+type OsNames = 
+    ExcelFile< @"G:\work\Projects\events2\adb\adb-outstations-names-for-edm2.xlsx",
+                SheetName = "Sheet1",
+                ForceString = true >
+
+type OsNameRow = OsNames.Row
+
+let readOsNames () : OsNameRow list = 
+    let helper = 
+        { new IExcelProviderHelper<OsNames,OsNameRow>
+          with member this.ReadTableRows table = table.Data 
+               member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
+         
+    excelReadRowsAsList helper (new OsNames()) 
+
+
+
 let makeOutputPath (fileName:string) : string = 
     System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..", "data", fileName)
+
+
+let ntrim (source:string) : string = 
+    match source with
+    | null -> ""
+    | _ -> source.Trim()
+
 
 
 // "outstation(uid:atom, adb_path:string, status:atom)."
@@ -58,20 +83,32 @@ let outstation3 (row:OsRow) : Predicate =
                 ; quotedAtom row.AssetStatus
                 ]
 
-let writeListing (rows: OsRow list) (outPath:string) : unit =
-    let justfile = FileInfo(outPath).Name
+
+// "outstation(os_name:atom, uid:atom, common_name:string)."
+let outstationName3 (row:OsNameRow) : Predicate option = 
+    match ntrim row.``RTS Outstation Name`` with
+    | null | "" -> None
+    | rtsname -> 
+        predicate "outstation_name" 
+                        [ quotedAtom rtsname
+                        ; quotedAtom row.Reference
+                        ; stringTerm (ntrim row.``Common Name``)
+                        ] |> Some
+
+
+let main () = 
+    let outPath = makeOutputPath "edm_outstations.pl"
+    let osList = readOutstations () 
+    let namesList = readOsNames ()             
     runFactWriter 160 outPath 
         <|  factWriter {
-            do! tellComment justfile
+            do! tellComment "edm_outstations.pl"
             do! newline
-            do! tellDirective (moduleDirective "edm_outstations" ["outstation/3"])
+            do! tellDirective (moduleDirective "edm_outstations" ["outstation/3" ; "outstation_name/3"])
             do! newline
-            do! mapMz (tellPredicate << outstation3) rows
+            do! mapMz (tellPredicate << outstation3) osList
             do! newline
+            do! mapMz (optTellPredicate << outstationName3) namesList
             return ()
         }
 
-let main () = 
-    let outFile = makeOutputPath "edm_outstations.pl"
-    readOutstations () 
-        |> fun rows -> writeListing rows outFile
