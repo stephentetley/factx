@@ -38,23 +38,7 @@ let test01 () =
 
 
 
-// Note - to make facts a "filestore" must have a name
-// The obvious name is the <path-to-root>.
-
-//let test02 () = 
-//    let path1 = getLocalDataFile "dir.txt"
-//    match readDirRecurseOutput path1 with
-//    | Choice1Of2 err -> failwith err
-//    | Choice2Of2 ans -> 
-//        let fs:FactBase = fileStore ans in (fs.ToProlog()) |> printfn "%A" 
-//        let fs:FactBase = drive ans in (fs.ToProlog()) |> printfn "%A" 
-
-// SWI-Prolog has a pcre module which suggests representing paths
-// as lists of strings might be useful.
-let pathList (path:FilePath) : Term = 
-    path.Split('\\') |> Array.toList |> List.map stringTerm |> listTerm
-
-
+/// This should go in the DirectoryListing module...
 let writeListing (inputPath:string) (moduleName:string)  : unit =
     match listingToProlog inputPath with
     | None -> printfn "Could not interpret the directory listing: '%s'" inputPath
@@ -64,6 +48,7 @@ let writeListing (inputPath:string) (moduleName:string)  : unit =
         runFactWriter 160 outPath 
             <|  factWriter {
                 do! tellComment justFile
+                do! timestamp
                 do! newlines 3
                 do! tellDirective (moduleDirective moduleName ["listing/1"])
                 do! newline

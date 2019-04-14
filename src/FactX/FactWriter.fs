@@ -8,7 +8,9 @@ namespace FactX
 
 module FactWriter = 
 
+    open System
     open System.IO
+    
     open SLFormat.Pretty
 
     open FactX
@@ -144,3 +146,7 @@ module FactWriter =
         match optBody with
         | None -> mreturn ()
         | Some body -> tellDoc (ppPredicate body)
+
+    let timestamp : FactWriter<unit> = 
+        DateTime.Now.ToString("yyyy-MM-ddThh:mm:ss") |> tellComment
+        
