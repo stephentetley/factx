@@ -16,7 +16,7 @@ module FactWriter =
     open FactX
     open FactX.Pretty
 
-    type ErrMsg = string
+    // type ErrMsg = string
 
     /// TODO - potentially add indent level
 
@@ -71,6 +71,212 @@ module FactWriter =
         use sw = new StreamWriter(outPath)
         apply1 ma 0 sw lineWidth |> fst
 
+
+    let tellDoc (doc:Doc) : FactWriter<unit> =
+        FactWriter <| fun st handle lineWidth ->
+            let text = render lineWidth doc
+            handle.WriteLine text
+            ((), st)
+
+    // ****************************************************
+    // Monadic Operations
+
+    /// fmap 
+    let fmapM (fn:'a -> 'b) (ma:FactWriter<'a>) : FactWriter<'b> = 
+        FactWriter <| fun st handle lineWidth -> 
+           let (a, st1) =  apply1 ma st handle lineWidth in (fn a, st1)
+           
+
+    // liftM (which is fmap)
+    let liftM (fn:'a -> 'x) (ma:FactWriter<'a>) : FactWriter<'x> = 
+        fmapM fn ma
+
+    let liftM2 (fn:'a -> 'b -> 'x) 
+               (ma:FactWriter<'a>) 
+               (mb:FactWriter<'b>) : FactWriter<'x> = 
+        factWriter { 
+            let! a = ma
+            let! b = mb
+            return (fn a b)
+        }
+
+    let liftM3 (fn:'a -> 'b -> 'c -> 'x) 
+               (ma:FactWriter<'a>) 
+               (mb:FactWriter<'b>) 
+               (mc:FactWriter<'c>) : FactWriter<'x> = 
+        factWriter { 
+            let! a = ma
+            let! b = mb
+            let! c = mc
+            return (fn a b c)
+        }
+
+    let liftM4 (fn:'a -> 'b -> 'c -> 'd -> 'x) 
+               (ma:FactWriter<'a>) 
+               (mb:FactWriter<'b>) 
+               (mc:FactWriter<'c>) 
+               (md:FactWriter<'d>) : FactWriter<'x> = 
+        factWriter { 
+            let! a = ma
+            let! b = mb
+            let! c = mc
+            let! d = md
+            return (fn a b c d)
+        }
+
+
+    let liftM5 (fn:'a -> 'b -> 'c -> 'd -> 'e -> 'x) 
+               (ma:FactWriter<'a>) 
+               (mb:FactWriter<'b>) 
+               (mc:FactWriter<'c>) 
+               (md:FactWriter<'d>) 
+               (me:FactWriter<'e>) : FactWriter<'x> = 
+        factWriter { 
+            let! a = ma
+            let! b = mb
+            let! c = mc
+            let! d = md
+            let! e = me
+            return (fn a b c d e)
+        }
+
+    let liftM6 (fn:'a -> 'b -> 'c -> 'd -> 'e -> 'f -> 'x) 
+               (ma:FactWriter<'a>) 
+               (mb:FactWriter<'b>) 
+               (mc:FactWriter<'c>) 
+               (md:FactWriter<'d>) 
+               (me:FactWriter<'e>) 
+               (mf:FactWriter<'f>) : FactWriter<'x> = 
+        factWriter { 
+            let! a = ma
+            let! b = mb
+            let! c = mc
+            let! d = md
+            let! e = me
+            let! f = mf
+            return (fn a b c d e f)
+        }
+
+
+    let tupleM2 (ma:FactWriter<'a>) 
+                (mb:FactWriter<'b>) : FactWriter<'a * 'b> = 
+        liftM2 (fun a b -> (a,b)) ma mb
+
+    let tupleM3 (ma:FactWriter<'a>) 
+                (mb:FactWriter<'b>) 
+                (mc:FactWriter<'c>) : FactWriter<'a * 'b * 'c> = 
+        liftM3 (fun a b c -> (a,b,c)) ma mb mc
+
+    let tupleM4 (ma:FactWriter<'a>) 
+                (mb:FactWriter<'b>) 
+                (mc:FactWriter<'c>) 
+                (md:FactWriter<'d>) : FactWriter<'a * 'b * 'c * 'd> = 
+        liftM4 (fun a b c d -> (a,b,c,d)) ma mb mc md
+
+    let tupleM5 (ma:FactWriter<'a>) 
+                (mb:FactWriter<'b>) 
+                (mc:FactWriter<'c>) 
+                (md:FactWriter<'d>) 
+                (me:FactWriter<'e>) : FactWriter<'a * 'b * 'c * 'd * 'e> = 
+        liftM5 (fun a b c d e -> (a,b,c,d,e)) ma mb mc md me
+
+    let tupleM6 (ma:FactWriter<'a>) 
+                (mb:FactWriter<'b>) 
+                (mc:FactWriter<'c>) 
+                (md:FactWriter<'d>) 
+                (me:FactWriter<'e>) 
+                (mf:FactWriter<'f>) : FactWriter<'a * 'b * 'c * 'd * 'e * 'f> = 
+        liftM6 (fun a b c d e f -> (a,b,c,d,e,f)) ma mb mc md me mf
+
+    let pipeM2 (ma:FactWriter<'a>) 
+               (mb:FactWriter<'b>) 
+               (fn:'a -> 'b -> 'x) : FactWriter<'x> = 
+        liftM2 fn ma mb
+
+    let pipeM3 (ma:FactWriter<'a>) 
+               (mb:FactWriter<'b>) 
+               (mc:FactWriter<'c>) 
+               (fn:'a -> 'b -> 'c -> 'x) : FactWriter<'x> = 
+        liftM3 fn ma mb mc
+
+    let pipeM4 (ma:FactWriter<'a>) 
+               (mb:FactWriter<'b>) 
+               (mc:FactWriter<'c>) 
+               (md:FactWriter<'d>) 
+               (fn:'a -> 'b -> 'c -> 'd -> 'x) : FactWriter<'x> = 
+        liftM4 fn ma mb mc md
+
+    let pipeM5 (ma:FactWriter<'a>) 
+               (mb:FactWriter<'b>) 
+               (mc:FactWriter<'c>) 
+               (md:FactWriter<'d>) 
+               (me:FactWriter<'e>) 
+               (fn:'a -> 'b -> 'c -> 'd -> 'e ->'x) : FactWriter<'x> = 
+        liftM5 fn ma mb mc md me
+
+    let pipeM6 (ma:FactWriter<'a>) 
+               (mb:FactWriter<'b>) 
+               (mc:FactWriter<'c>) 
+               (md:FactWriter<'d>) 
+               (me:FactWriter<'e>) 
+               (mf:FactWriter<'f>) 
+               (fn:'a -> 'b -> 'c -> 'd -> 'e -> 'f -> 'x) : FactWriter<'x> = 
+        liftM6 fn ma mb mc md me mf
+
+    /// Left biased choice, if ``ma`` succeeds return its result, otherwise try ``mb``.
+    let altM (ma:FactWriter<'a>) (mb:FactWriter<'a>) : FactWriter<'a> = 
+        combineM ma mb
+
+
+    /// Haskell Applicative's (<*>)
+    let apM (mf:FactWriter<'a ->'b>) (ma:FactWriter<'a>) : FactWriter<'b> = 
+        factWriter { 
+            let! fn = mf
+            let! a = ma
+            return (fn a) 
+        }
+
+
+
+    /// Perform two actions in sequence. 
+    /// Ignore the results of the second action if both succeed.
+    let seqL (ma:FactWriter<'a>) (mb:FactWriter<'b>) : FactWriter<'a> = 
+        factWriter { 
+            let! a = ma
+            let! b = mb
+            return a
+        }
+
+    /// Perform two actions in sequence. 
+    /// Ignore the results of the first action if both succeed.
+    let seqR (ma:FactWriter<'a>) (mb:FactWriter<'b>) : FactWriter<'b> = 
+        factWriter { 
+            let! a = ma
+            let! b = mb
+            return b
+        }
+
+
+    let kleisliL (mf:'a -> FactWriter<'b>)
+                 (mg:'b -> FactWriter<'c>)
+                 (source:'a) : FactWriter<'c> = 
+        factWriter { 
+            let! b = mf source
+            let! c = mg b
+            return c
+        }
+
+    /// Flipped kleisliL
+    let kleisliR (mf:'b -> FactWriter<'c>)
+                 (mg:'a -> FactWriter<'b>)
+                 (source:'a) : FactWriter<'c> = 
+        factWriter { 
+            let! b = mg source
+            let! c = mf b
+            return c
+        }
+
+
     /// Implemented in CPS 
     let mapM (mf: 'a -> FactWriter<'b>) 
              (source:'a list) : FactWriter<'b list> = 
@@ -120,12 +326,59 @@ module FactWriter =
                     cont st3)
             work state count (fun s -> ((), s))
 
-    let tellDoc (doc:Doc) : FactWriter<unit> =
-        FactWriter <| fun st handle lineWidth ->
-            let text = render lineWidth doc
-            handle.WriteLine text
-            ((), st)
 
+
+    // ****************************************************
+    // Monadic operators
+
+    /// Bind operator
+    let ( >>= ) (ma:FactWriter<'a>) 
+              (fn:'a -> FactWriter<'b>) : FactWriter<'b> = 
+        bindM ma fn
+
+    /// Flipped Bind operator
+    let ( =<< ) (fn:'a -> FactWriter<'b>) 
+              (ma:FactWriter<'a>) : FactWriter<'b> = 
+        bindM ma fn
+
+
+    /// Operator for fmap.
+    let ( |>> ) (ma:FactWriter<'a>) (fn:'a -> 'b) : FactWriter<'b> = 
+        fmapM fn ma
+
+    /// Flipped fmap.
+    let ( <<| ) (fn:'a -> 'b) (ma:FactWriter<'a>) : FactWriter<'b> = 
+        fmapM fn ma
+
+
+    /// Operator for seqL
+    let ( .>> ) (ma:FactWriter<'a>) 
+                (mb:FactWriter<'b>) : FactWriter<'a> = 
+        seqL ma mb
+
+    /// Operator for seqR
+    let ( >>. ) (ma:FactWriter<'a>) 
+                (mb:FactWriter<'b>) : FactWriter<'b> = 
+        seqR ma mb
+
+
+
+    /// Operator for kleisliL
+    let ( >=> ) (mf : 'a -> FactWriter<'b>)
+                (mg : 'b -> FactWriter<'c>)
+                (source:'a) : FactWriter<'c> = 
+        kleisliL mf mg source
+
+
+    /// Operator for kleisliR
+    let ( <=< ) (mf : 'b -> FactWriter<'c>)
+                (mg : 'a -> FactWriter<'b>)
+                (source:'a) : FactWriter<'c> = 
+        kleisliR mf mg source
+
+
+    // ****************************************************
+    // Fact output
     let newline : FactWriter<unit> = 
         tellDoc emptyDoc
 
