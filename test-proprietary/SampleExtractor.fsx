@@ -38,17 +38,16 @@ type InstallationsTable =
 
 type InstallationsRow = InstallationsTable.Row
 
-let readInstallations () : InstallationsRow list = 
-    let helper = 
-        { new IExcelProviderHelper<InstallationsTable,InstallationsRow>
-          with member this.ReadTableRows table = table.Data 
-               member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
+let excelHelper : IExcelProviderHelper<InstallationsTable,InstallationsRow> = 
+    { new IExcelProviderHelper<InstallationsTable,InstallationsRow>
+        with 
+            member this.ReadTableRows table = table.Data 
+            member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
          
-    excelReadRowsAsList helper (new InstallationsTable()) 
+
 
 let makeOutputPath (fileName:string) : string = 
     System.IO.Path.Combine(__SOURCE_DIRECTORY__,"..", "data", fileName)
-
 
 
 let address2 (row:InstallationsRow) : Predicate = 
@@ -57,21 +56,16 @@ let address2 (row:InstallationsRow) : Predicate =
                 ; stringTerm row.``Full Address`` 
                 ]
 
-let writeListing (rows: InstallationsRow list) (outPath:string) : unit =
-    let justfile = FileInfo(outPath).Name
-    runFactWriter 160 outPath 
-        <|  factWriter {
-            do! tellComment justfile
-            do! newline
-            do! tellDirective (moduleDirective "addresses" ["address/2"])
-            do! newline
-            do! tellComment "address(id:atom, address_text:string)."
-            do! mapMz (tellPredicate << address2) rows
-            do! newline
-            return ()
-        }
+let makeSkeleton (outPath:string) = 
+    { OutputPath = outPath
+      ModuleName = "addresses"
+      Exports = ["address/2"]
+      PredicateComment = "address(id:atom, address_text:string)."
+      ExcelReader = excelHelper
+      RowFact = Some << address2
+    }
+
 
 let main () = 
-    let outFile = makeOutputPath "addresses.pl"
-    readInstallations () 
-        |> fun rows -> writeListing rows outFile
+    let skeleton = makeSkeleton (makeOutputPath "addresses.pl")
+    excelTableToFacts1to1 skeleton (new InstallationsTable())
