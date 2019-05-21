@@ -45,7 +45,7 @@ type InstRow = InstTable.Row
 let readInstSpreadsheet () : InstRow list = 
     let helper = 
         { new IExcelProviderHelper<InstTable,InstRow>
-          with member this.ReadTableRows table = table.Data 
+          with member this.TableRows table = table.Data 
                member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
          
     excelReadRowsAsList helper (new InstTable())

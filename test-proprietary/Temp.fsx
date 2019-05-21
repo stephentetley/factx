@@ -41,7 +41,7 @@ type OsRow = OsTable.Row
 let readOutstations () : OsRow list = 
     let helper = 
         { new IExcelProviderHelper<OsTable,OsRow>
-          with member this.ReadTableRows table = table.Data 
+          with member this.TableRows table = table.Data 
                member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
          
     excelReadRowsAsList helper (new OsTable()) 
@@ -57,7 +57,7 @@ type OsNameRow = OsNames.Row
 let readOsNames () : OsNameRow list = 
     let helper = 
         { new IExcelProviderHelper<OsNames,OsNameRow>
-          with member this.ReadTableRows table = table.Data 
+          with member this.TableRows table = table.Data 
                member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
          
     excelReadRowsAsList helper (new OsNames()) 

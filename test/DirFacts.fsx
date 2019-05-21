@@ -2,6 +2,8 @@
 // License: BSD 3 Clause
 
 #r "netstandard"
+open System.IO
+open System.Text.RegularExpressions
 
 #I @"C:\Users\stephen\.nuget\packages\FParsec\1.0.4-rc3\lib\netstandard1.6"
 #r "FParsec"
@@ -66,6 +68,27 @@ let main (inputPath:string) =
 let demo01 () = 
     let inputPath = getLocalDataFile "dir.txt"
     writeListing inputPath "directories"
+
+let getName(fileName:string) : string option = 
+    let ans = Regex.Match(fileName, "^(?<prefix>.*)\.listing\.txt")
+    if ans.Success then 
+        ans.Groups.["prefix"].Value 
+            |> fun s -> s.Replace("-", "_").ToLower()
+            |> Some
+    else
+        None
+
+let demo02 () : unit = 
+    let src = @"G:\work\Projects\project-listings"
+    let proc1 (listingFile:FileInfo) : unit = 
+        match getName listingFile.Name with
+        | None -> ()
+        | Some moduleName -> 
+            writeListing listingFile.FullName moduleName
+    DirectoryInfo(src).GetFiles(searchPattern = @"*listing.txt")
+        |> Seq.iter (fun info -> printfn "%s" info.Name; proc1 info)
+
+
 
 
 

@@ -51,7 +51,7 @@ type SaiRow = SaiTable.Row
 let readSaiRowRows () : SaiRow list = 
     let helper = 
         { new IExcelProviderHelper<SaiTable,SaiRow>
-          with member this.ReadTableRows table = table.Data 
+          with member this.TableRows table = table.Data 
                member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
          
     excelReadRowsAsList helper (new SaiTable())

@@ -9,15 +9,8 @@
     <None Include="SampleExtractor.fsx" />
     <None Include="Temp.fsx" />
     <None Include="SaiFacts.fsx" />
-    <None Include="UQ_RtuFacts.fsx" />
-    <None Include="UQ_AssetFacts.fsx" />
-    <None Include="Hawkeyes.fsx" />
-    <None Include="Outstations.fsx" />
-    <None Include="LMP.fsx" />
     <None Include="LevelCalibration.fsx" />
-    <None Include="ScreenFacts.fsx" />
     <None Include="InstallationFacts.fsx" />
-    <None Include="PowerUpTimes.fsx" />
     <None Include="SiteInsts.fsx" />
   </ItemGroup>
 

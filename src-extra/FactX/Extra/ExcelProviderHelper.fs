@@ -15,11 +15,11 @@ module ExcelProviderHelper =
 
     /// F# design guidelines say favour object-interfaces rather than records of functions...
     type IExcelProviderHelper<'table,'row> = 
-        abstract member ReadTableRows : 'table -> seq<'row>
+        abstract member TableRows : 'table -> seq<'row>
         abstract member IsBlankRow: 'row -> bool
 
     let excelReadRows (helper:IExcelProviderHelper<'table,'row>) (table:'table) : seq<'row> = 
-        let allrows = helper.ReadTableRows table
+        let allrows = helper.TableRows table
         allrows |> Seq.filter (not << helper.IsBlankRow)
 
 
@@ -29,7 +29,8 @@ module ExcelProviderHelper =
     
     /// Skeleton
 
-    type ExcelProvider1to1Skeleton<'table,'row> = 
+    /// This skeleton derives facts from a single table.
+    type ExcelProviderSingleSheetSkeleton<'table,'row> = 
         { OutputPath: string
           ModuleName: string
           Exports: string list
@@ -38,7 +39,7 @@ module ExcelProviderHelper =
           RowFact: 'row -> Predicate option
         }
 
-    let excelTableToFacts1to1 (skeleton:ExcelProvider1to1Skeleton<'table, 'row>) (table: 'table): unit =
+    let excelSingleSheetToFacts (skeleton:ExcelProviderSingleSheetSkeleton<'table, 'row>) (table: 'table): unit =
         let justfile = FileInfo(skeleton.OutputPath).Name
         let rows = excelReadRowsAsList skeleton.ExcelReader table 
         runFactWriter 160 skeleton.OutputPath 

@@ -41,7 +41,7 @@ type InstallationsRow = InstallationsTable.Row
 let excelHelper : IExcelProviderHelper<InstallationsTable,InstallationsRow> = 
     { new IExcelProviderHelper<InstallationsTable,InstallationsRow>
         with 
-            member this.ReadTableRows table = table.Data 
+            member this.TableRows table = table.Data 
             member this.IsBlankRow row = match row.GetValue(0) with null -> true | _ -> false }
          
 
@@ -68,4 +68,4 @@ let makeSkeleton (outPath:string) =
 
 let main () = 
     let skeleton = makeSkeleton (makeOutputPath "addresses.pl")
-    excelTableToFacts1to1 skeleton (new InstallationsTable())
+    excelSingleSheetToFacts skeleton (new InstallationsTable())
