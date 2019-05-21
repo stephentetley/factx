@@ -9,8 +9,6 @@
     <None Include="SampleExtractor.fsx" />
     <None Include="Temp.fsx" />
     <None Include="SaiFacts.fsx" />
-    <None Include="LevelCalibration.fsx" />
-    <None Include="InstallationFacts.fsx" />
     <None Include="SiteInsts.fsx" />
   </ItemGroup>
 
