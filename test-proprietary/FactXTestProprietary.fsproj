@@ -10,6 +10,7 @@
     <None Include="Temp.fsx" />
     <None Include="SaiFacts.fsx" />
     <None Include="SiteInsts.fsx" />
+    <None Include="AHR.fsx" />
   </ItemGroup>
 
   <ItemGroup>

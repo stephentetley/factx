@@ -1,4 +1,4 @@
-﻿// Copyright (c) Stephen Tetley 2018
+﻿// Copyright (c) Stephen Tetley 2018, 2019
 // License: BSD 3 Clause
 
 namespace FactX.Extra.ExcelProviderHelper
@@ -11,7 +11,7 @@ module ExcelProviderHelper =
 
     open FactX
     open FactX.FactWriter
-
+    open FactX.Extra.Skeletons
 
     /// F# design guidelines say favour object-interfaces rather than records of functions...
     type IExcelProviderHelper<'table,'row> = 
@@ -27,29 +27,9 @@ module ExcelProviderHelper =
         excelReadRows helper table |> Seq.toList
 
     
-    /// Skeleton
+    let excelProviderWriteFacts (helper:IExcelProviderHelper<'table,'row>) 
+                                (rowFact: 'row -> Predicate option) 
+                                (table:'table) : FactWriter<unit> =
+        let rows = excelReadRowsAsList helper table 
+        mapMz (optTellPredicate << rowFact) rows
 
-    /// This skeleton derives facts from a single table.
-    type ExcelProviderSingleSheetSkeleton<'table,'row> = 
-        { OutputPath: string
-          ModuleName: string
-          Exports: string list
-          PredicateComment: string
-          ExcelReader: IExcelProviderHelper<'table,'row>
-          RowFact: 'row -> Predicate option
-        }
-
-    let excelSingleSheetToFacts (skeleton:ExcelProviderSingleSheetSkeleton<'table, 'row>) (table: 'table): unit =
-        let justfile = FileInfo(skeleton.OutputPath).Name
-        let rows = excelReadRowsAsList skeleton.ExcelReader table 
-        runFactWriter 160 skeleton.OutputPath 
-            <|  factWriter {
-                do! tellComment justfile
-                do! newline
-                do! tellDirective (moduleDirective skeleton.ModuleName skeleton.Exports)
-                do! newline
-                do! tellComment skeleton.PredicateComment
-                do! mapMz (optTellPredicate << skeleton.RowFact) rows
-                do! newline
-                return ()
-            }

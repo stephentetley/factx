@@ -26,7 +26,6 @@ open FSharp.Interop.Excel
 #load "..\src\FactX\FactWriter.fs"
 #load "..\src-extra\FactX\Extra\ExcelProviderHelper.fs"
 open FactX
-open FactX.FactWriter
 open FactX.Extra.ExcelProviderHelper
 
 // ********** DATA SETUP **********

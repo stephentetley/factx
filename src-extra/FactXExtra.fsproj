@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="FactX\Extra\Skeletons.fs" />
     <Compile Include="FactX\Extra\ExcelProviderHelper.fs" />
     <Compile Include="FactX\Extra\String.fs" />
     <Compile Include="FactX\Extra\PathString.fs" />
