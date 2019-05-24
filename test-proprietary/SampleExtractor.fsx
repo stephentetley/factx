@@ -24,8 +24,10 @@ open FSharp.Interop.Excel
 #load "..\src\FactX\Pretty.fs"
 #load "..\src\FactX\FactOutput.fs"
 #load "..\src\FactX\FactWriter.fs"
+#load "..\src-extra\FactX\Extra\Skeletons.fs"
 #load "..\src-extra\FactX\Extra\ExcelProviderHelper.fs"
 open FactX
+open FactX.Extra.Skeletons
 open FactX.Extra.ExcelProviderHelper
 
 // ********** DATA SETUP **********
@@ -55,16 +57,19 @@ let address2 (row:InstallationsRow) : Predicate =
                 ; stringTerm row.``Full Address`` 
                 ]
 
-let makeSkeleton (outPath:string) = 
+let addressSkeleton (outPath:string) (table:InstallationsTable) = 
+    let predSkeleton = 
+        { PredicateName = "address/2"
+          Comment = "address(id:atom, address_text:string)."
+          WriteFacts = excelProviderWriteFacts excelHelper (Some << address2) table
+        }
+
     { OutputPath = outPath
       ModuleName = "addresses"
-      Exports = ["address/2"]
-      PredicateComment = "address(id:atom, address_text:string)."
-      ExcelReader = excelHelper
-      RowFact = Some << address2
+      PredicateSkeletons = [ predSkeleton ]
     }
 
 
 let main () = 
-    let skeleton = makeSkeleton (makeOutputPath "addresses.pl")
-    excelSingleSheetToFacts skeleton (new InstallationsTable())
+    let outpath = makeOutputPath "addresses.pl"
+    generateModule (addressSkeleton outpath (new InstallationsTable()))

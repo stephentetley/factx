@@ -135,8 +135,6 @@ let processesSkeleton (table:MappingTable) : ModuleSkeleton =
           Comment = "process(process_name:atom)."
           WriteFacts = seqWriteFacts (Some << prc) elements
         }
-
-
     { OutputPath = @"G:\work\Projects\asset_sync\output\processes.pl"
       ModuleName = "processes"
       PredicateSkeletons = [ prcgPredicate; prcPredicate ]
