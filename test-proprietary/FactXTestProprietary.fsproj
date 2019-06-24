@@ -11,6 +11,7 @@
     <None Include="SaiFacts.fsx" />
     <None Include="SiteInsts.fsx" />
     <None Include="AHR.fsx" />
+    <None Include="Edm2.fsx" />
   </ItemGroup>
 
   <ItemGroup>

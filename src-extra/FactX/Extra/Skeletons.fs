@@ -14,8 +14,8 @@ module Skeletons =
 
     /// Predicate name must include the arity suffix.
     type PredicateSkeleton = 
-        { PredicateName: string
-          Comment: string
+        { PredicateName : string
+          Comment : string
           WriteFacts : FactWriter<unit>
         }
 
