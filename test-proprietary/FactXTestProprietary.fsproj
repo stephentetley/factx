@@ -6,18 +6,20 @@
 
   <ItemGroup>
     <Compile Include="Proprietary.fs" />
+    <None Include="Edm2.fsx" />
     <None Include="SampleExtractor.fsx" />
     <None Include="Temp.fsx" />
     <None Include="SaiFacts.fsx" />
     <None Include="SiteInsts.fsx" />
     <None Include="AHR.fsx" />
-    <None Include="Edm2.fsx" />
+    <None Include="EquipmentLP.fsx" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="ExcelProvider" Version="1.0.1" />
     <PackageReference Include="FParsec" Version="1.0.4-RC3" />
     <PackageReference Include="FSharp.Data" Version="3.0.1" />
+    <PackageReference Include="RewriteYourStrings" Version="1.0.0-alpha-20190628" />
   </ItemGroup>
 
   <ItemGroup>
