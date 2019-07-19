@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Stephen Tetley 2019
 // License: BSD 3 Clause
 
-namespace FactX.Extra
+namespace FactX
 
 
 module Skeletons = 

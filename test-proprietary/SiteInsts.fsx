@@ -22,7 +22,7 @@ open FSharp.Interop.Excel
 #load "..\src\FactX\Pretty.fs"
 #load "..\src\FactX\FactOutput.fs"
 #load "..\src\FactX\FactWriter.fs"
-#load "..\src-extra\FactX\Extra\Skeletons.fs"
+#load "..\src\FactX\Skeletons.fs"
 #load "..\src-extra\FactX\Extra\ExcelProviderHelper.fs"
 open FactX
 open FactX.FactWriter

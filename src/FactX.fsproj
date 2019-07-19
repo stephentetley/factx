@@ -15,6 +15,7 @@
     <Compile Include="FactX\Pretty.fs" />
     <Compile Include="FactX\FactOutput.fs" />
     <Compile Include="FactX\FactWriter.fs" />
+    <Compile Include="FactX\Skeletons.fs" />
   </ItemGroup>
 
   <ItemGroup>

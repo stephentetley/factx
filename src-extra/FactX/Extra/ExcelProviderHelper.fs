@@ -11,7 +11,7 @@ module ExcelProviderHelper =
 
     open FactX
     open FactX.FactWriter
-    open FactX.Extra.Skeletons
+    open FactX.Skeletons
 
     /// F# design guidelines say favour object-interfaces rather than records of functions...
     type IExcelProviderHelper<'table,'row> = 
