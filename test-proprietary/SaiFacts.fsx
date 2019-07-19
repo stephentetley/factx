@@ -3,11 +3,7 @@
 
 #r "netstandard"
 #r "System.Xml.Linq"
-
-
-#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190322\lib\netstandard2.0"
-#r "SLFormat"
-
+open System.IO
 
 
 #I @"C:\Users\stephen\.nuget\packages\ExcelProvider\1.0.1\lib\netstandard2.0"
@@ -24,11 +20,16 @@ open FSharp.Interop.Excel
 open FSharp.Data
 
 
+#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190712\lib\netstandard2.0"
+#r "SLFormat"
+
+
 #load "..\src\FactX\Internal\Common.fs"
 #load "..\src\FactX\Syntax.fs"
 #load "..\src\FactX\Pretty.fs"
 #load "..\src\FactX\FactOutput.fs"
 #load "..\src\FactX\FactWriter.fs"
+#load "..\src-extra\FactX\Extra\Skeletons.fs"
 #load "..\src-extra\FactX\Extra\ExcelProviderHelper.fs"
 open FactX
 open FactX.FactWriter

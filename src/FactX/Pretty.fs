@@ -59,12 +59,12 @@ module Pretty =
 
     /// Print vertically
     let private ppList (docs:Doc list) : Doc = 
-        enclose lbracket rbracket  <| foldDocs (fun x y -> x ^^ comma ^@@^ y) docs
+        enclose lbracket rbracket  <| foldDocs (fun x y -> x ^^ comma ^!!^ y) docs
 
 
 
     let private ppDict (tag:Doc) (docs:Doc list) : Doc = 
-        let body = foldDocs (fun x y -> x ^^ comma ^@@^ y) docs
+        let body = foldDocs (fun x y -> x ^^ comma ^!!^ y) docs
         tag ^^ enclose lbrace rbrace body
 
 

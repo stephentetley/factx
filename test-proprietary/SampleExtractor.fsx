@@ -4,11 +4,6 @@
 #r "netstandard"
 open System.IO
 
-
-
-#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190322\lib\netstandard2.0"
-#r "SLFormat"
-
 #I @"C:\Users\stephen\.nuget\packages\ExcelProvider\1.0.1\lib\netstandard2.0"
 #r "ExcelProvider.Runtime.dll"
 
@@ -17,6 +12,10 @@ open System.IO
 #r "ExcelDataReader.dll"
 #r "ExcelProvider.DesignTime.dll"
 open FSharp.Interop.Excel
+
+
+#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190712\lib\netstandard2.0"
+#r "SLFormat"
 
 
 #load "..\src\FactX\Internal\Common.fs"

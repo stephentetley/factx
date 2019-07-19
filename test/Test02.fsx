@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 
-#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190322\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190712\lib\netstandard2.0"
 #r "SLFormat"
 open SLFormat.Pretty
 
@@ -40,13 +40,13 @@ let test04 (ntimes:int) =
     runTestW 35 (vcat <| List.replicate ntimes doc)
 
 let test05 () = 
-     runTestW 80 <| text "one" ^@@^ text "two"
+     runTestW 80 <| text "one" ^!!^ text "two"
 
 let test05a () = 
-     runTestW 80 <| text "one" ^@^ text "two"
+     runTestW 80 <| text "one" ^!^ text "two"
 
 let test06 () = 
-     runTestW 80 <| text "one" ^@@^ empty ^@@^ text "two"
+     runTestW 80 <| text "one" ^!!^ empty ^!!^ text "two"
 
 type Tree = 
     | Node of int
@@ -109,10 +109,10 @@ let treeFormat (source:Tree) : Doc =
     let rec work (acc:Doc) (term:Tree) (cont:Doc -> Doc) : Doc =
         printfn "work term=%O" term
         match term with
-        | Node i -> let doc1 = text <| sprintf "Node:%i" i in cont (acc ^@^ doc1)
+        | Node i -> let doc1 = text <| sprintf "Node:%i" i in cont (acc ^!^ doc1)
         | Tree xs -> 
             workList [] xs (fun d1 -> 
-            cont (acc ^@^ d1))
+            cont (acc ^!^ d1))
     and workList (acc:Doc List) (terms: Tree list) (cont:Doc -> Doc) : Doc =
         match terms with
         | [] -> cont (List.rev acc |> semiList)

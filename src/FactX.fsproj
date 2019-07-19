@@ -2,6 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <Copyright>Stephen Tetley 2019</Copyright>
+    <Version>1.0.0-alpha-20190719</Version>
+    <Authors>Stephen Tetley</Authors>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +19,14 @@
 
   <ItemGroup>
     <PackageReference Include="FParsec" Version="1.0.4-RC3" />
-    <PackageReference Include="SLFormat" Version="1.0.2-alpha-20190322" />
+    <PackageReference Include="SLFormat" Version="1.0.2-alpha-20190712" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

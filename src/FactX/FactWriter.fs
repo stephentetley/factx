@@ -23,7 +23,7 @@ module FactWriter =
     type private LineWidth = int
 
     type FactWriter<'a> = 
-        FactWriter of (int -> StreamWriter -> LineWidth -> 'a * int)
+        internal | FactWriter of (int -> StreamWriter -> LineWidth -> 'a * int)
 
 
     let inline private apply1 (ma: FactWriter<'a>) 
@@ -33,7 +33,7 @@ module FactWriter =
         let (FactWriter f) = ma in f state handle lineWidth
 
 
-    let inline mreturn (x:'a) : FactWriter<'a> = 
+    let mreturn (x:'a) : FactWriter<'a> = 
         FactWriter <| fun st _ _ -> (x, st)
 
 

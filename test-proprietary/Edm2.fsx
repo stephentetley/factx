@@ -5,14 +5,6 @@ open System.IO
 
 open System.Text.RegularExpressions
 
-#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190322\lib\netstandard2.0"
-#r "SLFormat"
-
-#I @"C:\Users\stephen\.nuget\packages\rewriteyourstrings\1.0.0-alpha-20190628\lib\netstandard2.0"
-#r "RewriteYourStrings"
-open RewriteYourStrings.RewriteMonad
-open RewriteYourStrings.Query
-open RewriteYourStrings.Transform
 
 #I @"C:\Users\stephen\.nuget\packages\ExcelProvider\1.0.1\lib\netstandard2.0"
 #r "ExcelProvider.Runtime.dll"
@@ -22,6 +14,16 @@ open RewriteYourStrings.Transform
 #r "ExcelDataReader.dll"
 #r "ExcelProvider.DesignTime.dll"
 open FSharp.Interop.Excel
+
+
+#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190712\lib\netstandard2.0"
+#r "SLFormat"
+
+#I @"C:\Users\stephen\.nuget\packages\rewriteyourstrings\1.0.0-alpha-20190628\lib\netstandard2.0"
+#r "RewriteYourStrings"
+open RewriteYourStrings.RewriteMonad
+open RewriteYourStrings.Query
+open RewriteYourStrings.Transform
 
 #load "..\src\FactX\Internal\Common.fs"
 #load "..\src\FactX\Syntax.fs"

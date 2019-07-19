@@ -11,7 +11,7 @@ open System.IO
 open FSharp.Data
 
 
-#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190322\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190712\lib\netstandard2.0"
 #r "SLFormat"
 
 
@@ -44,11 +44,13 @@ type Equipment =
       ObjectClass : string
     }
 
-let conv1 (row : EquipmentRow) : Equipment = 
-    { AibDescription = row.``Asset Type Description``
-      ObjectType = row.``Object Type``
-      ObjectClass = row.Class
-     }
+let conv1 (row : EquipmentRow) : Equipment option = 
+    match row.``Object Type``, row.Class with
+    | null,_ | _, null | "", _ -> None
+    | _ -> 
+        Some { AibDescription = row.``Asset Type Description``
+               ObjectType = row.``Object Type``
+               ObjectClass = row.Class }
 
 
 let equipmentFact (item : Equipment) : Predicate = 
@@ -61,7 +63,9 @@ let equipmentFact (item : Equipment) : Predicate =
 let docNames () : Equipment list = 
     let table = new EquipmentTable ()
     table.Rows
-        |> Seq.map conv1
+        |> Seq.map conv1 
+        |> Seq.choose id
+        |> Seq.sort
         |> Seq.distinct
         |> Seq.toList
 

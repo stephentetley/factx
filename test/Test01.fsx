@@ -8,7 +8,7 @@
 #r "FParsecCS"
 open FParsec
 
-#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190322\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\slformat\1.0.2-alpha-20190712\lib\netstandard2.0"
 #r "SLFormat"
 open SLFormat.Pretty
 
@@ -27,7 +27,7 @@ let testRender (doc:Doc) : unit =
 let test01 () = 
     let d1 = text "Hello" ^+^ text "world!"
     let d2 = text "***** ******"
-    render 80 (indent 2 (d1 ^@@^ d2)) |> printfn "%s"
+    render 80 (indent 2 (d1 ^!!^ d2)) |> printfn "%s"
 
     let fact1 : Fact = 
         fact "address" [quotedAtom "UID001"; stringTerm "1, Yellow Brick Road" ]
