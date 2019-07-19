@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Copyright>Stephen Tetley 2019</Copyright>
-    <Version>1.0.0-alpha-20190719</Version>
+    <Version>1.0.0-alpha-20190719a</Version>
     <Authors>Stephen Tetley</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>

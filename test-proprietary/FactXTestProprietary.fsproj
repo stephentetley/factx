@@ -11,8 +11,6 @@
     <None Include="Temp.fsx" />
     <None Include="SaiFacts.fsx" />
     <None Include="SiteInsts.fsx" />
-    <None Include="AHR.fsx" />
-    <None Include="EquipmentLP.fsx" />
   </ItemGroup>
 
   <ItemGroup>
