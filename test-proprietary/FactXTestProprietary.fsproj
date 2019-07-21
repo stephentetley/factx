@@ -17,7 +17,6 @@
     <PackageReference Include="ExcelProvider" Version="1.0.1" />
     <PackageReference Include="FParsec" Version="1.0.4-RC3" />
     <PackageReference Include="FSharp.Data" Version="3.0.1" />
-    <PackageReference Include="RewriteYourStrings" Version="1.0.0-alpha-20190628" />
   </ItemGroup>
 
   <ItemGroup>

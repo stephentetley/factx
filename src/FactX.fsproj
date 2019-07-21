@@ -4,9 +4,11 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Copyright>Stephen Tetley 2019</Copyright>
-    <Version>1.0.0-alpha-20190719a</Version>
+    <Version>1.0.0-alpha-20190721</Version>
     <Authors>Stephen Tetley</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageProjectUrl>https://github.com/stephentetley/factx-fsharp</PackageProjectUrl>
+    <Description>Library to generate Prolog and Answer Set facts</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,7 +22,7 @@
 
   <ItemGroup>
     <PackageReference Include="FParsec" Version="1.0.4-RC3" />
-    <PackageReference Include="SLFormat" Version="1.0.2-alpha-20190712" />
+    <PackageReference Include="SLFormat" Version="1.0.2-alpha-20190721" />
   </ItemGroup>
 
   <ItemGroup>
